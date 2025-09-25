@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+.idea/misc.xml
+.idea/modules.xml
+.idea/TingSub.iml
+.idea/vcs.xml
