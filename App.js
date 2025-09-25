@@ -1,12 +1,38 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
+import { Provider } from 'react-redux';
+import { store } from './store';
+import Navigation from './navigation';
+import { TamaguiProvider } from 'tamagui';
+import tamaguiConfig from './tamagui.config';
+import { useFonts } from 'expo-font';
 
 export default function App() {
+  const [loaded] = useFonts({
+    Inter: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
+    InterBold: require('@tamagui/font-inter/otf/Inter-Bold.otf'),
+  });
+
+  const [appLoaded, setAppLoaded] = useState(false);
+
+  useEffect(() => {
+    if (loaded) {
+      setAppLoaded(true);
+    }
+  }, [loaded]);
+
+  if (!appLoaded) {
+    return null;
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <TamaguiProvider config={tamaguiConfig}>
+      <Provider store={store}>
+        <Navigation />
+        <StatusBar style="auto" />
+      </Provider>
+    </TamaguiProvider>
   );
 }
 
