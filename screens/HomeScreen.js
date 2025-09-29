@@ -6,15 +6,13 @@ import {
   User,
   Search,
   Plus,
-  CalendarDays,
-  CreditCard,
-  BarChart3,
-  Music,
-  Video,
-  Apple as AppleIcon,
   Check
 } from '@tamagui/lucide-icons';
-import Svg, { Rect } from 'react-native-svg';
+import SectionHeader from './components/SectionHeader';
+import SummaryCard from './components/SummaryCard';
+import UpcomingCard from './components/UpcomingCard';
+import ActiveRow from './components/ActiveRow';
+import BarChart from './components/BarChart';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { addSubscription, updateSubscription, removeSubscription } from '../store';
@@ -36,90 +34,7 @@ function daysUntil(dateISO){
   return diff;
 }
 
-const UpcomingCard = ({ item, onLongPress }) => (
-  <TouchableOpacity style={styles.upcomingCard} onLongPress={onLongPress}>
-    <View style={styles.upcomingIconBox}>
-      <Music size={20} color="#0ea5e9" />
-    </View>
-    <View style={{ flex: 1 }}>
-      <Text style={styles.upcomingName}>{item.name}</Text>
-      <Text style={styles.upcomingCycle}>{item.cycle}</Text>
-      <View style={styles.upcomingMetaRow}>
-        <View style={styles.badgeInfo}>
-          <CalendarDays size={14} color="#6b7280" />
-          <Text style={styles.badgeText}>{item.next}</Text>
-        </View>
-        <View style={styles.badgeInfo}>
-          <CreditCard size={14} color="#6b7280" />
-          <Text style={styles.badgeText}>{item.price}</Text>
-        </View>
-      </View>
-    </View>
-  </TouchableOpacity>
-);
-
-const BarChart = ({ data, width = 300, height = 180, barColor = '#4f46e5' }) => {
-  const maxVal = useMemo(() => Math.max(...data, 1), [data]);
-  const barWidth = Math.floor((width - 20) / data.length);
-  return (
-    <Svg width={width} height={height}>
-      {data.map((v, i) => {
-        const h = Math.round((v / maxVal) * (height - 20));
-        return (
-          <Rect
-            key={i}
-            x={10 + i * barWidth}
-            y={height - h - 10}
-            width={barWidth - 8}
-            height={h}
-            rx={6}
-            fill={barColor}
-          />
-        );
-      })}
-    </Svg>
-  );
-};
-
-const SectionHeader = ({ title, actionText, onPress }) => (
-  <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    {actionText ? (
-      <TouchableOpacity onPress={onPress}>
-        <Text style={styles.link}>{actionText}</Text>
-      </TouchableOpacity>
-    ) : (
-      <View />
-    )}
-  </View>
-);
-
-const ActiveRow = ({ item, index, onLongPress }) => (
-  <TouchableOpacity style={styles.activeRow} onLongPress={onLongPress}>
-    <View style={styles.activeIconBox}>
-      {item.id === 'am' ? (
-        <AppleIcon size={18} color="#111827" />
-      ) : item.id === 'ytp' ? (
-        <Video size={18} color="#111827" />
-      ) : (
-        <BarChart3 size={18} color="#111827" />
-      )}
-    </View>
-    <View style={{ flex: 1 }}>
-      <Text style={styles.activeName}>{item.name}</Text>
-      <Text style={styles.activeHint}>{item.price}</Text>
-    </View>
-    <Text style={styles.activeNext}>{item.next}</Text>
-  </TouchableOpacity>
-);
-
-const SummaryCard = ({ title, value, sub }) => (
-  <View style={styles.summaryCard}>
-    <Text style={styles.summaryTitle}>{title}</Text>
-    <Text style={styles.summaryValue}>{value}</Text>
-    {sub ? <Text style={styles.summarySub}>{sub}</Text> : null}
-  </View>
-);
+/* Components moved to screens/components: UpcomingCard, BarChart, SectionHeader, ActiveRow, SummaryCard */
 
 // ... existing code ...
 const HomeScreen = () => {
@@ -294,34 +209,34 @@ const HomeScreen = () => {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* 订阅概览 */}
-        <SectionHeader title="订阅概览" actionText="查看全部" />
+        <SectionHeader title="订阅概览" actionText="查看全部" styles={styles} />
         <View style={styles.summaryGrid}>
-          <SummaryCard title="总订阅数" value={summaryData.totalSubs} sub="" />
-          <SummaryCard title="本月支出" value={`¥${summaryData.monthlySpend}`} sub={``} />
-          <SummaryCard title="即将到期" value={summaryData.upcomingBills} sub="7天内" />
-          <SummaryCard title="年度支出" value={`¥${summaryData.yearlySpend}`} sub={``} />
+          <SummaryCard title="总订阅数" value={summaryData.totalSubs} sub="" styles={styles} />
+          <SummaryCard title="本月支出" value={`¥${summaryData.monthlySpend}`} sub={``} styles={styles} />
+          <SummaryCard title="即将到期" value={summaryData.upcomingBills} sub="7天内" styles={styles} />
+          <SummaryCard title="年度支出" value={`¥${summaryData.yearlySpend}`} sub={``} styles={styles} />
         </View>
 
         {/* 即将到期 */}
-        <SectionHeader title="即将到期" actionText="更多" />
+        <SectionHeader title="即将到期" actionText="更多" styles={styles} />
         <View style={{ gap: 12 }}>
           {upcomingList.map((u) => (
-            <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} />
+            <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
           ))}
         </View>
 
         {/* 支出分析 */}
-        <SectionHeader title="支出分析" />
+        <SectionHeader title="支出分析" styles={styles} />
         <View style={styles.chartCard}>
           <BarChart data={spendByMonth} width={330} height={180} />
           <Text style={styles.chartAxis}>1月 3月 5月 7月 9月 11月</Text>
         </View>
 
         {/* 活跃订阅 */}
-        <SectionHeader title="活跃订阅" />
+        <SectionHeader title="活跃订阅" styles={styles} />
         <View style={{ gap: 8 }}>
           {activeSubs.map((s, idx) => (
-            <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} />
+            <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
           ))}
         </View>
 
