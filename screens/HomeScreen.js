@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { Text } from 'tamagui';
 import {
   Bell,
@@ -12,11 +12,13 @@ import {
   Music,
   Video,
   Apple as AppleIcon,
+  Check
 } from '@tamagui/lucide-icons';
 import Svg, { Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { addSubscription } from '../store';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 // 计算型工具
 const cycleLabelMap = { monthly: '月付', quarterly: '季付', yearly: '年付', lifetime: '终身', other: '其他' };
@@ -170,9 +172,35 @@ const HomeScreen = () => {
   }, [subs]);
   // 表单弹窗状态
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false });
-
-  const openModal = () => setModalOpen(true);
+  const [form, setForm] = useState({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+  // 简易日期选择：年/月/日
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const today = new Date();
+  const [dateParts, setDateParts] = useState({ year: today.getFullYear(), month: today.getMonth() + 1, day: today.getDate() });
+  const years = useMemo(() => Array.from({ length: 6 }, (_, i) => today.getFullYear() + i), []);
+  const months = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
+  const getDaysInMonth = (year, month) => new Date(year, month, 0).getDate();
+  const days = useMemo(() => Array.from({ length: getDaysInMonth(dateParts.year, dateParts.month) }, (_, i) => i + 1), [dateParts.year, dateParts.month]);
+  // 新增：Android 原生日期选择控件开关
+  const [showPicker, setShowPicker] = useState(false);
+  // Android DateTimePicker 变更处理
+  const onAndroidDateChange = (event, selectedDate) => {
+    if (Platform.OS !== 'web') {
+      const currentDate = selectedDate || new Date(dateParts.year, dateParts.month - 1, dateParts.day);
+      setShowPicker(false);
+      const y = currentDate.getFullYear();
+      const m = currentDate.getMonth() + 1;
+      const d = currentDate.getDate();
+      const iso = `${y}-${pad2(m)}-${pad2(d)}`;
+      setForm(v => ({ ...v, nextDueISO: iso }));
+      setDateParts({ year: y, month: m, day: d });
+    }
+  };
+  const openModal = () => {
+    setModalOpen(true);
+    const iso = `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`;
+    setForm((v) => ({ ...v, nextDueISO: iso }));
+  };
   const closeModal = () => setModalOpen(false);
   const submitForm = () => {
     if(!form.name || !form.price) return;
@@ -184,10 +212,11 @@ const HomeScreen = () => {
       cycle: form.cycle,
       nextDueISO: form.nextDueISO || undefined,
       autoRenew: form.autoRenew,
+      currency: form.currency,
     };
     dispatch(addSubscription(payload));
     closeModal();
-    setForm({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false });
+    setForm({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
   };
 
   return (
@@ -267,6 +296,13 @@ const HomeScreen = () => {
             <View style={styles.formRow}><Text style={styles.formLabel}>订阅名称</Text><TextInput style={styles.formInput} value={form.name} onChangeText={(t)=>setForm(v=>({...v,name:t}))} placeholder="例如：网易云音乐VIP" /></View>
             <View style={styles.formRow}><Text style={styles.formLabel}>订阅类型</Text><TextInput style={styles.formInput} value={form.category} onChangeText={(t)=>setForm(v=>({...v,category:t}))} placeholder="如：视频会员" /></View>
             <View style={styles.formRow}><Text style={styles.formLabel}>价格</Text><TextInput style={styles.formInput} keyboardType="numeric" value={form.price} onChangeText={(t)=>setForm(v=>({...v,price:t}))} placeholder="例如：15" /></View>
+            <View style={styles.formRow}><Text style={styles.formLabel}>货币</Text>
+              <View style={styles.selectRow}>
+                <TouchableOpacity style={[styles.selectItem, styles.selectItemActive]}>
+                  <Text style={[styles.selectText, styles.selectTextActive]}>人民币（¥）</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
             <View style={styles.formRow}><Text style={styles.formLabel}>计费周期</Text>
               <View style={styles.selectRow}>
                 {Object.entries(cycleLabelMap).map(([key,label])=> (
@@ -276,8 +312,55 @@ const HomeScreen = () => {
                 ))}
               </View>
             </View>
-            <View style={styles.formRow}><Text style={styles.formLabel}>到期日期</Text><TextInput style={styles.formInput} value={form.nextDueISO} onChangeText={(t)=>setForm(v=>({...v,nextDueISO:t}))} placeholder="YYYY-MM-DD" /></View>
-            <View style={styles.formRow}><TouchableOpacity onPress={()=>setForm(v=>({...v,autoRenew:!v.autoRenew}))} style={styles.checkbox}><Text style={styles.checkboxText}>{form.autoRenew? '✓ 自动续费' : '自动续费'}</Text></TouchableOpacity></View>
+            <View style={styles.formRow}><Text style={styles.formLabel}>到期日期</Text>
+              {Platform.OS === 'web' ? (
+                <>
+                  <input
+                    type="date"
+                    value={form.nextDueISO || `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`}
+                    onChange={(e)=>{
+                      const val = e.target.value;
+                      setForm(v=>({...v, nextDueISO: val }));
+                      if(val){
+                        const [y,m,d] = val.split('-').map(Number);
+                        setDateParts({ year: y, month: m, day: d });
+                      }
+                    }}
+                    style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: 8, padding: '8px 10px' }}
+                  />
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
+                    <TouchableOpacity onPress={()=>{ setForm(v=>({...v, nextDueISO: ''})); }}>
+                      <Text style={{ color: '#0ea5e9', fontSize: 12 }}>清除</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={()=>{ const t=new Date(); const iso=`${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`; setForm(v=>({...v, nextDueISO: iso})); setDateParts({ year: t.getFullYear(), month: t.getMonth()+1, day: t.getDate() }); }}>
+                      <Text style={{ color: '#0ea5e9', fontSize: 12 }}>今天</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity style={[styles.selectItem, styles.selectItemActive]} onPress={() => setShowPicker(true)}>
+                    <Text style={[styles.selectText, styles.selectTextActive]}>{form.nextDueISO || `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`}</Text>
+                  </TouchableOpacity>
+                  {showPicker && (
+                    <DateTimePicker
+                      value={new Date(dateParts.year, dateParts.month - 1, dateParts.day)}
+                      mode="date"
+                      display="calendar"
+                      onChange={onAndroidDateChange}
+                    />
+                  )}
+                </>
+              )}
+            </View>
+            <View style={styles.formRow}>
+              <TouchableOpacity onPress={()=>setForm(v=>({...v,autoRenew:!v.autoRenew}))} style={styles.checkboxRow}>
+                <View style={[styles.checkboxBox, form.autoRenew?styles.checkboxBoxChecked:null]}>
+                  {form.autoRenew ? <Check size={14} color="#fff" /> : null}
+                </View>
+                <Text style={styles.checkboxText}>自动续费</Text>
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.btnGhost} onPress={closeModal}><Text style={styles.btnGhostText}>取消</Text></TouchableOpacity>
@@ -412,6 +495,10 @@ const styles = StyleSheet.create({
   selectItemActive: { backgroundColor: '#E6F2FF', borderColor: '#60A5FA' },
   selectText: { fontSize: 12, color: '#374151' },
   selectTextActive: { color: '#1D4ED8', fontWeight: '700' },
+  // 新增复选框样式
+  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
+  checkboxBox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+  checkboxBoxChecked: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
   checkbox: { paddingVertical: 8 },
   checkboxText: { fontSize: 13, color: '#374151' },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 6 },

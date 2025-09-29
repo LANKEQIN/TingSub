@@ -1,6 +1,6 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-// 简单计数示例 reducer（保留）
+// 简单计数示例 reducer（保留本地定义，避免引入不存在文件）
 const counterReducer = (state = { value: 0 }, action: { type: string }) => {
   switch (action.type) {
     case 'counter/increment':
@@ -22,6 +22,7 @@ export interface Subscription {
   cycle: Cycle; // 计费周期
   nextDueISO?: string; // 下次到期日期（ISO 字符串）
   autoRenew?: boolean; // 是否自动续费
+  currency?: 'CNY'; // 货币（当前仅支持人民币）
 }
 
 const initialSubs: Subscription[] = [];
