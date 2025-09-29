@@ -18,14 +18,27 @@ import { useSelector, useDispatch } from 'react-redux';
 import { addSubscription, updateSubscription, removeSubscription } from '../store';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { ThemeContext } from '../lib/theme';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { RootStackParamList, TabParamList } from '../lib/navigation';
+import type { RootState, AppDispatch, Subscription, Cycle } from '../store';
 
 // 计算型工具
-const cycleLabelMap = { monthly: '月付', quarterly: '季付', yearly: '年付', lifetime: '终身', other: '其他' };
-const categoryGroupOptions = ['影音娱乐','工作','生活','其他'];
+// 类型：订阅分组
+type CategoryGroup = '影音娱乐' | '工作' | '生活' | '其他';
+// 计费周期标签映射（带类型）
+const cycleLabelMap: Record<Cycle, string> = { monthly: '月付', quarterly: '季付', yearly: '年付', lifetime: '终身', other: '其他' };
+// 可选的订阅分组选项（带类型）
+const categoryGroupOptions: CategoryGroup[] = ['影音娱乐','工作','生活','其他'];
+// 类型守卫与转换器
+const isCategoryGroup = (val: string): val is CategoryGroup => (categoryGroupOptions as string[]).includes(val);
+const toCategoryGroup = (val?: string): CategoryGroup => (val && isCategoryGroup(val) ? val : '其他');
 function formatPrice(price, cycle){
   if(cycle==='yearly') return `¥${price}/年`;
   if(cycle==='quarterly') return `¥${price}/季`;
   if(cycle==='lifetime') return `¥${price}/终身`;
+  if(cycle==='其他') return `¥${price}`;
   if(cycle==='other') return `¥${price}`;
   return `¥${price}/月`;
 }
@@ -38,10 +51,18 @@ function daysUntil(dateISO){
 
 /* Components moved to screens/components: UpcomingCard, BarChart, SectionHeader, ActiveRow, SummaryCard */
 
-const HomeScreen = () => {
+type HomeScreenProps = {
+  navigation: CompositeNavigationProp<
+    BottomTabNavigationProp<TabParamList, 'Home'>,
+    NativeStackNavigationProp<RootStackParamList>
+  >;
+  route: RouteProp<TabParamList, 'Home'>;
+};
+
+const HomeScreen: React.FC<HomeScreenProps> = () => {
   const insets = useSafeAreaInsets();
-  const dispatch = useDispatch();
-  const subs = useSelector((state) => state.subscriptions.list);
+  const dispatch = useDispatch<AppDispatch>();
+  const subs = useSelector((state: RootState) => state.subscriptions.list);
   const { effectiveScheme } = useContext(ThemeContext);
   const styles = createStyles(effectiveScheme);
 
@@ -93,10 +114,19 @@ const HomeScreen = () => {
   }, [subs]);
   // 表单弹窗状态
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState({ name: '', categoryGroup: '影音娱乐', categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+  const [form, setForm] = useState<{
+    name: string;
+    categoryGroup: '影音娱乐' | '工作' | '生活' | '其他';
+    categoryLabel: string;
+    price: string;
+    cycle: Cycle;
+    nextDueISO: string;
+    autoRenew: boolean;
+    currency: 'CNY';
+  }>({ name: '', categoryGroup: '影音娱乐', categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
   // 新增：编辑/操作相关状态（修复 actionOpen 未定义报错）
   const [editMode, setEditMode] = useState(false);
-  const [selectedSub, setSelectedSub] = useState(null);
+  const [selectedSub, setSelectedSub] = useState<Subscription | null>(null);
   const [actionOpen, setActionOpen] = useState(false);
   // 简易日期选择：年/月/日
   const pad2 = (n) => String(n).padStart(2, '0');
@@ -135,12 +165,13 @@ const HomeScreen = () => {
   // 新增：开始编辑所选订阅
   const startEditSelected = () => {
     if (!selectedSub) return;
+    const isGroupOption = selectedSub.category ? isCategoryGroup(selectedSub.category) : false;
     setForm({
       name: selectedSub.name,
-      categoryGroup: selectedSub.categoryGroup ?? (categoryGroupOptions.includes(selectedSub.category) ? selectedSub.category : '其他'),
-      categoryLabel: (selectedSub.categoryGroup ?? (categoryGroupOptions.includes(selectedSub.category) ? selectedSub.category : '其他')) === '其他'
+      categoryGroup: toCategoryGroup(selectedSub.categoryGroup ?? (isGroupOption ? selectedSub.category : undefined)),
+      categoryLabel: (selectedSub.categoryGroup ?? (isGroupOption ? (selectedSub.category as '影音娱乐' | '工作' | '生活' | '其他') : '其他')) === '其他'
         ? (selectedSub.category ?? '')
-        : (categoryGroupOptions.includes(selectedSub.category) ? '' : (selectedSub.category ?? '')),
+        : (isGroupOption ? '' : (selectedSub.category ?? '')),
       price: String(selectedSub.price),
       cycle: selectedSub.cycle,
       nextDueISO: selectedSub.nextDueISO ?? '',
@@ -169,7 +200,7 @@ const HomeScreen = () => {
   const submitForm = () => {
     if(!form.name || !form.price) return;
     if (editMode && selectedSub) {
-      const payloadUpdate = {
+      const payloadUpdate: Subscription = {
         ...selectedSub,
         name: form.name,
         category: form.categoryGroup === '其他' ? (form.categoryLabel?.trim() || '其他') : form.categoryGroup,
@@ -182,7 +213,7 @@ const HomeScreen = () => {
       };
       dispatch(updateSubscription(payloadUpdate));
     } else {
-      const payload = {
+      const payload: Subscription = {
         id: `${Date.now()}`,
         name: form.name,
         category: form.categoryGroup === '其他' ? (form.categoryLabel?.trim() || '其他') : form.categoryGroup,
@@ -310,7 +341,7 @@ const HomeScreen = () => {
             </View>
             <View style={styles.formRow}><Text style={styles.formLabel}>计费周期</Text>
               <View style={styles.selectRow}>
-                {Object.entries(cycleLabelMap).map(([key,label])=> (
+                {(Object.entries(cycleLabelMap) as [Cycle, string][]).map(([key,label])=> (
                   <TouchableOpacity key={key} style={[styles.selectItem, form.cycle===key?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v,cycle:key}))}>
                     <Text style={[styles.selectText, form.cycle===key?styles.selectTextActive:null]}>{label}</Text>
                   </TouchableOpacity>
