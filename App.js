@@ -14,6 +14,8 @@ import NotificationsScreen from './screens/NotificationsScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import ThemeScreen from './screens/ThemeScreen';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Provider } from 'react-redux'
+import { store } from './store'
 
 export const ThemeContext = React.createContext({
   themeMode: 'auto',
@@ -79,19 +81,21 @@ export default function App() {
 
   return (
     <ThemeContext.Provider value={{ themeMode, setThemeMode, effectiveScheme }}>
-      <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveScheme}>
-        <SafeAreaProvider>
-          <NavigationContainer theme={navigationTheme}>
-            <Stack.Navigator>
-              <Stack.Screen name="Tabs" options={{ headerShown: false }}>
-                {() => <MainTabs effectiveScheme={effectiveScheme} />}
-              </Stack.Screen>
-              <Stack.Screen name="Theme" component={ThemeScreen} options={{ title: '主题' }} />
-            </Stack.Navigator>
-            <StatusBar style="auto" />
-          </NavigationContainer>
-        </SafeAreaProvider>
-      </TamaguiProvider>
+      <Provider store={store}>
+        <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveScheme}>
+          <SafeAreaProvider>
+            <NavigationContainer theme={navigationTheme}>
+              <Stack.Navigator>
+                <Stack.Screen name="Tabs" options={{ headerShown: false }}>
+                  {() => <MainTabs effectiveScheme={effectiveScheme} />}
+                </Stack.Screen>
+                <Stack.Screen name="Theme" component={ThemeScreen} options={{ title: '主题' }} />
+              </Stack.Navigator>
+              <StatusBar style="auto" />
+            </NavigationContainer>
+          </SafeAreaProvider>
+        </TamaguiProvider>
+      </Provider>
     </ThemeContext.Provider>
   );
 }
