@@ -17,7 +17,7 @@ import {
 import Svg, { Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
-import { addSubscription } from '../store';
+import { addSubscription, updateSubscription, removeSubscription } from '../store';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 // 计算型工具
@@ -36,8 +36,8 @@ function daysUntil(dateISO){
   return diff;
 }
 
-const UpcomingCard = ({ item }) => (
-  <View style={styles.upcomingCard}>
+const UpcomingCard = ({ item, onLongPress }) => (
+  <TouchableOpacity style={styles.upcomingCard} onLongPress={onLongPress}>
     <View style={styles.upcomingIconBox}>
       <Music size={20} color="#0ea5e9" />
     </View>
@@ -55,7 +55,7 @@ const UpcomingCard = ({ item }) => (
         </View>
       </View>
     </View>
-  </View>
+  </TouchableOpacity>
 );
 
 const BarChart = ({ data, width = 300, height = 180, barColor = '#4f46e5' }) => {
@@ -94,8 +94,8 @@ const SectionHeader = ({ title, actionText, onPress }) => (
   </View>
 );
 
-const ActiveRow = ({ item, index }) => (
-  <View style={styles.activeRow}>
+const ActiveRow = ({ item, index, onLongPress }) => (
+  <TouchableOpacity style={styles.activeRow} onLongPress={onLongPress}>
     <View style={styles.activeIconBox}>
       {item.id === 'am' ? (
         <AppleIcon size={18} color="#111827" />
@@ -110,7 +110,7 @@ const ActiveRow = ({ item, index }) => (
       <Text style={styles.activeHint}>{item.price}</Text>
     </View>
     <Text style={styles.activeNext}>{item.next}</Text>
-  </View>
+  </TouchableOpacity>
 );
 
 const SummaryCard = ({ title, value, sub }) => (
@@ -173,6 +173,10 @@ const HomeScreen = () => {
   // 表单弹窗状态
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+  // 新增：编辑/操作相关状态（修复 actionOpen 未定义报错）
+  const [editMode, setEditMode] = useState(false);
+  const [selectedSub, setSelectedSub] = useState(null);
+  const [actionOpen, setActionOpen] = useState(false);
   // 简易日期选择：年/月/日
   const pad2 = (n) => String(n).padStart(2, '0');
   const today = new Date();
@@ -201,20 +205,70 @@ const HomeScreen = () => {
     const iso = `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`;
     setForm((v) => ({ ...v, nextDueISO: iso }));
   };
-  const closeModal = () => setModalOpen(false);
+  // 新增：打开某订阅的操作面板
+  const openActionFor = (id) => {
+    const s = subs.find((x) => x.id === id);
+    setSelectedSub(s || null);
+    setActionOpen(true);
+  };
+  // 新增：开始编辑所选订阅
+  const startEditSelected = () => {
+    if (!selectedSub) return;
+    setForm({
+      name: selectedSub.name,
+      category: selectedSub.category ?? '视频会员',
+      price: String(selectedSub.price),
+      cycle: selectedSub.cycle,
+      nextDueISO: selectedSub.nextDueISO ?? '',
+      autoRenew: !!selectedSub.autoRenew,
+      currency: selectedSub.currency ?? 'CNY',
+    });
+    if (selectedSub.nextDueISO) {
+      const [y, m, d] = selectedSub.nextDueISO.split('-').map(Number);
+      setDateParts({ year: y, month: m, day: d });
+    } else {
+      const t = new Date();
+      setDateParts({ year: t.getFullYear(), month: t.getMonth() + 1, day: t.getDate() });
+    }
+    setEditMode(true);
+    setActionOpen(false);
+    setModalOpen(true);
+  };
+  // 新增：删除所选订阅
+  const deleteSelected = () => {
+    if (!selectedSub) return;
+    dispatch(removeSubscription(selectedSub.id));
+    setActionOpen(false);
+    setSelectedSub(null);
+  };
+  const closeModal = () => { setModalOpen(false); setEditMode(false); setSelectedSub(null); };
   const submitForm = () => {
     if(!form.name || !form.price) return;
-    const payload = {
-      id: `${Date.now()}`,
-      name: form.name,
-      category: form.category,
-      price: Number(form.price),
-      cycle: form.cycle,
-      nextDueISO: form.nextDueISO || undefined,
-      autoRenew: form.autoRenew,
-      currency: form.currency,
-    };
-    dispatch(addSubscription(payload));
+    if (editMode && selectedSub) {
+      const payloadUpdate = {
+        ...selectedSub,
+        name: form.name,
+        category: form.category,
+        price: Number(form.price),
+        cycle: form.cycle,
+        nextDueISO: form.nextDueISO || undefined,
+        autoRenew: form.autoRenew,
+        currency: form.currency,
+      };
+      dispatch(updateSubscription(payloadUpdate));
+    } else {
+      const payload = {
+        id: `${Date.now()}`,
+        name: form.name,
+        category: form.category,
+        price: Number(form.price),
+        cycle: form.cycle,
+        nextDueISO: form.nextDueISO || undefined,
+        autoRenew: form.autoRenew,
+        currency: form.currency,
+      };
+      dispatch(addSubscription(payload));
+    }
     closeModal();
     setForm({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
   };
@@ -252,7 +306,7 @@ const HomeScreen = () => {
         <SectionHeader title="即将到期" actionText="更多" />
         <View style={{ gap: 12 }}>
           {upcomingList.map((u) => (
-            <UpcomingCard key={u.id} item={u} />
+            <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} />
           ))}
         </View>
 
@@ -267,7 +321,7 @@ const HomeScreen = () => {
         <SectionHeader title="活跃订阅" />
         <View style={{ gap: 8 }}>
           {activeSubs.map((s, idx) => (
-            <ActiveRow key={s.id} item={s} index={idx} />
+            <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} />
           ))}
         </View>
 
@@ -288,11 +342,31 @@ const HomeScreen = () => {
         <Plus size={24} color="#fff" />
       </TouchableOpacity>
 
-      {/* 添加订阅弹窗（简易） */}
+      {/* 操作弹窗：编辑或删除 */}
+      {actionOpen && (
+        <View style={styles.modalMask}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>选择操作</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.btnGhost} onPress={() => { setActionOpen(false); setSelectedSub(null); }}>
+                <Text style={styles.btnGhostText}>取消</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.btnPrimary} onPress={startEditSelected}>
+                <Text style={styles.btnPrimaryText}>编辑</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.btnPrimary, { backgroundColor: '#EF4444' }]} onPress={deleteSelected}>
+                <Text style={styles.btnPrimaryText}>删除</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* 添加/编辑订阅弹窗（简易） */}
       {modalOpen && (
         <View style={styles.modalMask}>
           <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>添加新订阅</Text>
+            <Text style={styles.modalTitle}>{editMode ? '编辑订阅' : '添加新订阅'}</Text>
             <View style={styles.formRow}><Text style={styles.formLabel}>订阅名称</Text><TextInput style={styles.formInput} value={form.name} onChangeText={(t)=>setForm(v=>({...v,name:t}))} placeholder="例如：网易云音乐VIP" /></View>
             <View style={styles.formRow}><Text style={styles.formLabel}>订阅类型</Text><TextInput style={styles.formInput} value={form.category} onChangeText={(t)=>setForm(v=>({...v,category:t}))} placeholder="如：视频会员" /></View>
             <View style={styles.formRow}><Text style={styles.formLabel}>价格</Text><TextInput style={styles.formInput} keyboardType="numeric" value={form.price} onChangeText={(t)=>setForm(v=>({...v,price:t}))} placeholder="例如：15" /></View>
@@ -364,7 +438,7 @@ const HomeScreen = () => {
 
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.btnGhost} onPress={closeModal}><Text style={styles.btnGhostText}>取消</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.btnPrimary} onPress={submitForm}><Text style={styles.btnPrimaryText}>添加</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.btnPrimary} onPress={submitForm}><Text style={styles.btnPrimaryText}>{editMode ? '保存' : '添加'}</Text></TouchableOpacity>
             </View>
           </View>
         </View>
