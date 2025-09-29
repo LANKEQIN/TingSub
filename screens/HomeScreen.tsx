@@ -15,18 +15,20 @@ import ActiveRow from './components/ActiveRow';
 import BarChart from './components/BarChart';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
-import { addSubscription, updateSubscription, removeSubscription } from '../store';
+import { addSubscription, updateSubscription, removeSubscription } from '../features/subscriptions/slice';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { ThemeContext } from '../lib/theme';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { RootStackParamList, TabParamList } from '../lib/navigation';
-import type { RootState, AppDispatch, Subscription, Cycle } from '../store';
+import type { RootState, AppDispatch } from '../store';
+import type { Subscription, Cycle } from '../features/subscriptions/slice';
+import type { CategoryGroup } from '../features/subscriptions/types';
+import { getCategoriesByGroup } from '../features/subscriptions/categories';
 
 // 计算型工具
-// 类型：订阅分组
-type CategoryGroup = '影音娱乐' | '工作' | '生活' | '其他';
+// 类型：订阅分组使用领域类型
 // 计费周期标签映射（带类型）
 const cycleLabelMap: Record<Cycle, string> = { monthly: '月付', quarterly: '季付', yearly: '年付', lifetime: '终身', other: '其他' };
 // 可选的订阅分组选项（带类型）
@@ -116,14 +118,15 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<{
     name: string;
-    categoryGroup: '影音娱乐' | '工作' | '生活' | '其他';
+    categoryGroup: CategoryGroup;
+    categoryId?: string;
     categoryLabel: string;
     price: string;
     cycle: Cycle;
     nextDueISO: string;
     autoRenew: boolean;
     currency: 'CNY';
-  }>({ name: '', categoryGroup: '影音娱乐', categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+  }>({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
   // 新增：编辑/操作相关状态（修复 actionOpen 未定义报错）
   const [editMode, setEditMode] = useState(false);
   const [selectedSub, setSelectedSub] = useState<Subscription | null>(null);
@@ -169,7 +172,13 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     setForm({
       name: selectedSub.name,
       categoryGroup: toCategoryGroup(selectedSub.categoryGroup ?? (isGroupOption ? selectedSub.category : undefined)),
-      categoryLabel: (selectedSub.categoryGroup ?? (isGroupOption ? (selectedSub.category as '影音娱乐' | '工作' | '生活' | '其他') : '其他')) === '其他'
+      // 根据分组尝试匹配默认分类ID
+      categoryId: (() => {
+        const grp = toCategoryGroup(selectedSub.categoryGroup ?? (isGroupOption ? selectedSub.category : undefined));
+        const found = getCategoriesByGroup(grp).find(c => c.label === selectedSub.category);
+        return found?.id;
+      })(),
+      categoryLabel: (selectedSub.categoryGroup ?? (isGroupOption ? (selectedSub.category as CategoryGroup) : '其他')) === '其他'
         ? (selectedSub.category ?? '')
         : (isGroupOption ? '' : (selectedSub.category ?? '')),
       price: String(selectedSub.price),
@@ -203,7 +212,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       const payloadUpdate: Subscription = {
         ...selectedSub,
         name: form.name,
-        category: form.categoryGroup === '其他' ? (form.categoryLabel?.trim() || '其他') : form.categoryGroup,
+        category: form.categoryGroup === '其他'
+          ? (form.categoryLabel?.trim() || '其他')
+          : (form.categoryId ? (getCategoriesByGroup(form.categoryGroup).find(c => c.id === form.categoryId)?.label || form.categoryGroup) : form.categoryGroup),
         categoryGroup: form.categoryGroup,
         price: Number(form.price),
         cycle: form.cycle,
@@ -216,7 +227,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       const payload: Subscription = {
         id: `${Date.now()}`,
         name: form.name,
-        category: form.categoryGroup === '其他' ? (form.categoryLabel?.trim() || '其他') : form.categoryGroup,
+        category: form.categoryGroup === '其他'
+          ? (form.categoryLabel?.trim() || '其他')
+          : (form.categoryId ? (getCategoriesByGroup(form.categoryGroup).find(c => c.id === form.categoryId)?.label || form.categoryGroup) : form.categoryGroup),
         categoryGroup: form.categoryGroup,
         price: Number(form.price),
         cycle: form.cycle,
@@ -227,7 +240,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       dispatch(addSubscription(payload));
     }
     closeModal();
-    setForm({ name: '', categoryGroup: '影音娱乐', categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+    setForm({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
   };
 
   return (
@@ -319,11 +332,23 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
             <View style={styles.formRow}><Text style={styles.formLabel}>订阅类型</Text>
               <View style={styles.selectRow}>
                 {categoryGroupOptions.map((opt)=> (
-                  <TouchableOpacity key={opt} style={[styles.selectItem, form.categoryGroup===opt?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v, categoryGroup: opt}))}>
+                  <TouchableOpacity key={opt} style={[styles.selectItem, form.categoryGroup===opt?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v, categoryGroup: opt, categoryId: undefined, categoryLabel: ''}))}>
                     <Text style={[styles.selectText, form.categoryGroup===opt?styles.selectTextActive:null]}>{opt}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
+              {form.categoryGroup!=='其他' && (
+                <View style={{ marginTop: 8 }}>
+                  <Text style={styles.formLabel}>分类标签</Text>
+                  <View style={styles.selectRow}>
+                    {getCategoriesByGroup(form.categoryGroup).map((c)=> (
+                      <TouchableOpacity key={c.id} style={[styles.selectItem, form.categoryId===c.id?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v, categoryId: c.id, categoryLabel: ''}))}>
+                        <Text style={[styles.selectText, form.categoryId===c.id?styles.selectTextActive:null]}>{c.label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
               {form.categoryGroup==='其他' ? (
                 <View style={{ marginTop: 8 }}>
                   <TextInput style={styles.formInput} value={form.categoryLabel} onChangeText={(t)=>setForm(v=>({...v, categoryLabel: t}))} placeholder="自定义类型名称（例如：视频会员/健身会员等）" />
