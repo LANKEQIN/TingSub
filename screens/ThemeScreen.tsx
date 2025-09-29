@@ -3,8 +3,17 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'tamagui';
 import { ThemeContext } from '../lib/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../lib/navigation';
 
-const Option = ({ active, label, onPress }) => (
+type OptionProps = {
+  active: boolean;
+  label: string;
+  onPress: () => void;
+};
+
+const Option: React.FC<OptionProps> = ({ active, label, onPress }) => (
   <TouchableOpacity
     onPress={onPress}
     style={[styles.option, active ? styles.optionActive : null]}
@@ -13,7 +22,12 @@ const Option = ({ active, label, onPress }) => (
   </TouchableOpacity>
 );
 
-const ThemeScreen = () => {
+type ThemeScreenProps = {
+  route: RouteProp<RootStackParamList, 'Theme'>;
+  navigation: NativeStackNavigationProp<RootStackParamList, 'Theme'>;
+};
+
+const ThemeScreen: React.FC<ThemeScreenProps> = ({}) => {
   const { themeMode, setThemeMode, effectiveScheme } = useContext(ThemeContext);
   const insets = useSafeAreaInsets();
 
@@ -38,7 +52,8 @@ const styles = StyleSheet.create({
   containerLight: { backgroundColor: '#F7FAFA' },
   containerDark: { backgroundColor: '#0F1416' },
   title: { fontSize: 22, fontWeight: '700', marginBottom: 24 },
-  row: { flexDirection: 'row', gap: 12 },
+  // gap 在 RN 类型中不一定存在，这里做类型断言避免 TS 报错
+  row: { flexDirection: 'row', gap: 12 } as any,
   option: {
     paddingVertical: 16,
     paddingHorizontal: 22,

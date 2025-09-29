@@ -2,9 +2,15 @@ import React, { useContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { RouteProp } from '@react-navigation/native';
+import type { TabParamList } from '../lib/navigation';
 import { ThemeContext } from '../lib/theme';
 
-const NotificationsScreen = () => {
+type NotificationsScreenProps = {
+  route: RouteProp<TabParamList, 'Notifications'>;
+};
+
+const NotificationsScreen: React.FC<NotificationsScreenProps> = () => {
   const insets = useSafeAreaInsets();
   const { effectiveScheme } = useContext(ThemeContext);
   const styles = createStyles(effectiveScheme);
@@ -16,7 +22,7 @@ const NotificationsScreen = () => {
   );
 };
 
-function createStyles(scheme){
+function createStyles(scheme: 'light' | 'dark'){
   const isDark = scheme === 'dark';
   return StyleSheet.create({
     container: {

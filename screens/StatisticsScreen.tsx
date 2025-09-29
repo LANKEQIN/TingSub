@@ -6,10 +6,17 @@ import BarChart from './components/BarChart'
 import SectionHeader from './components/SectionHeader'
 import { useSelector } from 'react-redux'
 import { ThemeContext } from '../lib/theme'
+import type { RouteProp } from '@react-navigation/native'
+import type { TabParamList } from '../lib/navigation'
+import type { RootState } from '../store'
 
-const StatisticsScreen = () => {
+type StatisticsScreenProps = {
+  route: RouteProp<TabParamList, 'Statistics'>
+}
+
+const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   const insets = useSafeAreaInsets()
-  const subs = useSelector((state) => state.subscriptions.list)
+  const subs = useSelector((state: RootState) => state.subscriptions.list)
   const [chartW, setChartW] = useState(330)
   const { effectiveScheme } = useContext(ThemeContext)
   const styles = createStyles(effectiveScheme)
@@ -58,7 +65,7 @@ const StatisticsScreen = () => {
   )
 }
 
-function createStyles(scheme){
+function createStyles(scheme: 'light' | 'dark'){
   const isDark = scheme === 'dark'
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: isDark ? '#0F1416' : '#F8FAFC' },
