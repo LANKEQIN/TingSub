@@ -17,20 +17,29 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { Provider } from 'react-redux'
 import { store, persistor } from './store'
 import { PersistGate } from 'redux-persist/integration/react'
+import type { RootStackParamList, TabParamList } from './lib/navigation'
 
-export const ThemeContext = React.createContext({
+type ThemeMode = 'auto' | 'light' | 'dark'
+type EffectiveScheme = 'light' | 'dark'
+type ThemeContextType = {
+  themeMode: ThemeMode
+  setThemeMode: React.Dispatch<React.SetStateAction<ThemeMode>>
+  effectiveScheme: EffectiveScheme
+}
+export const ThemeContext = React.createContext<ThemeContextType>({
   themeMode: 'auto',
-  setThemeMode: (m) => {},
+  setThemeMode: (() => {}) as React.Dispatch<React.SetStateAction<ThemeMode>>,
   effectiveScheme: 'light',
 })
 
-const Tab = createBottomTabNavigator()
-const Stack = createNativeStackNavigator()
+const Tab = createBottomTabNavigator<TabParamList, 'main-tabs'>()
+const Stack = createNativeStackNavigator<RootStackParamList, 'root-stack'>()
 
-function MainTabs({ effectiveScheme }) {
+function MainTabs({ effectiveScheme }: { effectiveScheme: 'light' | 'dark' }) {
   const insets = useSafeAreaInsets()
   return (
     <Tab.Navigator
+      id="main-tabs"
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let IconComponent
@@ -77,8 +86,8 @@ function MainTabs({ effectiveScheme }) {
 
 export default function App() {
   const systemScheme = useColorScheme()
-  const [themeMode, setThemeMode] = useState('auto') // 'auto' | 'light' | 'dark'
-  const effectiveScheme = useMemo(() => (themeMode === 'auto' ? (systemScheme ?? 'light') : themeMode), [themeMode, systemScheme])
+  const [themeMode, setThemeMode] = useState<'auto' | 'light' | 'dark'>('auto')
+  const effectiveScheme = useMemo(() => (themeMode === 'auto' ? (systemScheme ?? 'light') : themeMode), [themeMode, systemScheme]) as 'light' | 'dark'
 
   const navigationTheme = effectiveScheme === 'dark' ? DarkTheme : DefaultTheme
 
@@ -89,7 +98,7 @@ export default function App() {
           <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveScheme}>
             <SafeAreaProvider>
               <NavigationContainer theme={navigationTheme}>
-                <Stack.Navigator>
+                <Stack.Navigator id="root-stack">
                   <Stack.Screen name="Tabs" options={{ headerShown: false }}>
                     {() => <MainTabs effectiveScheme={effectiveScheme} />}
                   </Stack.Screen>
