@@ -6,18 +6,16 @@ import {
   User,
   Search,
   Plus,
-  CalendarDays,
-  CreditCard,
-  BarChart3,
-  Music,
-  Video,
-  Apple as AppleIcon,
   Check
 } from '@tamagui/lucide-icons';
-import Svg, { Rect } from 'react-native-svg';
+import SectionHeader from './components/SectionHeader';
+import SummaryCard from './components/SummaryCard';
+import UpcomingCard from './components/UpcomingCard';
+import ActiveRow from './components/ActiveRow';
+import BarChart from './components/BarChart';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
-import { addSubscription } from '../store';
+import { addSubscription, updateSubscription, removeSubscription } from '../store';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 // 计算型工具
@@ -36,92 +34,8 @@ function daysUntil(dateISO){
   return diff;
 }
 
-const UpcomingCard = ({ item }) => (
-  <View style={styles.upcomingCard}>
-    <View style={styles.upcomingIconBox}>
-      <Music size={20} color="#0ea5e9" />
-    </View>
-    <View style={{ flex: 1 }}>
-      <Text style={styles.upcomingName}>{item.name}</Text>
-      <Text style={styles.upcomingCycle}>{item.cycle}</Text>
-      <View style={styles.upcomingMetaRow}>
-        <View style={styles.badgeInfo}>
-          <CalendarDays size={14} color="#6b7280" />
-          <Text style={styles.badgeText}>{item.next}</Text>
-        </View>
-        <View style={styles.badgeInfo}>
-          <CreditCard size={14} color="#6b7280" />
-          <Text style={styles.badgeText}>{item.price}</Text>
-        </View>
-      </View>
-    </View>
-  </View>
-);
+/* Components moved to screens/components: UpcomingCard, BarChart, SectionHeader, ActiveRow, SummaryCard */
 
-const BarChart = ({ data, width = 300, height = 180, barColor = '#4f46e5' }) => {
-  const maxVal = useMemo(() => Math.max(...data, 1), [data]);
-  const barWidth = Math.floor((width - 20) / data.length);
-  return (
-    <Svg width={width} height={height}>
-      {data.map((v, i) => {
-        const h = Math.round((v / maxVal) * (height - 20));
-        return (
-          <Rect
-            key={i}
-            x={10 + i * barWidth}
-            y={height - h - 10}
-            width={barWidth - 8}
-            height={h}
-            rx={6}
-            fill={barColor}
-          />
-        );
-      })}
-    </Svg>
-  );
-};
-
-const SectionHeader = ({ title, actionText, onPress }) => (
-  <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    {actionText ? (
-      <TouchableOpacity onPress={onPress}>
-        <Text style={styles.link}>{actionText}</Text>
-      </TouchableOpacity>
-    ) : (
-      <View />
-    )}
-  </View>
-);
-
-const ActiveRow = ({ item, index }) => (
-  <View style={styles.activeRow}>
-    <View style={styles.activeIconBox}>
-      {item.id === 'am' ? (
-        <AppleIcon size={18} color="#111827" />
-      ) : item.id === 'ytp' ? (
-        <Video size={18} color="#111827" />
-      ) : (
-        <BarChart3 size={18} color="#111827" />
-      )}
-    </View>
-    <View style={{ flex: 1 }}>
-      <Text style={styles.activeName}>{item.name}</Text>
-      <Text style={styles.activeHint}>{item.price}</Text>
-    </View>
-    <Text style={styles.activeNext}>{item.next}</Text>
-  </View>
-);
-
-const SummaryCard = ({ title, value, sub }) => (
-  <View style={styles.summaryCard}>
-    <Text style={styles.summaryTitle}>{title}</Text>
-    <Text style={styles.summaryValue}>{value}</Text>
-    {sub ? <Text style={styles.summarySub}>{sub}</Text> : null}
-  </View>
-);
-
-// ... existing code ...
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
@@ -133,22 +47,25 @@ const HomeScreen = () => {
     const yearlySpend = subs.filter(s=>s.cycle==='yearly').reduce((sum,s)=>sum+s.price,0) + monthlySpend*12 + subs.filter(s=>s.cycle==='quarterly').reduce((sum,s)=>sum+s.price*4,0);
     const upcomingBills = subs.filter(s=>{
       const d = daysUntil(s.nextDueISO);
-      return d!==null && d<=7;
+      return d!==null && d>=0 && d<=7;
     }).length;
     return { totalSubs, monthlySpend, yearlySpend, upcomingBills, deltas: { monthlySpend: '+0', yearlySpend: '+0' } };
   }, [subs]);
 
   const upcomingList = useMemo(() => subs
-    .map(s=>({
-      id: s.id,
-      name: s.name,
-      cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
-      next: s.nextDueISO ? `${daysUntil(s.nextDueISO)}天内` : '未设置',
-      price: formatPrice(s.price, s.cycle),
-    }))
-    .sort((a,b)=>{
-      const ad = parseInt(a.next)||9999, bd = parseInt(b.next)||9999; return ad-bd;
+    .map(s => {
+      const d = daysUntil(s.nextDueISO);
+      return {
+        id: s.id,
+        name: s.name,
+        cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
+        next: s.nextDueISO ? `${d}天内` : '未设置',
+        price: formatPrice(s.price, s.cycle),
+        dueDays: d,
+      };
     })
+    .filter(u => u.dueDays !== null && u.dueDays >= 0 && u.dueDays <= 7)
+    .sort((a, b) => a.dueDays - b.dueDays)
   , [subs]);
 
   // 新增：活跃订阅列表（用于 ActiveRow）
@@ -173,6 +90,10 @@ const HomeScreen = () => {
   // 表单弹窗状态
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+  // 新增：编辑/操作相关状态（修复 actionOpen 未定义报错）
+  const [editMode, setEditMode] = useState(false);
+  const [selectedSub, setSelectedSub] = useState(null);
+  const [actionOpen, setActionOpen] = useState(false);
   // 简易日期选择：年/月/日
   const pad2 = (n) => String(n).padStart(2, '0');
   const today = new Date();
@@ -201,20 +122,70 @@ const HomeScreen = () => {
     const iso = `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`;
     setForm((v) => ({ ...v, nextDueISO: iso }));
   };
-  const closeModal = () => setModalOpen(false);
+  // 新增：打开某订阅的操作面板
+  const openActionFor = (id) => {
+    const s = subs.find((x) => x.id === id);
+    setSelectedSub(s || null);
+    setActionOpen(true);
+  };
+  // 新增：开始编辑所选订阅
+  const startEditSelected = () => {
+    if (!selectedSub) return;
+    setForm({
+      name: selectedSub.name,
+      category: selectedSub.category ?? '视频会员',
+      price: String(selectedSub.price),
+      cycle: selectedSub.cycle,
+      nextDueISO: selectedSub.nextDueISO ?? '',
+      autoRenew: !!selectedSub.autoRenew,
+      currency: selectedSub.currency ?? 'CNY',
+    });
+    if (selectedSub.nextDueISO) {
+      const [y, m, d] = selectedSub.nextDueISO.split('-').map(Number);
+      setDateParts({ year: y, month: m, day: d });
+    } else {
+      const t = new Date();
+      setDateParts({ year: t.getFullYear(), month: t.getMonth() + 1, day: t.getDate() });
+    }
+    setEditMode(true);
+    setActionOpen(false);
+    setModalOpen(true);
+  };
+  // 新增：删除所选订阅
+  const deleteSelected = () => {
+    if (!selectedSub) return;
+    dispatch(removeSubscription(selectedSub.id));
+    setActionOpen(false);
+    setSelectedSub(null);
+  };
+  const closeModal = () => { setModalOpen(false); setEditMode(false); setSelectedSub(null); };
   const submitForm = () => {
     if(!form.name || !form.price) return;
-    const payload = {
-      id: `${Date.now()}`,
-      name: form.name,
-      category: form.category,
-      price: Number(form.price),
-      cycle: form.cycle,
-      nextDueISO: form.nextDueISO || undefined,
-      autoRenew: form.autoRenew,
-      currency: form.currency,
-    };
-    dispatch(addSubscription(payload));
+    if (editMode && selectedSub) {
+      const payloadUpdate = {
+        ...selectedSub,
+        name: form.name,
+        category: form.category,
+        price: Number(form.price),
+        cycle: form.cycle,
+        nextDueISO: form.nextDueISO || undefined,
+        autoRenew: form.autoRenew,
+        currency: form.currency,
+      };
+      dispatch(updateSubscription(payloadUpdate));
+    } else {
+      const payload = {
+        id: `${Date.now()}`,
+        name: form.name,
+        category: form.category,
+        price: Number(form.price),
+        cycle: form.cycle,
+        nextDueISO: form.nextDueISO || undefined,
+        autoRenew: form.autoRenew,
+        currency: form.currency,
+      };
+      dispatch(addSubscription(payload));
+    }
     closeModal();
     setForm({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
   };
@@ -240,45 +211,36 @@ const HomeScreen = () => {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* 订阅概览 */}
-        <SectionHeader title="订阅概览" actionText="查看全部" />
+        <SectionHeader title="订阅概览" actionText="查看全部" styles={styles} />
         <View style={styles.summaryGrid}>
-          <SummaryCard title="总订阅数" value={summaryData.totalSubs} sub="" />
-          <SummaryCard title="本月支出" value={`¥${summaryData.monthlySpend}`} sub={``} />
-          <SummaryCard title="即将到期" value={summaryData.upcomingBills} sub="7天内" />
-          <SummaryCard title="年度支出" value={`¥${summaryData.yearlySpend}`} sub={``} />
+          <SummaryCard title="总订阅数" value={summaryData.totalSubs} sub="" styles={styles} />
+          <SummaryCard title="本月支出" value={`¥${summaryData.monthlySpend}`} sub={``} styles={styles} />
+          <SummaryCard title="即将到期" value={summaryData.upcomingBills} sub="7天内" styles={styles} />
+          <SummaryCard title="年度支出" value={`¥${summaryData.yearlySpend}`} sub={``} styles={styles} />
         </View>
 
-        {/* 即将到期 */}
-        <SectionHeader title="即将到期" actionText="更多" />
-        <View style={{ gap: 12 }}>
-          {upcomingList.map((u) => (
-            <UpcomingCard key={u.id} item={u} />
-          ))}
-        </View>
+        {/* 即将到期（仅在7天内有到期项时显示） */}
+        {upcomingList.length > 0 && (
+          <>
+            <SectionHeader title="即将到期" actionText="更多" styles={styles} />
+            <View style={{ gap: 12 }}>
+              {upcomingList.map((u) => (
+                <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+              ))}
+            </View>
+          </>
+        )}
 
-        {/* 支出分析 */}
-        <SectionHeader title="支出分析" />
-        <View style={styles.chartCard}>
-          <BarChart data={spendByMonth} width={330} height={180} />
-          <Text style={styles.chartAxis}>1月 3月 5月 7月 9月 11月</Text>
-        </View>
+        {/* 支出分析已移至统计页 */}
 
         {/* 活跃订阅 */}
-        <SectionHeader title="活跃订阅" />
+        <SectionHeader title="活跃订阅" styles={styles} />
         <View style={{ gap: 8 }}>
           {activeSubs.map((s, idx) => (
-            <ActiveRow key={s.id} item={s} index={idx} />
+            <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
           ))}
         </View>
 
-        {/* TODO 提示 */}
-        <View style={styles.todoBox}>
-          <Text style={styles.todoTitle}>后续待办</Text>
-          <Text style={styles.todoItem}>• 接入真实数据源（本地数据库/云同步）</Text>
-          <Text style={styles.todoItem}>• 新增/编辑订阅表单与校验</Text>
-          <Text style={styles.todoItem}>• 支出统计图表组件抽离与交互</Text>
-          <Text style={styles.todoItem}>• 通知与到期提醒设置</Text>
-        </View>
 
         <View style={{ height: 80 }} />
       </ScrollView>
@@ -288,11 +250,31 @@ const HomeScreen = () => {
         <Plus size={24} color="#fff" />
       </TouchableOpacity>
 
-      {/* 添加订阅弹窗（简易） */}
+      {/* 操作弹窗：编辑或删除 */}
+      {actionOpen && (
+        <View style={styles.modalMask}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>选择操作</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.btnGhost} onPress={() => { setActionOpen(false); setSelectedSub(null); }}>
+                <Text style={styles.btnGhostText}>取消</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.btnPrimary} onPress={startEditSelected}>
+                <Text style={styles.btnPrimaryText}>编辑</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.btnPrimary, { backgroundColor: '#EF4444' }]} onPress={deleteSelected}>
+                <Text style={styles.btnPrimaryText}>删除</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* 添加/编辑订阅弹窗（简易） */}
       {modalOpen && (
         <View style={styles.modalMask}>
           <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>添加新订阅</Text>
+            <Text style={styles.modalTitle}>{editMode ? '编辑订阅' : '添加新订阅'}</Text>
             <View style={styles.formRow}><Text style={styles.formLabel}>订阅名称</Text><TextInput style={styles.formInput} value={form.name} onChangeText={(t)=>setForm(v=>({...v,name:t}))} placeholder="例如：网易云音乐VIP" /></View>
             <View style={styles.formRow}><Text style={styles.formLabel}>订阅类型</Text><TextInput style={styles.formInput} value={form.category} onChangeText={(t)=>setForm(v=>({...v,category:t}))} placeholder="如：视频会员" /></View>
             <View style={styles.formRow}><Text style={styles.formLabel}>价格</Text><TextInput style={styles.formInput} keyboardType="numeric" value={form.price} onChangeText={(t)=>setForm(v=>({...v,price:t}))} placeholder="例如：15" /></View>
@@ -364,7 +346,7 @@ const HomeScreen = () => {
 
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.btnGhost} onPress={closeModal}><Text style={styles.btnGhostText}>取消</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.btnPrimary} onPress={submitForm}><Text style={styles.btnPrimaryText}>添加</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.btnPrimary} onPress={submitForm}><Text style={styles.btnPrimaryText}>{editMode ? '保存' : '添加'}</Text></TouchableOpacity>
             </View>
           </View>
         </View>

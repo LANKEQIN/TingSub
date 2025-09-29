@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
 import { TamaguiProvider } from 'tamagui';
@@ -13,9 +13,10 @@ import StatisticsScreen from './screens/StatisticsScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import ThemeScreen from './screens/ThemeScreen';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Provider } from 'react-redux'
-import { store } from './store'
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Provider } from 'react-redux';
+import { store, setSubscriptions } from './store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const ThemeContext = React.createContext({
   themeMode: 'auto',
@@ -72,6 +73,35 @@ function MainTabs({ effectiveScheme }) {
   );
 }
 
+// 简单的持久化门组件：加载并保存订阅数据
+function PersistenceGate({ children }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let unsub = null;
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem('tingsub.subscriptions');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            store.dispatch(setSubscriptions(parsed));
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+      unsub = store.subscribe(() => {
+        const list = store.getState().subscriptions.list;
+        AsyncStorage.setItem('tingsub.subscriptions', JSON.stringify(list)).catch(() => {});
+      });
+      setReady(true);
+    })();
+    return () => { if (unsub) unsub(); };
+  }, []);
+  if (!ready) return null;
+  return children;
+}
+
 export default function App() {
   const systemScheme = useColorScheme();
   const [themeMode, setThemeMode] = useState('auto'); // 'auto' | 'light' | 'dark'
@@ -84,15 +114,17 @@ export default function App() {
       <Provider store={store}>
         <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveScheme}>
           <SafeAreaProvider>
-            <NavigationContainer theme={navigationTheme}>
-              <Stack.Navigator>
-                <Stack.Screen name="Tabs" options={{ headerShown: false }}>
-                  {() => <MainTabs effectiveScheme={effectiveScheme} />}
-                </Stack.Screen>
-                <Stack.Screen name="Theme" component={ThemeScreen} options={{ title: '主题' }} />
-              </Stack.Navigator>
-              <StatusBar style="auto" />
-            </NavigationContainer>
+            <PersistenceGate>
+              <NavigationContainer theme={navigationTheme}>
+                <Stack.Navigator>
+                  <Stack.Screen name="Tabs" options={{ headerShown: false }}>
+                    {() => <MainTabs effectiveScheme={effectiveScheme} />}
+                  </Stack.Screen>
+                  <Stack.Screen name="Theme" component={ThemeScreen} options={{ title: '主题' }} />
+                </Stack.Navigator>
+                <StatusBar style="auto" />
+              </NavigationContainer>
+            </PersistenceGate>
           </SafeAreaProvider>
         </TamaguiProvider>
       </Provider>

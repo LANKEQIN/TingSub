@@ -42,10 +42,13 @@ const subscriptionsSlice = createSlice({
     removeSubscription(state, action: PayloadAction<string>) {
       state.list = state.list.filter((s) => s.id !== action.payload);
     },
+    setSubscriptions(state, action: PayloadAction<Subscription[]>) {
+      state.list = action.payload;
+    },
   },
 });
 
-export const { addSubscription, updateSubscription, removeSubscription } = subscriptionsSlice.actions;
+export const { addSubscription, updateSubscription, removeSubscription, setSubscriptions } = subscriptionsSlice.actions;
 
 // 配置 store
 export const store = configureStore({
