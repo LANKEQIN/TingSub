@@ -36,7 +36,6 @@ function daysUntil(dateISO){
 
 /* Components moved to screens/components: UpcomingCard, BarChart, SectionHeader, ActiveRow, SummaryCard */
 
-// ... existing code ...
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
@@ -48,22 +47,25 @@ const HomeScreen = () => {
     const yearlySpend = subs.filter(s=>s.cycle==='yearly').reduce((sum,s)=>sum+s.price,0) + monthlySpend*12 + subs.filter(s=>s.cycle==='quarterly').reduce((sum,s)=>sum+s.price*4,0);
     const upcomingBills = subs.filter(s=>{
       const d = daysUntil(s.nextDueISO);
-      return d!==null && d<=7;
+      return d!==null && d>=0 && d<=7;
     }).length;
     return { totalSubs, monthlySpend, yearlySpend, upcomingBills, deltas: { monthlySpend: '+0', yearlySpend: '+0' } };
   }, [subs]);
 
   const upcomingList = useMemo(() => subs
-    .map(s=>({
-      id: s.id,
-      name: s.name,
-      cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
-      next: s.nextDueISO ? `${daysUntil(s.nextDueISO)}天内` : '未设置',
-      price: formatPrice(s.price, s.cycle),
-    }))
-    .sort((a,b)=>{
-      const ad = parseInt(a.next)||9999, bd = parseInt(b.next)||9999; return ad-bd;
+    .map(s => {
+      const d = daysUntil(s.nextDueISO);
+      return {
+        id: s.id,
+        name: s.name,
+        cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
+        next: s.nextDueISO ? `${d}天内` : '未设置',
+        price: formatPrice(s.price, s.cycle),
+        dueDays: d,
+      };
     })
+    .filter(u => u.dueDays !== null && u.dueDays >= 0 && u.dueDays <= 7)
+    .sort((a, b) => a.dueDays - b.dueDays)
   , [subs]);
 
   // 新增：活跃订阅列表（用于 ActiveRow）
@@ -217,20 +219,19 @@ const HomeScreen = () => {
           <SummaryCard title="年度支出" value={`¥${summaryData.yearlySpend}`} sub={``} styles={styles} />
         </View>
 
-        {/* 即将到期 */}
-        <SectionHeader title="即将到期" actionText="更多" styles={styles} />
-        <View style={{ gap: 12 }}>
-          {upcomingList.map((u) => (
-            <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
-          ))}
-        </View>
+        {/* 即将到期（仅在7天内有到期项时显示） */}
+        {upcomingList.length > 0 && (
+          <>
+            <SectionHeader title="即将到期" actionText="更多" styles={styles} />
+            <View style={{ gap: 12 }}>
+              {upcomingList.map((u) => (
+                <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+              ))}
+            </View>
+          </>
+        )}
 
-        {/* 支出分析 */}
-        <SectionHeader title="支出分析" styles={styles} />
-        <View style={styles.chartCard}>
-          <BarChart data={spendByMonth} width={330} height={180} />
-          <Text style={styles.chartAxis}>1月 3月 5月 7月 9月 11月</Text>
-        </View>
+        {/* 支出分析已移至统计页 */}
 
         {/* 活跃订阅 */}
         <SectionHeader title="活跃订阅" styles={styles} />
@@ -240,14 +241,6 @@ const HomeScreen = () => {
           ))}
         </View>
 
-        {/* TODO 提示 */}
-        <View style={styles.todoBox}>
-          <Text style={styles.todoTitle}>后续待办</Text>
-          <Text style={styles.todoItem}>• 接入真实数据源（本地数据库/云同步）</Text>
-          <Text style={styles.todoItem}>• 新增/编辑订阅表单与校验</Text>
-          <Text style={styles.todoItem}>• 支出统计图表组件抽离与交互</Text>
-          <Text style={styles.todoItem}>• 通知与到期提醒设置</Text>
-        </View>
 
         <View style={{ height: 80 }} />
       </ScrollView>
