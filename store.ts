@@ -19,7 +19,8 @@ export type Cycle = 'monthly' | 'quarterly' | 'yearly' | 'lifetime' | 'other';
 export interface Subscription {
   id: string;
   name: string;
-  category?: string; // 订阅类型（如：视频会员）
+  category?: string; // 订阅类型（如：视频会员 或自定义标签）
+  categoryGroup?: string; // 订阅所属分组：影音娱乐/工作/生活/其他（当选择“其他”时，底层分类此字段为“其他”）
   price: number; // 金额（元）
   cycle: Cycle; // 计费周期
   nextDueISO?: string; // 下次到期日期（ISO 字符串）

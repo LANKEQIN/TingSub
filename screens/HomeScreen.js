@@ -20,6 +20,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 // 计算型工具
 const cycleLabelMap = { monthly: '月付', quarterly: '季付', yearly: '年付', lifetime: '终身', other: '其他' };
+const categoryGroupOptions = ['影音娱乐','工作','生活','其他'];
 function formatPrice(price, cycle){
   if(cycle==='yearly') return `¥${price}/年`;
   if(cycle==='quarterly') return `¥${price}/季`;
@@ -89,7 +90,7 @@ const HomeScreen = () => {
   }, [subs]);
   // 表单弹窗状态
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+  const [form, setForm] = useState({ name: '', categoryGroup: '影音娱乐', categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
   // 新增：编辑/操作相关状态（修复 actionOpen 未定义报错）
   const [editMode, setEditMode] = useState(false);
   const [selectedSub, setSelectedSub] = useState(null);
@@ -133,7 +134,10 @@ const HomeScreen = () => {
     if (!selectedSub) return;
     setForm({
       name: selectedSub.name,
-      category: selectedSub.category ?? '视频会员',
+      categoryGroup: selectedSub.categoryGroup ?? (categoryGroupOptions.includes(selectedSub.category) ? selectedSub.category : '其他'),
+      categoryLabel: (selectedSub.categoryGroup ?? (categoryGroupOptions.includes(selectedSub.category) ? selectedSub.category : '其他')) === '其他'
+        ? (selectedSub.category ?? '')
+        : (categoryGroupOptions.includes(selectedSub.category) ? '' : (selectedSub.category ?? '')),
       price: String(selectedSub.price),
       cycle: selectedSub.cycle,
       nextDueISO: selectedSub.nextDueISO ?? '',
@@ -165,7 +169,8 @@ const HomeScreen = () => {
       const payloadUpdate = {
         ...selectedSub,
         name: form.name,
-        category: form.category,
+        category: form.categoryGroup === '其他' ? (form.categoryLabel?.trim() || '其他') : form.categoryGroup,
+        categoryGroup: form.categoryGroup,
         price: Number(form.price),
         cycle: form.cycle,
         nextDueISO: form.nextDueISO || undefined,
@@ -177,7 +182,8 @@ const HomeScreen = () => {
       const payload = {
         id: `${Date.now()}`,
         name: form.name,
-        category: form.category,
+        category: form.categoryGroup === '其他' ? (form.categoryLabel?.trim() || '其他') : form.categoryGroup,
+        categoryGroup: form.categoryGroup,
         price: Number(form.price),
         cycle: form.cycle,
         nextDueISO: form.nextDueISO || undefined,
@@ -187,7 +193,7 @@ const HomeScreen = () => {
       dispatch(addSubscription(payload));
     }
     closeModal();
-    setForm({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+    setForm({ name: '', categoryGroup: '影音娱乐', categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
   };
 
   return (
@@ -276,7 +282,21 @@ const HomeScreen = () => {
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>{editMode ? '编辑订阅' : '添加新订阅'}</Text>
             <View style={styles.formRow}><Text style={styles.formLabel}>订阅名称</Text><TextInput style={styles.formInput} value={form.name} onChangeText={(t)=>setForm(v=>({...v,name:t}))} placeholder="例如：网易云音乐VIP" /></View>
-            <View style={styles.formRow}><Text style={styles.formLabel}>订阅类型</Text><TextInput style={styles.formInput} value={form.category} onChangeText={(t)=>setForm(v=>({...v,category:t}))} placeholder="如：视频会员" /></View>
+            <View style={styles.formRow}><Text style={styles.formLabel}>订阅类型</Text>
+              <View style={styles.selectRow}>
+                {categoryGroupOptions.map((opt)=> (
+                  <TouchableOpacity key={opt} style={[styles.selectItem, form.categoryGroup===opt?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v, categoryGroup: opt}))}>
+                    <Text style={[styles.selectText, form.categoryGroup===opt?styles.selectTextActive:null]}>{opt}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              {form.categoryGroup==='其他' ? (
+                <View style={{ marginTop: 8 }}>
+                  <TextInput style={styles.formInput} value={form.categoryLabel} onChangeText={(t)=>setForm(v=>({...v, categoryLabel: t}))} placeholder="自定义类型名称（例如：视频会员/健身会员等）" />
+                  <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>提示：保存时底层分类依然归为“其他”</Text>
+                </View>
+              ) : null}
+            </View>
             <View style={styles.formRow}><Text style={styles.formLabel}>价格</Text><TextInput style={styles.formInput} keyboardType="numeric" value={form.price} onChangeText={(t)=>setForm(v=>({...v,price:t}))} placeholder="例如：15" /></View>
             <View style={styles.formRow}><Text style={styles.formLabel}>货币</Text>
               <View style={styles.selectRow}>
