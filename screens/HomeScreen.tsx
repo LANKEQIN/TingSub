@@ -15,14 +15,15 @@ import ActiveRow from './components/ActiveRow';
 import BarChart from './components/BarChart';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
-import { addSubscription, updateSubscription, removeSubscription } from '../store';
+import { addSubscription, updateSubscription, removeSubscription } from '../features/subscriptions/slice';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { ThemeContext } from '../lib/theme';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { RootStackParamList, TabParamList } from '../lib/navigation';
-import type { RootState, AppDispatch, Subscription, Cycle } from '../store';
+import type { RootState, AppDispatch } from '../store';
+import type { Subscription, Cycle } from '../features/subscriptions/slice';
 
 // 计算型工具
 // 类型：订阅分组
