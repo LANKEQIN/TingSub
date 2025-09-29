@@ -1,6 +1,6 @@
 # 汀阅 (TingSub)
 
-这是一个基于 Expo React Native 的 Hello World 应用。
+这是一个基于 Expo React Native 的应用。
 
 ## 项目信息
 
