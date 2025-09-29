@@ -6,7 +6,19 @@ const formatCurrency = (val, symbol = '¥') => {
   return `${symbol}${Math.round(val).toLocaleString('zh-CN')}`;
 };
 
-const BarChart = ({
+type BarChartProps = {
+  data?: number[]
+  labels?: string[]
+  width?: number
+  height?: number
+  barColor?: string
+  gridColor?: string
+  axisLabelColor?: string
+  currencySymbol?: string
+  showValues?: boolean
+}
+
+const BarChart: React.FC<BarChartProps> = ({
   data = [],
   labels = [],
   width = 300,
@@ -17,7 +29,7 @@ const BarChart = ({
   currencySymbol = '¥',
   showValues = true,
 }) => {
-  const [activeIndex, setActiveIndex] = useState(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const maxVal = useMemo(() => {
     const m = Math.max(...(data.length ? data : [0]));
@@ -32,7 +44,7 @@ const BarChart = ({
   const barGap = 8;
   const barWidth = data.length > 0 ? Math.floor(chartW / data.length) : 0;
 
-  const handlePressBar = (i) => {
+  const handlePressBar = (i: number) => {
     setActiveIndex((prev) => (prev === i ? null : i));
   };
 
