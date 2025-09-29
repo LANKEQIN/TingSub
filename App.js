@@ -1,49 +1,49 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet } from 'react-native';
-import { TamaguiProvider } from 'tamagui';
-import tamaguiConfig from './tamagui.config';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useColorScheme } from 'react-native';
-import { Home, BarChart3, Bell, User } from '@tamagui/lucide-icons';
-import HomeScreen from './screens/HomeScreen';
-import StatisticsScreen from './screens/StatisticsScreen';
-import NotificationsScreen from './screens/NotificationsScreen';
-import ProfileScreen from './screens/ProfileScreen';
-import ThemeScreen from './screens/ThemeScreen';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Provider } from 'react-redux';
-import { store, setSubscriptions } from './store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useMemo, useState, useEffect } from 'react'
+import { StatusBar } from 'expo-status-bar'
+import { StyleSheet } from 'react-native'
+import { TamaguiProvider } from 'tamagui'
+import tamaguiConfig from './tamagui.config'
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native'
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { useColorScheme } from 'react-native'
+import { Home, BarChart3, Bell, User } from '@tamagui/lucide-icons'
+import HomeScreen from './screens/HomeScreen'
+import StatisticsScreen from './screens/StatisticsScreen'
+import NotificationsScreen from './screens/NotificationsScreen'
+import ProfileScreen from './screens/ProfileScreen'
+import ThemeScreen from './screens/ThemeScreen'
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Provider } from 'react-redux'
+import { store, persistor } from './store'
+import { PersistGate } from 'redux-persist/integration/react'
 
 export const ThemeContext = React.createContext({
   themeMode: 'auto',
   setThemeMode: (m) => {},
   effectiveScheme: 'light',
-});
+})
 
-const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator()
+const Stack = createNativeStackNavigator()
 
 function MainTabs({ effectiveScheme }) {
-  const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets()
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
-          let IconComponent;
+          let IconComponent
           if (route.name === 'Home') {
-            IconComponent = Home;
+            IconComponent = Home
           } else if (route.name === 'Statistics') {
-            IconComponent = BarChart3;
+            IconComponent = BarChart3
           } else if (route.name === 'Notifications') {
-            IconComponent = Bell;
+            IconComponent = Bell
           } else if (route.name === 'Profile') {
-            IconComponent = User;
+            IconComponent = User
           }
-          return <IconComponent size={size} color={color} />;
+          return <IconComponent size={size} color={color} />
         },
         tabBarActiveTintColor: effectiveScheme === 'dark' ? '#4DB6FF' : '#007AFF',
         tabBarInactiveTintColor: effectiveScheme === 'dark' ? '#B0B0B8' : '#8E8E93',
@@ -70,51 +70,24 @@ function MainTabs({ effectiveScheme }) {
       <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ title: '通知', tabBarLabel: '通知' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: '我的', tabBarLabel: '我的' }} />
     </Tab.Navigator>
-  );
+  )
 }
 
-// 简单的持久化门组件：加载并保存订阅数据
-function PersistenceGate({ children }) {
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    let unsub = null;
-    (async () => {
-      try {
-        const raw = await AsyncStorage.getItem('tingsub.subscriptions');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            store.dispatch(setSubscriptions(parsed));
-          }
-        }
-      } catch (e) {
-        // ignore
-      }
-      unsub = store.subscribe(() => {
-        const list = store.getState().subscriptions.list;
-        AsyncStorage.setItem('tingsub.subscriptions', JSON.stringify(list)).catch(() => {});
-      });
-      setReady(true);
-    })();
-    return () => { if (unsub) unsub(); };
-  }, []);
-  if (!ready) return null;
-  return children;
-}
+// 移除自定义 PersistenceGate（由 redux-persist 的 PersistGate 代替）
 
 export default function App() {
-  const systemScheme = useColorScheme();
-  const [themeMode, setThemeMode] = useState('auto'); // 'auto' | 'light' | 'dark'
-  const effectiveScheme = useMemo(() => (themeMode === 'auto' ? (systemScheme ?? 'light') : themeMode), [themeMode, systemScheme]);
+  const systemScheme = useColorScheme()
+  const [themeMode, setThemeMode] = useState('auto') // 'auto' | 'light' | 'dark'
+  const effectiveScheme = useMemo(() => (themeMode === 'auto' ? (systemScheme ?? 'light') : themeMode), [themeMode, systemScheme])
 
-  const navigationTheme = effectiveScheme === 'dark' ? DarkTheme : DefaultTheme;
+  const navigationTheme = effectiveScheme === 'dark' ? DarkTheme : DefaultTheme
 
   return (
     <ThemeContext.Provider value={{ themeMode, setThemeMode, effectiveScheme }}>
       <Provider store={store}>
-        <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveScheme}>
-          <SafeAreaProvider>
-            <PersistenceGate>
+        <PersistGate loading={null} persistor={persistor}>
+          <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveScheme}>
+            <SafeAreaProvider>
               <NavigationContainer theme={navigationTheme}>
                 <Stack.Navigator>
                   <Stack.Screen name="Tabs" options={{ headerShown: false }}>
@@ -124,12 +97,12 @@ export default function App() {
                 </Stack.Navigator>
                 <StatusBar style="auto" />
               </NavigationContainer>
-            </PersistenceGate>
-          </SafeAreaProvider>
-        </TamaguiProvider>
+            </SafeAreaProvider>
+          </TamaguiProvider>
+        </PersistGate>
       </Provider>
     </ThemeContext.Provider>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -139,4 +112,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+})

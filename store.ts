@@ -1,4 +1,6 @@
-import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { configureStore, createSlice, PayloadAction, combineReducers } from '@reduxjs/toolkit'
+import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 // 简单计数示例 reducer（保留本地定义，避免引入不存在文件）
 const counterReducer = (state = { value: 0 }, action: { type: string }) => {
@@ -48,16 +50,34 @@ const subscriptionsSlice = createSlice({
   },
 });
 
-export const { addSubscription, updateSubscription, removeSubscription, setSubscriptions } = subscriptionsSlice.actions;
+export const { addSubscription, updateSubscription, removeSubscription, setSubscriptions } = subscriptionsSlice.actions
 
-// 配置 store
+// 配置 store 持久化（仅持久化 subscriptions slice）
+const rootReducer = combineReducers({
+  counter: counterReducer,
+  subscriptions: subscriptionsSlice.reducer,
+})
+
+const persistConfig = {
+  key: 'root',
+  storage: AsyncStorage,
+  whitelist: ['subscriptions'],
+}
+
+const persistedReducer = persistReducer(persistConfig, rootReducer)
+
 export const store = configureStore({
-  reducer: {
-    counter: counterReducer,
-    subscriptions: subscriptionsSlice.reducer,
-  },
-});
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
+})
+
+export const persistor = persistStore(store)
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch
