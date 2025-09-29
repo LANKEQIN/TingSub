@@ -3,7 +3,13 @@ import { View, TouchableOpacity } from 'react-native';
 import { Text } from 'tamagui';
 import { Music, CalendarDays, CreditCard } from '@tamagui/lucide-icons';
 
-const UpcomingCard = ({ item, onLongPress, styles }) => (
+type UpcomingCardProps = {
+  item: { id: string; name: string; cycle: string; next: string; price: string }
+  onLongPress?: () => void
+  styles: any
+}
+
+const UpcomingCard: React.FC<UpcomingCardProps> = ({ item, onLongPress, styles }) => (
   <TouchableOpacity style={styles.upcomingCard} onLongPress={onLongPress}>
     <View style={styles.upcomingIconBox}>
       <Music size={20} color="#0ea5e9" />

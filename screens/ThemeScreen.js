@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'tamagui';
-import { ThemeContext } from '../App';
+import { ThemeContext } from '../lib/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Option = ({ active, label, onPress }) => (

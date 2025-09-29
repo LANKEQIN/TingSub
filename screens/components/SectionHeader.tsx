@@ -2,7 +2,14 @@ import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { Text } from 'tamagui';
 
-const SectionHeader = ({ title, actionText, onPress, styles }) => (
+type SectionHeaderProps = {
+  title: string
+  actionText?: string
+  onPress?: () => void
+  styles: any
+}
+
+const SectionHeader: React.FC<SectionHeaderProps> = ({ title, actionText, onPress, styles }) => (
   <View style={styles.sectionHeader}>
     <Text style={styles.sectionTitle}>{title}</Text>
     {actionText ? (

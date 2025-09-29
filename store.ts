@@ -1,4 +1,6 @@
-import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { configureStore, createSlice, PayloadAction, combineReducers } from '@reduxjs/toolkit'
+import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 // 简单计数示例 reducer（保留本地定义，避免引入不存在文件）
 const counterReducer = (state = { value: 0 }, action: { type: string }) => {
@@ -17,7 +19,8 @@ export type Cycle = 'monthly' | 'quarterly' | 'yearly' | 'lifetime' | 'other';
 export interface Subscription {
   id: string;
   name: string;
-  category?: string; // 订阅类型（如：视频会员）
+  category?: string; // 订阅类型（如：视频会员 或自定义标签）
+  categoryGroup?: string; // 订阅所属分组：影音娱乐/工作/生活/其他（当选择“其他”时，底层分类此字段为“其他”）
   price: number; // 金额（元）
   cycle: Cycle; // 计费周期
   nextDueISO?: string; // 下次到期日期（ISO 字符串）
@@ -48,16 +51,34 @@ const subscriptionsSlice = createSlice({
   },
 });
 
-export const { addSubscription, updateSubscription, removeSubscription, setSubscriptions } = subscriptionsSlice.actions;
+export const { addSubscription, updateSubscription, removeSubscription, setSubscriptions } = subscriptionsSlice.actions
 
-// 配置 store
+// 配置 store 持久化（仅持久化 subscriptions slice）
+const rootReducer = combineReducers({
+  counter: counterReducer,
+  subscriptions: subscriptionsSlice.reducer,
+})
+
+const persistConfig = {
+  key: 'root',
+  storage: AsyncStorage,
+  whitelist: ['subscriptions'],
+}
+
+const persistedReducer = persistReducer(persistConfig, rootReducer)
+
 export const store = configureStore({
-  reducer: {
-    counter: counterReducer,
-    subscriptions: subscriptionsSlice.reducer,
-  },
-});
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
+})
+
+export const persistor = persistStore(store)
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch
