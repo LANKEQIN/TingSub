@@ -7,11 +7,29 @@ import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../lib/navigation';
 
+/**
+ * 主题选项组件的属性类型定义
+ * @typedef {Object} OptionProps
+ * @property {boolean} active - 指示该选项是否为当前激活状态
+ * @property {string} label - 选项显示的文本标签
+ * @property {() => void} onPress - 点击选项时触发的回调函数
+ */
+
 type OptionProps = {
   active: boolean;
   label: string;
   onPress: () => void;
 };
+
+/**
+ * 主题选项按钮组件
+ * 
+ * 此组件渲染一个可点击的主题选项按钮，根据激活状态显示不同的样式。
+ * 
+ * @component
+ * @param {OptionProps} props - 组件属性
+ * @returns {JSX.Element} 渲染主题选项按钮的 JSX 元素
+ */
 
 const Option: React.FC<OptionProps> = ({ active, label, onPress }) => (
   <TouchableOpacity
@@ -27,7 +45,19 @@ type ThemeScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Theme'>;
 };
 
+/**
+ * 主题设置屏幕组件
+ * 
+ * 此组件允许用户选择应用的主题模式：自动、浅色或深色。
+ * 它通过 ThemeContext 访问和修改全局主题状态，并根据当前生效的主题方案渲染 UI。
+ * 
+ * @component
+ * @param {ThemeScreenProps} props - 组件属性（当前未直接使用）
+ * @returns {JSX.Element} 渲染主题设置页面的 JSX 元素
+ */
+
 const ThemeScreen: React.FC<ThemeScreenProps> = ({}) => {
+  // 从 ThemeContext 获取当前主题模式、设置函数和生效的主题方案
   const { themeMode, setThemeMode, effectiveScheme } = useContext(ThemeContext);
   const insets = useSafeAreaInsets();
 

@@ -1,11 +1,29 @@
 import React, { useMemo, useState } from 'react';
 import Svg, { Rect, Line, Text as SvgText } from 'react-native-svg';
 
+/**
+ * 格式化货币数值
+ * @param {number} val - 要格式化的数值
+ * @param {string} symbol - 货币符号，默认为'¥'
+ * @returns {string} 格式化后的货币字符串
+ */
 const formatCurrency = (val, symbol = '¥') => {
   if (val == null || Number.isNaN(val)) return '-';
   return `${symbol}${Math.round(val).toLocaleString('zh-CN')}`;
 };
 
+/**
+ * BarChart 组件属性接口
+ * @property {number[]} [data] - 图表数据数组
+ * @property {string[]} [labels] - X轴标签数组
+ * @property {number} [width] - 图表宽度，默认300
+ * @property {number} [height] - 图表高度，默认200
+ * @property {string} [barColor] - 柱状图颜色，默认'#4f46e5'
+ * @property {string} [gridColor] - 网格线颜色，默认'#E5E7EB'
+ * @property {string} [axisLabelColor] - 坐标轴标签颜色，默认'#6b7280'
+ * @property {string} [currencySymbol] - 货币符号，默认'¥'
+ * @property {boolean} [showValues] - 是否显示数值标签，默认true
+ */
 type BarChartProps = {
   data?: number[]
   labels?: string[]
@@ -18,6 +36,14 @@ type BarChartProps = {
   showValues?: boolean
 }
 
+/**
+ * SVG柱状图组件
+ * 支持交互式点击、货币格式化、网格线和坐标轴标签
+ * 当数据为空时显示"暂无数据"提示
+ * 
+ * @param {BarChartProps} props - 组件属性
+ * @returns {JSX.Element} 渲染的SVG柱状图
+ */
 const BarChart: React.FC<BarChartProps> = ({
   data = [],
   labels = [],

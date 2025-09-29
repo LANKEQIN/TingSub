@@ -8,6 +8,12 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { RootStackParamList, TabParamList } from '../lib/navigation';
 import { ThemeContext } from '../lib/theme';
 
+/**
+ * 我的屏幕的属性类型定义
+ * @typedef {Object} ProfileScreenProps
+ * @property {CompositeNavigationProp<BottomTabNavigationProp<TabParamList, 'Profile'>, NativeStackNavigationProp<RootStackParamList>>} navigation - 导航对象，用于屏幕间跳转
+ */
+
 type ProfileScreenProps = {
   navigation: CompositeNavigationProp<
     BottomTabNavigationProp<TabParamList, 'Profile'>,
@@ -15,8 +21,22 @@ type ProfileScreenProps = {
   >
 }
 
+/**
+ * 我的屏幕组件
+ * 
+ * 此组件展示应用的个人中心页面，包含主题设置等选项。
+ * 它使用 ThemeContext 来适配当前的主题模式（浅色/深色），
+ * 并使用 useSafeAreaInsets 来处理设备的安全区域。
+ * 导航对象用于跳转到其他屏幕，例如主题设置屏幕。
+ * 
+ * @component
+ * @param {ProfileScreenProps} props - 组件属性
+ * @returns {JSX.Element} 渲染个人中心页面的 JSX 元素
+ */
+
 const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   const insets = useSafeAreaInsets();
+  // 从 ThemeContext 获取当前生效的主题方案
   const { effectiveScheme } = useContext(ThemeContext);
   const styles = createStyles(effectiveScheme);
   return (
@@ -30,7 +50,14 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   );
 };
 
+/**
+ * 根据主题方案创建样式对象
+ * 
+ * @param {('light' | 'dark')} scheme - 当前的主题方案
+ * @returns {StyleSheet.NamedStyles} 返回适配指定主题的样式对象
+ */
 function createStyles(scheme: 'light' | 'dark'){
+  // 判断是否为深色主题
   const isDark = scheme === 'dark';
   return StyleSheet.create({
     container: {
