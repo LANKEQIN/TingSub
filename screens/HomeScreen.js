@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { Text } from 'tamagui';
 import {
   Bell,
@@ -12,56 +12,29 @@ import {
   Music,
   Video,
   Apple as AppleIcon,
+  Check
 } from '@tamagui/lucide-icons';
 import Svg, { Rect } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector, useDispatch } from 'react-redux';
+import { addSubscription } from '../store';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
-// 临时硬编码数据（TODO: 替换为真实数据源，并接入状态管理/数据库）
-const summaryData = {
-  totalSubs: 8,
-  monthlySpend: 128,
-  upcomingBills: 2,
-  yearlySpend: 1536,
-  deltas: {
-    monthlySpend: '+30',
-    yearlySpend: '+12.5%'
-  }
-};
-
-const upcomingList = [
-  { id: '1', name: '网易云音乐VIP', cycle: '个人会员 · 月付', next: '3天内', price: '¥15/月' },
-  { id: '2', name: 'B站大会员', cycle: '年度会员 · 年付', next: '7天内', price: '¥148/年' },
-];
-
-const spendByMonth = [
-  90, 160, 120, 140, 115, 130, 100, 135, 125, 150, 110,
-];
-
-const activeSubs = [
-  { id: 'm365', name: 'Microsoft 365', price: '¥498/年', next: '6个月后到期' },
-  { id: 'am', name: 'Apple Music', price: '¥10/月', next: '1个月后到期' },
-  { id: 'ytp', name: 'YouTube Premium', price: '¥30/月', next: '2个月后到期' },
-  { id: 'dn', name: 'Discord Nitro', price: '¥30/月', next: '3个月后到期' },
-];
-
-const SectionHeader = ({ title, actionText }) => (
-  <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    {actionText ? (
-      <TouchableOpacity>
-        <Text style={styles.link}>{actionText}</Text>
-      </TouchableOpacity>
-    ) : null}
-  </View>
-);
-
-const SummaryCard = ({ title, value, sub }) => (
-  <View style={styles.summaryCard}>
-    <Text style={styles.summaryTitle}>{title}</Text>
-    <Text style={styles.summaryValue}>{value}</Text>
-    {sub ? <Text style={styles.summarySub}>{sub}</Text> : null}
-  </View>
-);
+// 计算型工具
+const cycleLabelMap = { monthly: '月付', quarterly: '季付', yearly: '年付', lifetime: '终身', other: '其他' };
+function formatPrice(price, cycle){
+  if(cycle==='yearly') return `¥${price}/年`;
+  if(cycle==='quarterly') return `¥${price}/季`;
+  if(cycle==='lifetime') return `¥${price}/终身`;
+  if(cycle==='other') return `¥${price}`;
+  return `¥${price}/月`;
+}
+function daysUntil(dateISO){
+  if(!dateISO) return null;
+  const d = new Date(dateISO);
+  const diff = Math.ceil((d.getTime() - Date.now())/86400000);
+  return diff;
+}
 
 const UpcomingCard = ({ item }) => (
   <View style={styles.upcomingCard}>
@@ -108,6 +81,19 @@ const BarChart = ({ data, width = 300, height = 180, barColor = '#4f46e5' }) => 
   );
 };
 
+const SectionHeader = ({ title, actionText, onPress }) => (
+  <View style={styles.sectionHeader}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    {actionText ? (
+      <TouchableOpacity onPress={onPress}>
+        <Text style={styles.link}>{actionText}</Text>
+      </TouchableOpacity>
+    ) : (
+      <View />
+    )}
+  </View>
+);
+
 const ActiveRow = ({ item, index }) => (
   <View style={styles.activeRow}>
     <View style={styles.activeIconBox}>
@@ -127,10 +113,114 @@ const ActiveRow = ({ item, index }) => (
   </View>
 );
 
+const SummaryCard = ({ title, value, sub }) => (
+  <View style={styles.summaryCard}>
+    <Text style={styles.summaryTitle}>{title}</Text>
+    <Text style={styles.summaryValue}>{value}</Text>
+    {sub ? <Text style={styles.summarySub}>{sub}</Text> : null}
+  </View>
+);
+
+// ... existing code ...
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
+  const dispatch = useDispatch();
+  const subs = useSelector((state) => state.subscriptions.list);
+
+  const summaryData = useMemo(() => {
+    const totalSubs = subs.length;
+    const monthlySpend = subs.filter(s=>s.cycle==='monthly').reduce((sum,s)=>sum+s.price,0);
+    const yearlySpend = subs.filter(s=>s.cycle==='yearly').reduce((sum,s)=>sum+s.price,0) + monthlySpend*12 + subs.filter(s=>s.cycle==='quarterly').reduce((sum,s)=>sum+s.price*4,0);
+    const upcomingBills = subs.filter(s=>{
+      const d = daysUntil(s.nextDueISO);
+      return d!==null && d<=7;
+    }).length;
+    return { totalSubs, monthlySpend, yearlySpend, upcomingBills, deltas: { monthlySpend: '+0', yearlySpend: '+0' } };
+  }, [subs]);
+
+  const upcomingList = useMemo(() => subs
+    .map(s=>({
+      id: s.id,
+      name: s.name,
+      cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
+      next: s.nextDueISO ? `${daysUntil(s.nextDueISO)}天内` : '未设置',
+      price: formatPrice(s.price, s.cycle),
+    }))
+    .sort((a,b)=>{
+      const ad = parseInt(a.next)||9999, bd = parseInt(b.next)||9999; return ad-bd;
+    })
+  , [subs]);
+
+  // 新增：活跃订阅列表（用于 ActiveRow）
+  const activeSubs = useMemo(() => subs.map(s => ({
+    id: s.id,
+    name: s.name,
+    price: formatPrice(s.price, s.cycle),
+    next: s.nextDueISO ? `${daysUntil(s.nextDueISO)}天内` : '未设置',
+  })), [subs]);
+
+  // 新增：支出分析数据（近 6 个月的预计月支出）
+  const spendByMonth = useMemo(() => {
+    const monthly = subs.reduce((sum, s) => {
+      if (s.cycle === 'monthly') return sum + s.price;
+      if (s.cycle === 'quarterly') return sum + s.price / 3;
+      if (s.cycle === 'yearly') return sum + s.price / 12;
+      return sum; // lifetime/other 不计入月支出
+    }, 0);
+    const val = Math.round(monthly);
+    return [val, val, val, val, val, val];
+  }, [subs]);
+  // 表单弹窗状态
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+  // 简易日期选择：年/月/日
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const today = new Date();
+  const [dateParts, setDateParts] = useState({ year: today.getFullYear(), month: today.getMonth() + 1, day: today.getDate() });
+  const years = useMemo(() => Array.from({ length: 6 }, (_, i) => today.getFullYear() + i), []);
+  const months = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
+  const getDaysInMonth = (year, month) => new Date(year, month, 0).getDate();
+  const days = useMemo(() => Array.from({ length: getDaysInMonth(dateParts.year, dateParts.month) }, (_, i) => i + 1), [dateParts.year, dateParts.month]);
+  // 新增：Android 原生日期选择控件开关
+  const [showPicker, setShowPicker] = useState(false);
+  // Android DateTimePicker 变更处理
+  const onAndroidDateChange = (event, selectedDate) => {
+    if (Platform.OS !== 'web') {
+      const currentDate = selectedDate || new Date(dateParts.year, dateParts.month - 1, dateParts.day);
+      setShowPicker(false);
+      const y = currentDate.getFullYear();
+      const m = currentDate.getMonth() + 1;
+      const d = currentDate.getDate();
+      const iso = `${y}-${pad2(m)}-${pad2(d)}`;
+      setForm(v => ({ ...v, nextDueISO: iso }));
+      setDateParts({ year: y, month: m, day: d });
+    }
+  };
+  const openModal = () => {
+    setModalOpen(true);
+    const iso = `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`;
+    setForm((v) => ({ ...v, nextDueISO: iso }));
+  };
+  const closeModal = () => setModalOpen(false);
+  const submitForm = () => {
+    if(!form.name || !form.price) return;
+    const payload = {
+      id: `${Date.now()}`,
+      name: form.name,
+      category: form.category,
+      price: Number(form.price),
+      cycle: form.cycle,
+      nextDueISO: form.nextDueISO || undefined,
+      autoRenew: form.autoRenew,
+      currency: form.currency,
+    };
+    dispatch(addSubscription(payload));
+    closeModal();
+    setForm({ name: '', category: '视频会员', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+  };
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}> 
       {/* 顶部导航 */}
       <View style={styles.topbar}>
         <View style={styles.logoBox}>
@@ -152,10 +242,10 @@ const HomeScreen = () => {
         {/* 订阅概览 */}
         <SectionHeader title="订阅概览" actionText="查看全部" />
         <View style={styles.summaryGrid}>
-          <SummaryCard title="总订阅数" value={summaryData.totalSubs} sub="较上月 +2" />
-          <SummaryCard title="本月支出" value={`¥${summaryData.monthlySpend}`} sub={`较上月 ${summaryData.deltas.monthlySpend}`} />
-          <SummaryCard title="即将到期" value={summaryData.upcomingBills} sub="3天内" />
-          <SummaryCard title="年度支出" value={`¥${summaryData.yearlySpend}`} sub={`同比 ${summaryData.deltas.yearlySpend}`} />
+          <SummaryCard title="总订阅数" value={summaryData.totalSubs} sub="" />
+          <SummaryCard title="本月支出" value={`¥${summaryData.monthlySpend}`} sub={``} />
+          <SummaryCard title="即将到期" value={summaryData.upcomingBills} sub="7天内" />
+          <SummaryCard title="年度支出" value={`¥${summaryData.yearlySpend}`} sub={``} />
         </View>
 
         {/* 即将到期 */}
@@ -194,13 +284,96 @@ const HomeScreen = () => {
       </ScrollView>
 
       {/* 悬浮添加按钮 */}
-      <TouchableOpacity style={styles.fab}>
+      <TouchableOpacity style={styles.fab} onPress={openModal}>
         <Plus size={24} color="#fff" />
       </TouchableOpacity>
+
+      {/* 添加订阅弹窗（简易） */}
+      {modalOpen && (
+        <View style={styles.modalMask}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>添加新订阅</Text>
+            <View style={styles.formRow}><Text style={styles.formLabel}>订阅名称</Text><TextInput style={styles.formInput} value={form.name} onChangeText={(t)=>setForm(v=>({...v,name:t}))} placeholder="例如：网易云音乐VIP" /></View>
+            <View style={styles.formRow}><Text style={styles.formLabel}>订阅类型</Text><TextInput style={styles.formInput} value={form.category} onChangeText={(t)=>setForm(v=>({...v,category:t}))} placeholder="如：视频会员" /></View>
+            <View style={styles.formRow}><Text style={styles.formLabel}>价格</Text><TextInput style={styles.formInput} keyboardType="numeric" value={form.price} onChangeText={(t)=>setForm(v=>({...v,price:t}))} placeholder="例如：15" /></View>
+            <View style={styles.formRow}><Text style={styles.formLabel}>货币</Text>
+              <View style={styles.selectRow}>
+                <TouchableOpacity style={[styles.selectItem, styles.selectItemActive]}>
+                  <Text style={[styles.selectText, styles.selectTextActive]}>人民币（¥）</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={styles.formRow}><Text style={styles.formLabel}>计费周期</Text>
+              <View style={styles.selectRow}>
+                {Object.entries(cycleLabelMap).map(([key,label])=> (
+                  <TouchableOpacity key={key} style={[styles.selectItem, form.cycle===key?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v,cycle:key}))}>
+                    <Text style={[styles.selectText, form.cycle===key?styles.selectTextActive:null]}>{label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            <View style={styles.formRow}><Text style={styles.formLabel}>到期日期</Text>
+              {Platform.OS === 'web' ? (
+                <>
+                  <input
+                    type="date"
+                    value={form.nextDueISO || `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`}
+                    onChange={(e)=>{
+                      const val = e.target.value;
+                      setForm(v=>({...v, nextDueISO: val }));
+                      if(val){
+                        const [y,m,d] = val.split('-').map(Number);
+                        setDateParts({ year: y, month: m, day: d });
+                      }
+                    }}
+                    style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: 8, padding: '8px 10px' }}
+                  />
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
+                    <TouchableOpacity onPress={()=>{ setForm(v=>({...v, nextDueISO: ''})); }}>
+                      <Text style={{ color: '#0ea5e9', fontSize: 12 }}>清除</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={()=>{ const t=new Date(); const iso=`${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`; setForm(v=>({...v, nextDueISO: iso})); setDateParts({ year: t.getFullYear(), month: t.getMonth()+1, day: t.getDate() }); }}>
+                      <Text style={{ color: '#0ea5e9', fontSize: 12 }}>今天</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity style={[styles.selectItem, styles.selectItemActive]} onPress={() => setShowPicker(true)}>
+                    <Text style={[styles.selectText, styles.selectTextActive]}>{form.nextDueISO || `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`}</Text>
+                  </TouchableOpacity>
+                  {showPicker && (
+                    <DateTimePicker
+                      value={new Date(dateParts.year, dateParts.month - 1, dateParts.day)}
+                      mode="date"
+                      display="calendar"
+                      onChange={onAndroidDateChange}
+                    />
+                  )}
+                </>
+              )}
+            </View>
+            <View style={styles.formRow}>
+              <TouchableOpacity onPress={()=>setForm(v=>({...v,autoRenew:!v.autoRenew}))} style={styles.checkboxRow}>
+                <View style={[styles.checkboxBox, form.autoRenew?styles.checkboxBoxChecked:null]}>
+                  {form.autoRenew ? <Check size={14} color="#fff" /> : null}
+                </View>
+                <Text style={styles.checkboxText}>自动续费</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.btnGhost} onPress={closeModal}><Text style={styles.btnGhostText}>取消</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.btnPrimary} onPress={submitForm}><Text style={styles.btnPrimaryText}>添加</Text></TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
 
+// 样式补充
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAFC' },
   topbar: {
@@ -309,6 +482,30 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 6,
   },
+
+  // 弹窗样式
+  modalMask: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
+  modalBox: { width: '90%', backgroundColor: '#fff', borderRadius: 12, padding: 16 },
+  modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 12 },
+  formRow: { marginBottom: 10 },
+  formLabel: { fontSize: 13, color: '#6b7280', marginBottom: 6 },
+  formInput: { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 },
+  selectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  selectItem: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB' },
+  selectItemActive: { backgroundColor: '#E6F2FF', borderColor: '#60A5FA' },
+  selectText: { fontSize: 12, color: '#374151' },
+  selectTextActive: { color: '#1D4ED8', fontWeight: '700' },
+  // 新增复选框样式
+  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
+  checkboxBox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+  checkboxBoxChecked: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
+  checkbox: { paddingVertical: 8 },
+  checkboxText: { fontSize: 13, color: '#374151' },
+  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 6 },
+  btnGhost: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB' },
+  btnGhostText: { color: '#374151' },
+  btnPrimary: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, backgroundColor: '#2563EB' },
+  btnPrimaryText: { color: '#fff', fontWeight: '700' },
 });
 
 export default HomeScreen;
