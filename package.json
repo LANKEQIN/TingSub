@@ -2,7 +2,7 @@
   "name": "tingsub",
   "version": "1.0.0",
   "displayName": "汀阅",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
