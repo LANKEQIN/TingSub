@@ -2,11 +2,11 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'tamagui';
 
-const HomeScreen = () => {
+const ProfileScreen = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>主页</Text>
-      <Text>这是主页内容</Text>
+      <Text style={styles.title}>我的</Text>
+      <Text>这是个人资料页面内容</Text>
     </View>
   );
 };
@@ -24,4 +24,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+export default ProfileScreen;

@@ -2,11 +2,11 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'tamagui';
 
-const HomeScreen = () => {
+const NotificationsScreen = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>主页</Text>
-      <Text>这是主页内容</Text>
+      <Text style={styles.title}>通知</Text>
+      <Text>这是通知页面内容</Text>
     </View>
   );
 };
@@ -24,4 +24,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+export default NotificationsScreen;

@@ -3,35 +3,63 @@ import { StyleSheet, View } from 'react-native';
 import { TamaguiProvider } from 'tamagui';
 import tamaguiConfig from './tamagui.config';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from './screens/HomeScreenWithRedux';
-import DetailsScreen from './screens/DetailsScreenWithRedux';
-import { Provider } from 'react-redux';
-import { store } from './store'; // 注意：TypeScript 文件可以直接导入而无需指定扩展名
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import HomeScreen from './screens/HomeScreen';
+import StatisticsScreen from './screens/StatisticsScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
+import ProfileScreen from './screens/ProfileScreen';
 
-const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
-    <Provider store={store}>
-      <TamaguiProvider config={tamaguiConfig}>
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="Home">
-            <Stack.Screen 
-              name="Home" 
-              component={HomeScreen} 
-              options={{ title: '首页' }} 
-            />
-            <Stack.Screen 
-              name="Details" 
-              component={DetailsScreen} 
-              options={{ title: '详情' }} 
-            />
-          </Stack.Navigator>
-          <StatusBar style="auto" />
-        </NavigationContainer>
-      </TamaguiProvider>
-    </Provider>
+    <TamaguiProvider config={tamaguiConfig}>
+      <NavigationContainer>
+        <Tab.Navigator
+          screenOptions={{
+            tabBarStyle: {
+              paddingBottom: 5,
+              paddingTop: 5,
+              height: 60,
+            }
+          }}
+        >
+          <Tab.Screen 
+            name="Home" 
+            component={HomeScreen} 
+            options={{ 
+              title: '主页',
+              tabBarLabel: '主页'
+            }} 
+          />
+          <Tab.Screen 
+            name="Statistics" 
+            component={StatisticsScreen} 
+            options={{ 
+              title: '统计',
+              tabBarLabel: '统计'
+            }} 
+          />
+          <Tab.Screen 
+            name="Notifications" 
+            component={NotificationsScreen} 
+            options={{ 
+              title: '通知',
+              tabBarLabel: '通知'
+            }} 
+          />
+          <Tab.Screen 
+            name="Profile" 
+            component={ProfileScreen} 
+            options={{ 
+              title: '我的',
+              tabBarLabel: '我的'
+            }} 
+          />
+        </Tab.Navigator>
+        <StatusBar style="auto" />
+      </NavigationContainer>
+    </TamaguiProvider>
   );
 }
 
