@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { addSubscription, updateSubscription, removeSubscription } from '../store';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { ThemeContext } from '../App';
+import { ThemeContext } from '../lib/theme';
 
 // 计算型工具
 const cycleLabelMap = { monthly: '月付', quarterly: '季付', yearly: '年付', lifetime: '终身', other: '其他' };

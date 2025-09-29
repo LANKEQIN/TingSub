@@ -19,18 +19,7 @@ import { store, persistor } from './store'
 import { PersistGate } from 'redux-persist/integration/react'
 import type { RootStackParamList, TabParamList } from './lib/navigation'
 
-type ThemeMode = 'auto' | 'light' | 'dark'
-type EffectiveScheme = 'light' | 'dark'
-type ThemeContextType = {
-  themeMode: ThemeMode
-  setThemeMode: React.Dispatch<React.SetStateAction<ThemeMode>>
-  effectiveScheme: EffectiveScheme
-}
-export const ThemeContext = React.createContext<ThemeContextType>({
-  themeMode: 'auto',
-  setThemeMode: (() => {}) as React.Dispatch<React.SetStateAction<ThemeMode>>,
-  effectiveScheme: 'light',
-})
+import { ThemeContext } from './lib/theme'
 
 const Tab = createBottomTabNavigator<TabParamList, 'main-tabs'>()
 const Stack = createNativeStackNavigator<RootStackParamList, 'root-stack'>()

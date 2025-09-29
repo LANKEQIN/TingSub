@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import BarChart from './components/BarChart'
 import SectionHeader from './components/SectionHeader'
 import { useSelector } from 'react-redux'
-import { ThemeContext } from '../App'
+import { ThemeContext } from '../lib/theme'
 
 const StatisticsScreen = () => {
   const insets = useSafeAreaInsets()

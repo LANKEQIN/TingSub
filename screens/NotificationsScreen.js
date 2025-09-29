@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ThemeContext } from '../App';
+import { ThemeContext } from '../lib/theme';
 
 const NotificationsScreen = () => {
   const insets = useSafeAreaInsets();

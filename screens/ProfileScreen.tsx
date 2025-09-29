@@ -6,7 +6,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { RootStackParamList, TabParamList } from '../lib/navigation';
-import { ThemeContext } from '../App';
+import { ThemeContext } from '../lib/theme';
 
 type ProfileScreenProps = {
   navigation: CompositeNavigationProp<
