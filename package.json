@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
+    "@types/react-native": "^0.73.0",
     "tamagui": "^1.134.4",
     "typescript": "~5.9.2"
   },

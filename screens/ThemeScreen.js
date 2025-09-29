@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'tamagui';
 import { ThemeContext } from '../App';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Option = ({ active, label, onPress }) => (
   <TouchableOpacity
@@ -14,9 +15,14 @@ const Option = ({ active, label, onPress }) => (
 
 const ThemeScreen = () => {
   const { themeMode, setThemeMode, effectiveScheme } = useContext(ThemeContext);
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, effectiveScheme === 'dark' ? styles.containerDark : styles.containerLight]}>
+    <View style={[
+      styles.container,
+      effectiveScheme === 'dark' ? styles.containerDark : styles.containerLight,
+      { paddingTop: insets.top + 32 }
+    ]}>
       <Text style={styles.title}>主题模式</Text>
       <View style={styles.row}>
         <Option label="自动" active={themeMode === 'auto'} onPress={() => setThemeMode('auto')} />

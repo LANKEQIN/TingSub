@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'tamagui';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ProfileScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 32 }]}>
       <Text style={styles.title}>我的</Text>
       <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Theme')}>
         <Text style={styles.itemText}>主题</Text>
