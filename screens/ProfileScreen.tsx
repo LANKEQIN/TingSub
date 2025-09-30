@@ -7,6 +7,8 @@ import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { RootStackParamList, TabParamList } from '../lib/navigation';
 import { ThemeContext } from '../lib/theme';
+import { useAppDispatch, useAppSelector } from '../store';
+import { selectPreferredCurrency, setPreferredCurrency } from '../features/currency/slice';
 
 /**
  * 我的屏幕的属性类型定义
@@ -20,6 +22,12 @@ type ProfileScreenProps = {
     NativeStackNavigationProp<RootStackParamList>
   >
 }
+
+type OptionProps = {
+  active: boolean;
+  label: string;
+  onPress: () => void;
+};
 
 /**
  * 我的屏幕组件
@@ -39,12 +47,24 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   // 从 ThemeContext 获取当前生效的主题方案
   const { effectiveScheme } = useContext(ThemeContext);
   const styles = createStyles(effectiveScheme);
+  const dispatch = useAppDispatch();
+  const preferredCurrency = useAppSelector(selectPreferredCurrency);
+  const Option: React.FC<OptionProps> = ({ active, label, onPress }) => (
+    <TouchableOpacity onPress={onPress} style={[styles.option, active ? styles.optionActive : null]}>
+      <Text style={[styles.optionText, active ? styles.optionTextActive : null]}>{label}</Text>
+    </TouchableOpacity>
+  );
   return (
     <View style={[styles.container, { paddingTop: insets.top + 32 }]}>
       <Text style={styles.title}>我的</Text>
       <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Theme')}>
         <Text style={styles.itemText}>主题</Text>
         <Text style={styles.itemSub}>设置深色模式，调整色彩</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.item, { marginTop: 12 }]} onPress={() => navigation.navigate('Settings')}>
+        <Text style={styles.itemText}>应用设置</Text>
+        <Text style={styles.itemSub}>偏好货币等应用偏好设置</Text>
       </TouchableOpacity>
     </View>
   );
@@ -73,6 +93,14 @@ function createStyles(scheme: 'light' | 'dark'){
       marginBottom: 20,
       color: isDark ? '#E5E7EB' : '#111827',
     },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      alignSelf: 'flex-start',
+      marginLeft: '5%',
+      marginBottom: 12,
+      color: isDark ? '#E5E7EB' : '#111827',
+    },
     item: {
       width: '90%',
       backgroundColor: isDark ? '#1C1F24' : '#F5F5F7',
@@ -90,6 +118,22 @@ function createStyles(scheme: 'light' | 'dark'){
     itemSub: {
       color: isDark ? '#A7B0B8' : '#6b7280',
     },
+    row: { flexDirection: 'row', gap: 12 },
+    option: {
+      paddingVertical: 12,
+      paddingHorizontal: 18,
+      borderRadius: 14,
+      backgroundColor: isDark ? '#22262B' : '#EAEAEA',
+      borderWidth: 1,
+      borderColor: isDark ? '#30343A' : '#E5E7EB',
+    },
+    optionActive: {
+      backgroundColor: isDark ? '#1F2A2E' : '#CFE8E8',
+      borderWidth: 1,
+      borderColor: isDark ? '#0f766e' : '#227A7A',
+    },
+    optionText: { fontSize: 14, color: isDark ? '#C9D1D9' : '#374151' },
+    optionTextActive: { color: '#0f766e', fontWeight: '700' },
   });
 }
 

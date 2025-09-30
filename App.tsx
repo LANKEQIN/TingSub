@@ -13,6 +13,7 @@ import StatisticsScreen from './screens/StatisticsScreen'
 import NotificationsScreen from './screens/NotificationsScreen'
 import ProfileScreen from './screens/ProfileScreen'
 import ThemeScreen from './screens/ThemeScreen'
+import SettingsScreen from './screens/SettingsScreen'
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Provider } from 'react-redux'
 import { store, persistor } from './store'
@@ -126,6 +127,7 @@ export default function App() {
                   <Stack.Screen name="Tabs" options={{ headerShown: false }}>
                     {() => <MainTabs effectiveScheme={effectiveScheme} />}
                   </Stack.Screen>
+                  <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: '应用设置' }} />
                   <Stack.Screen name="Theme" component={ThemeScreen} options={{ title: '主题' }} />
                 </Stack.Navigator>
                 <StatusBar style="auto" />

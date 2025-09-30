@@ -42,11 +42,18 @@ const toCategoryGroup = (val?: string): CategoryGroup => (val && isCategoryGroup
 function formatPriceByPref(price: number, cycle: string, fromCode: 'CNY'|'USD'|'JPY', toCode: 'CNY'|'USD'|'JPY'){
   const converted = convertCurrency(price, fromCode, toCode)
   const base = CurrencyService.format(converted, toCode)
-  if(cycle==='yearly') return `${base}/年`
-  if(cycle==='quarterly') return `${base}/季`
-  if(cycle==='lifetime') return `${base}/终身`
-  if(cycle==='其他' || cycle==='other') return base
-  return `${base}/月`
+  const suffix = (cycle==='yearly')?'/年': (cycle==='quarterly')?'/季': (cycle==='lifetime')?'/终身': (cycle==='其他'||cycle==='other')?'': '/月'
+  return `${base}${suffix}`
+}
+// 新增：原价 + 换算价的透明显示
+function formatPriceBoth(price: number, cycle: string, fromCode: 'CNY'|'USD'|'JPY', toCode: 'CNY'|'USD'|'JPY'){
+  const orig = CurrencyService.format(price, fromCode)
+  const conv = CurrencyService.convertAndFormat(price, fromCode, toCode)
+  const suffix = (cycle==='yearly')?'/年': (cycle==='quarterly')?'/季': (cycle==='lifetime')?'/终身': (cycle==='其他'||cycle==='other')?'': '/月'
+  if(fromCode===toCode){
+    return `${orig}${suffix}`
+  }
+  return `${orig}${suffix} · ≈ ${conv}${suffix}`
 }
 function daysUntil(dateISO){
   if(!dateISO) return null;
@@ -106,7 +113,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         name: s.name,
         cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
         next: s.nextDueISO ? `${d}天内` : '未设置',
-        price: formatPriceByPref(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
+        price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
         dueDays: d,
       };
     })
@@ -118,7 +125,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const activeSubs = useMemo(() => subs.map(s => ({
     id: s.id,
     name: s.name,
-    price: formatPriceByPref(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
+    price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
     next: s.nextDueISO ? `${daysUntil(s.nextDueISO)}天内` : '未设置',
   })), [subs, preferredCurrency]);
 
@@ -180,6 +187,17 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     const iso = `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`;
     setForm((v) => ({ ...v, nextDueISO: iso }));
   };
+  // 价格输入占位示例与预览文本
+  const pricePlaceholder = useMemo(() => {
+    const symbol = CurrencyService.symbol(form.currency as any)
+    const example = form.currency==='JPY' ? '1500' : '15'
+    return `例如：${symbol} ${example}`
+  }, [form.currency])
+  const pricePreview = useMemo(() => {
+    const num = Number(form.price)
+    if(!Number.isFinite(num) || num<=0) return ''
+    return formatPriceBoth(num, form.cycle, form.currency, preferredCurrency as any)
+  }, [form.price, form.cycle, form.currency, preferredCurrency])
   // 新增：打开某订阅的操作面板
   const openActionFor = (id) => {
     const s = subs.find((x) => x.id === id);
@@ -377,7 +395,24 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                 </View>
               ) : null}
             </View>
-            <View style={styles.formRow}><Text style={styles.formLabel}>价格</Text><TextInput style={styles.formInput} keyboardType="numeric" value={form.price} onChangeText={(t)=>setForm(v=>({...v,price:t}))} placeholder="例如：15" /></View>
+            <View style={styles.formRow}>
+              <Text style={styles.formLabel}>价格</Text>
+              <TextInput
+                style={styles.formInput}
+                keyboardType="numeric"
+                value={form.price}
+                onChangeText={(t)=>setForm(v=>({...v,price:t}))}
+                placeholder={pricePlaceholder}
+              />
+              <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
+                按所选币种输入原价（{form.currency}）。当前偏好币种为 {preferredCurrency}，将自动换算展示。
+              </Text>
+              {pricePreview ? (
+                <Text style={{ fontSize: 12, color: '#374151', marginTop: 4 }}>
+                  预览：{pricePreview}
+                </Text>
+              ) : null}
+            </View>
             <View style={styles.formRow}><Text style={styles.formLabel}>货币</Text>
               <View style={styles.selectRow}>
                 {(['CNY','USD','JPY'] as const).map((code)=> (
