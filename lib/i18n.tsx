@@ -37,6 +37,8 @@ i18n.translations = {
     profile: { title: 'Profile', theme: 'Theme', appSettings: 'App Settings', appSettingsSub: 'Currency preference etc.' },
     theme: { title: 'Theme', auto: 'Auto', light: 'Light', dark: 'Dark', currencyPref: 'Preferred Currency' },
     settings: { title: 'Settings', lang: { zh: '中文', en: 'English' } },
+    // 数据导出/导入
+    settings_data: { title: 'Data Export & Import', exportJson: 'Export JSON', exportCsv: 'Export CSV', importJson: 'Import JSON', cancel: 'Cancel', confirmImport: 'Confirm Import' },
     paymentMethods: {
       title: 'Payment Methods',
       add: 'Add Payment Method',
@@ -86,6 +88,8 @@ i18n.translations = {
     profile: { title: '我的', theme: '主题', appSettings: '应用设置', appSettingsSub: '偏好货币等应用偏好设置' },
     theme: { title: '主题模式', auto: '自动', light: '浅色', dark: '深色', currencyPref: '偏好货币' },
     settings: { title: '应用设置', lang: { zh: '中文', en: '英语' } },
+    // 数据导出/导入
+    settings_data: { title: '数据导出与导入', exportJson: '导出 JSON', exportCsv: '导出 CSV', importJson: '导入 JSON', cancel: '取消', confirmImport: '确认导入' },
     paymentMethods: {
       title: '支付方式',
       add: '新增支付方式',

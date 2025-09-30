@@ -1,5 +1,5 @@
-import React, { useContext } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, Platform } from 'react-native';
 import { Text } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RouteProp } from '@react-navigation/native';
@@ -12,6 +12,11 @@ import { selectPreferredCurrency, setPreferredCurrency } from '../features/curre
 import { getVariableValue } from '@tamagui/core';
 import tamaguiConfig from '../tamagui.config';
 import { UI } from '../lib/ui';
+import { buildJSONPayload, exportJSON, exportSubscriptionsCSV, parseImportJSON } from '../lib/dataTransfer'
+import { selectSubscriptions } from '../features/subscriptions/selectors'
+import { selectPaymentMethods } from '../features/payment_methods/selectors'
+import { setSubscriptions } from '../features/subscriptions/slice'
+import { setPaymentMethods } from '../features/payment_methods/slice'
 
 type SettingsScreenProps = {
   route: RouteProp<RootStackParamList, 'Settings'>;
@@ -32,7 +37,11 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const isDark = effectiveScheme === 'dark';
   const dispatch = useAppDispatch();
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
+  const subscriptions = useAppSelector(selectSubscriptions)
+  const paymentMethods = useAppSelector(selectPaymentMethods)
   const styles = createStyles(effectiveScheme);
+  const [importOpen, setImportOpen] = useState(false)
+  const [importText, setImportText] = useState('')
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 32 }]}> 
@@ -58,6 +67,62 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#E5E7EB' : '#111827' }}>{t('nav.paymentMethods')}</Text>
         <Text style={{ fontSize: 12, color: isDark ? '#94a3b8' : '#6b7280', marginTop: 4 }}>{t('paymentMethods.list')}</Text>
       </TouchableOpacity>
+
+      <Text style={[styles.sectionTitle, { marginTop: 24 }]}>{t('settings_data.title', { defaultValue: '数据导出与导入' })}</Text>
+      <View style={styles.row as any}>
+        <Option
+          styles={styles}
+          label={t('settings_data.exportJson', { defaultValue: '导出 JSON' })}
+          active={false}
+          onPress={async () => {
+            const payload = buildJSONPayload({ subscriptions, paymentMethods, currency: preferredCurrency as any })
+            const ok = await exportJSON(payload)
+            if (Platform.OS !== 'web') Alert.alert(ok ? '已共享' : '失败', ok ? '已唤起系统分享' : '分享失败')
+          }}
+        />
+        <Option
+          styles={styles}
+          label={t('settings_data.exportCsv', { defaultValue: '导出 CSV' })}
+          active={false}
+          onPress={async () => {
+            const ok = await exportSubscriptionsCSV(subscriptions)
+            if (Platform.OS !== 'web') Alert.alert(ok ? '已共享' : '失败', ok ? '已唤起系统分享' : '分享失败')
+          }}
+        />
+        <Option
+          styles={styles}
+          label={t('settings_data.importJson', { defaultValue: '导入 JSON' })}
+          active={false}
+          onPress={() => setImportOpen(true)}
+        />
+      </View>
+
+      <Modal visible={importOpen} animationType="slide" onRequestClose={() => setImportOpen(false)}>
+        <View style={[styles.container, { paddingTop: insets.top + 16 }]}> 
+          <Text style={styles.sectionTitle}>{t('settings_data.importJson', { defaultValue: '导入 JSON' })}</Text>
+          <TextInput
+            style={{ width: '90%', minHeight: 160, borderWidth: 1, borderColor: isDark ? '#374151' : '#D1D5DB', borderRadius: UI.radius.md, padding: UI.space.md, color: isDark ? '#E5E7EB' : '#111827' }}
+            multiline
+            placeholder="粘贴 JSON 数据"
+            placeholderTextColor={isDark ? '#6b7280' : '#9CA3AF'}
+            value={importText}
+            onChangeText={setImportText}
+          />
+          <View style={[styles.row as any, { marginTop: 16 }]}> 
+            <Option styles={styles} label={t('settings_data.cancel', { defaultValue: '取消' })} active={false} onPress={() => setImportOpen(false)} />
+            <Option styles={styles} label={t('settings_data.confirmImport', { defaultValue: '确认导入' })} active={false} onPress={() => {
+              const parsed = parseImportJSON(importText)
+              if (!parsed) { Alert.alert('格式错误', '请检查 JSON 格式'); return }
+              if (parsed.subscriptions) dispatch(setSubscriptions(parsed.subscriptions as any))
+              if (parsed.paymentMethods) dispatch(setPaymentMethods(parsed.paymentMethods as any))
+              if (parsed.currency) dispatch(setPreferredCurrency(parsed.currency as any))
+              setImportOpen(false)
+              setImportText('')
+              Alert.alert('已导入', '数据已写入本地存储')
+            }} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
