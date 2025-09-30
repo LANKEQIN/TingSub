@@ -7,6 +7,7 @@ import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { RootStackParamList, TabParamList } from '../lib/navigation';
 import { ThemeContext } from '../lib/theme';
+import { I18nContext } from '../lib/i18n';
 import { useAppDispatch, useAppSelector } from '../store';
 import { selectPreferredCurrency, setPreferredCurrency } from '../features/currency/slice';
 
@@ -46,6 +47,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   const insets = useSafeAreaInsets();
   // 从 ThemeContext 获取当前生效的主题方案
   const { effectiveScheme } = useContext(ThemeContext);
+  const { t } = useContext(I18nContext);
   const styles = createStyles(effectiveScheme);
   const dispatch = useAppDispatch();
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
@@ -56,15 +58,15 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   );
   return (
     <View style={[styles.container, { paddingTop: insets.top + 32 }]}>
-      <Text style={styles.title}>我的</Text>
+      <Text style={styles.title}>{t('profile.title')}</Text>
       <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Theme')}>
-        <Text style={styles.itemText}>主题</Text>
+        <Text style={styles.itemText}>{t('profile.theme')}</Text>
         <Text style={styles.itemSub}>设置深色模式，调整色彩</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={[styles.item, { marginTop: 12 }]} onPress={() => navigation.navigate('Settings')}>
-        <Text style={styles.itemText}>应用设置</Text>
-        <Text style={styles.itemSub}>偏好货币等应用偏好设置</Text>
+        <Text style={styles.itemText}>{t('profile.appSettings')}</Text>
+        <Text style={styles.itemSub}>{t('profile.appSettingsSub')}</Text>
       </TouchableOpacity>
     </View>
   );

@@ -20,6 +20,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
 import counterReducer from './features/counter/slice'
 import subscriptionsReducer from './features/subscriptions/slice'
 import currencyReducer from './features/currency/slice'
+import paymentMethodsReducer from './features/payment_methods/slice'
 import { subscriptionsApi } from './features/subscriptions/services'
 
 /**
@@ -47,6 +48,14 @@ const persistConfigCurrency = {
 }
 
 /**
+ * 支付方式持久化配置
+ */
+const persistConfigPaymentMethods = {
+  key: 'paymentMethods',
+  storage: AsyncStorage,
+}
+
+/**
  * 持久化的订阅 reducer
  * 
  * @constant
@@ -57,6 +66,7 @@ const persistConfigCurrency = {
  */
 const persistedSubscriptionsReducer = persistReducer(persistConfigSubs, subscriptionsReducer)
 const persistedCurrencyReducer = persistReducer(persistConfigCurrency, currencyReducer)
+const persistedPaymentMethodsReducer = persistReducer(persistConfigPaymentMethods, paymentMethodsReducer)
 
 /**
  * 根 reducer
@@ -74,6 +84,7 @@ const rootReducer = combineReducers({
   counter: counterReducer,
   subscriptions: persistedSubscriptionsReducer,
   currency: persistedCurrencyReducer,
+  paymentMethods: persistedPaymentMethodsReducer,
   [subscriptionsApi.reducerPath]: subscriptionsApi.reducer,
 })
 
@@ -96,7 +107,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         // 可选：忽略持久化标记路径，减少序列化检查噪音
-        ignoredPaths: ['subscriptions._persist', 'currency._persist'],
+        ignoredPaths: ['subscriptions._persist', 'currency._persist', 'paymentMethods._persist'],
       },
     }).concat(subscriptionsApi.middleware),
 })

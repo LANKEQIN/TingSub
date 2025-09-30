@@ -66,6 +66,7 @@ export interface Category {
  * @property {string} [nextDueISO] - 下次到期日期 (ISO 8601 格式)
  * @property {boolean} [autoRenew] - 是否自动续订
  * @property {Currency} [currency] - 货币类型
+ * @property {string} [paymentMethodId] - 关联的支付方式ID，用于追踪扣款来源
  * 
  * @description
  * 表示单个订阅的完整数据结构，包含所有必要信息
@@ -83,6 +84,8 @@ export interface Subscription {
   nextDueISO?: string
   autoRenew?: boolean
   currency?: Currency
+  // 关联的支付方式ID，用于追踪扣款来源
+  paymentMethodId?: string
 }
 
 /**
