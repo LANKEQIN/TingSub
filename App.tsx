@@ -21,6 +21,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 import type { RootStackParamList, TabParamList } from './lib/navigation'
 
 import { ThemeContext } from './lib/theme'
+import { I18nProvider, t } from './lib/i18n'
 
 const Tab = createBottomTabNavigator<TabParamList, 'main-tabs'>()
 const Stack = createNativeStackNavigator<RootStackParamList, 'root-stack'>()
@@ -82,10 +83,10 @@ function MainTabs({ effectiveScheme }: { effectiveScheme: 'light' | 'dark' }) {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ title: '主页', tabBarLabel: '主页' }} />
-      <Tab.Screen name="Statistics" component={StatisticsScreen} options={{ title: '统计', tabBarLabel: '统计' }} />
-      <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ title: '通知', tabBarLabel: '通知' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: '我的', tabBarLabel: '我的' }} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: t('tabs.home'), tabBarLabel: t('tabs.home') }} />
+      <Tab.Screen name="Statistics" component={StatisticsScreen} options={{ title: t('tabs.statistics'), tabBarLabel: t('tabs.statistics') }} />
+      <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ title: t('tabs.notifications'), tabBarLabel: t('tabs.notifications') }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: t('tabs.profile'), tabBarLabel: t('tabs.profile') }} />
     </Tab.Navigator>
   )
 }
@@ -117,26 +118,28 @@ export default function App() {
   const navigationTheme = effectiveScheme === 'dark' ? DarkTheme : DefaultTheme
 
   return (
-    <ThemeContext.Provider value={{ themeMode, setThemeMode, effectiveScheme }}>
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveScheme}>
-            <SafeAreaProvider>
-              <NavigationContainer theme={navigationTheme}>
-                <Stack.Navigator id="root-stack">
-                  <Stack.Screen name="Tabs" options={{ headerShown: false }}>
-                    {() => <MainTabs effectiveScheme={effectiveScheme} />}
-                  </Stack.Screen>
-                  <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: '应用设置' }} />
-                  <Stack.Screen name="Theme" component={ThemeScreen} options={{ title: '主题' }} />
-                </Stack.Navigator>
-                <StatusBar style="auto" />
-              </NavigationContainer>
-            </SafeAreaProvider>
-          </TamaguiProvider>
-        </PersistGate>
-      </Provider>
-    </ThemeContext.Provider>
+    <I18nProvider>
+      <ThemeContext.Provider value={{ themeMode, setThemeMode, effectiveScheme }}>
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveScheme}>
+              <SafeAreaProvider>
+                <NavigationContainer theme={navigationTheme}>
+                  <Stack.Navigator id="root-stack">
+                    <Stack.Screen name="Tabs" options={{ headerShown: false }}>
+                      {() => <MainTabs effectiveScheme={effectiveScheme} />}
+                    </Stack.Screen>
+                    <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('settings.title') }} />
+                    <Stack.Screen name="Theme" component={ThemeScreen} options={{ title: t('nav.theme') }} />
+                  </Stack.Navigator>
+                  <StatusBar style="auto" />
+                </NavigationContainer>
+              </SafeAreaProvider>
+            </TamaguiProvider>
+          </PersistGate>
+        </Provider>
+      </ThemeContext.Provider>
+    </I18nProvider>
   )
 }
 

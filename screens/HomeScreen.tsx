@@ -18,6 +18,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { addSubscription, updateSubscription, removeSubscription } from '../features/subscriptions/slice';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { ThemeContext } from '../lib/theme';
+import { I18nContext } from '../lib/i18n';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -77,6 +78,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const dispatch = useDispatch<AppDispatch>();
   const subs = useSelector((state: RootState) => state.subscriptions.list);
   const { effectiveScheme } = useContext(ThemeContext);
+  const { t } = useContext(I18nContext);
   const styles = createStyles(effectiveScheme);
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
 
@@ -287,7 +289,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       {/* 顶部导航 */}
       <View style={styles.topbar}>
         <View style={styles.logoBox}>
-          <Text style={styles.logoText}>订阅</Text>
+          <Text style={styles.logoText}>{t('home.title')}</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <TouchableOpacity style={styles.iconBtn}><Bell size={20} color={styles.colors.textPrimary} /></TouchableOpacity>
@@ -298,23 +300,23 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       {/* 搜索框 */}
       <View style={styles.searchBox}>
         <Search size={18} color={styles.colors.muted} />
-        <TextInput style={styles.searchInput} placeholder="搜索订阅…" placeholderTextColor={styles.colors.muted} />
+        <TextInput style={styles.searchInput} placeholder={t('home.searchPlaceholder')} placeholderTextColor={styles.colors.muted} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* 订阅概览 */}
-        <SectionHeader title="订阅概览" actionText="查看全部" styles={styles} />
+        <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
         <View style={styles.summaryGrid}>
-          <SummaryCard title="总订阅数" value={summaryData.totalSubs} sub="" styles={styles} />
-          <SummaryCard title="本月支出" value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
-          <SummaryCard title="即将到期" value={summaryData.upcomingBills} sub="7天内" styles={styles} />
-          <SummaryCard title="年度支出" value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+          <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
+          <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+          <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
+          <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
         </View>
 
         {/* 即将到期（仅在7天内有到期项时显示） */}
         {upcomingList.length > 0 && (
           <>
-            <SectionHeader title="即将到期" actionText="更多" styles={styles} />
+            <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
             <View style={{ gap: 12 }}>
               {upcomingList.map((u) => (
                 <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
@@ -326,7 +328,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         {/* 支出分析已移至统计页 */}
 
         {/* 活跃订阅 */}
-        <SectionHeader title="活跃订阅" styles={styles} />
+        <SectionHeader title={t('home.active')} styles={styles} />
         <View style={{ gap: 8 }}>
           {activeSubs.map((s, idx) => (
             <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />

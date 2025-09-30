@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RouteProp } from '@react-navigation/native';
 import type { TabParamList } from '../lib/navigation';
 import { ThemeContext } from '../lib/theme';
+import { I18nContext } from '../lib/i18n';
 
 /**
  * 通知屏幕的属性类型定义
@@ -31,11 +32,12 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = () => {
   const insets = useSafeAreaInsets();
   // 从 ThemeContext 获取当前生效的主题方案
   const { effectiveScheme } = useContext(ThemeContext);
+  const { t } = useContext(I18nContext);
   const styles = createStyles(effectiveScheme);
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Text style={styles.title}>通知</Text>
-      <Text style={styles.text}>这是通知页面内容</Text>
+      <Text style={styles.title}>{t('notifications.title')}</Text>
+      <Text style={styles.text}>{t('notifications.content')}</Text>
     </View>
   );
 };

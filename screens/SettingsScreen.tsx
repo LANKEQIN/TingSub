@@ -6,6 +6,7 @@ import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../lib/navigation';
 import { ThemeContext } from '../lib/theme';
+import { I18nContext } from '../lib/i18n';
 import { useAppDispatch, useAppSelector } from '../store';
 import { selectPreferredCurrency, setPreferredCurrency } from '../features/currency/slice';
 
@@ -29,19 +30,26 @@ const Option: React.FC<OptionProps> = ({ active, label, onPress }) => (
 const SettingsScreen: React.FC<SettingsScreenProps> = () => {
   const insets = useSafeAreaInsets();
   const { effectiveScheme } = useContext(ThemeContext);
+  const { t, setLocale, locale } = useContext(I18nContext);
   const isDark = effectiveScheme === 'dark';
   const dispatch = useAppDispatch();
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 32, backgroundColor: isDark ? '#0F1416' : '#F7FAFA' }]}> 
-      <Text style={[styles.title, { color: isDark ? '#E5E7EB' : '#111827' }]}>应用设置</Text>
+      <Text style={[styles.title, { color: isDark ? '#E5E7EB' : '#111827' }]}>{t('settings.title')}</Text>
 
-      <Text style={[styles.sectionTitle, { color: isDark ? '#E5E7EB' : '#111827' }]}>偏好货币</Text>
+      <Text style={[styles.sectionTitle, { color: isDark ? '#E5E7EB' : '#111827' }]}>{t('theme.currencyPref')}</Text>
       <View style={styles.row as any}>
         <Option label="人民币（CNY）" active={preferredCurrency === 'CNY'} onPress={() => dispatch(setPreferredCurrency('CNY'))} />
         <Option label="美元（USD）" active={preferredCurrency === 'USD'} onPress={() => dispatch(setPreferredCurrency('USD'))} />
         <Option label="日元（JPY）" active={preferredCurrency === 'JPY'} onPress={() => dispatch(setPreferredCurrency('JPY'))} />
+      </View>
+
+      <Text style={[styles.sectionTitle, { color: isDark ? '#E5E7EB' : '#111827', marginTop: 24 }]}>语言</Text>
+      <View style={styles.row as any}>
+        <Option label={t('settings.lang.zh')} active={locale === 'zh'} onPress={() => setLocale('zh')} />
+        <Option label={t('settings.lang.en')} active={locale === 'en'} onPress={() => setLocale('en')} />
       </View>
     </View>
   );
