@@ -12,6 +12,7 @@ import { useAppDispatch, useAppSelector } from '../store';
 import { selectPreferredCurrency, setPreferredCurrency } from '../features/currency/slice';
 import { getVariableValue } from '@tamagui/core';
 import tamaguiConfig from '../tamagui.config';
+import { UI } from '../lib/ui';
 
 /**
  * 我的屏幕的属性类型定义
@@ -113,14 +114,14 @@ function createStyles(scheme: 'light' | 'dark'){
       fontWeight: '700',
       alignSelf: 'flex-start',
       marginLeft: '5%',
-      marginBottom: 12,
+      marginBottom: UI.space.sm,
       color: colors.textPrimary as string,
     },
     item: {
       width: '90%',
       backgroundColor: colors.cardBg as string,
-      padding: 16,
-      borderRadius: 14,
+      padding: UI.space.md,
+      borderRadius: UI.radius.lg,
       borderWidth: 1,
       borderColor: colors.border as string,
     },
@@ -133,11 +134,11 @@ function createStyles(scheme: 'light' | 'dark'){
     itemSub: {
       color: colors.textSecondary as string,
     },
-    row: { flexDirection: 'row', gap: 12 },
+    row: { flexDirection: 'row', gap: UI.space.sm },
     option: {
-      paddingVertical: 12,
+      paddingVertical: UI.space.sm,
       paddingHorizontal: 18,
-      borderRadius: 14,
+      borderRadius: UI.radius.lg,
       backgroundColor: colors.iconBg as string,
       borderWidth: 1,
       borderColor: colors.border as string,

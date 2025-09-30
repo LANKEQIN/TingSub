@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from '../store';
 import { selectPreferredCurrency, setPreferredCurrency } from '../features/currency/slice';
 import { getVariableValue } from '@tamagui/core';
 import tamaguiConfig from '../tamagui.config';
+import { UI } from '../lib/ui';
 
 type SettingsScreenProps = {
   route: RouteProp<RootStackParamList, 'Settings'>;
@@ -47,11 +48,11 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
       <Text style={[styles.sectionTitle, { marginTop: 24 }]}>语言</Text>
       <View style={styles.row as any}>
         <Option styles={styles} label={t('settings.lang.zh')} active={locale === 'zh'} onPress={() => setLocale('zh')} />
-        <Option label={t('settings.lang.en')} active={locale === 'en'} onPress={() => setLocale('en')} />
+        <Option styles={styles} label={t('settings.lang.en')} active={locale === 'en'} onPress={() => setLocale('en')} />
       </View>
 
       <TouchableOpacity
-        style={[styles.navItem, { borderColor: isDark ? '#1f2937' : '#E5E7EB', backgroundColor: isDark ? '#111827' : '#FFFFFF', borderRadius: 14 }]}
+        style={[styles.navItem, { borderColor: isDark ? '#1f2937' : '#E5E7EB', backgroundColor: isDark ? '#111827' : '#FFFFFF', borderRadius: UI.radius.lg }]}
         onPress={() => navigation.navigate('PaymentMethods')}
       >
         <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#E5E7EB' : '#111827' }}>{t('nav.paymentMethods')}</Text>
@@ -78,12 +79,12 @@ function createStyles(scheme: 'light' | 'dark'){
     container: { flex: 1, alignItems: 'center', backgroundColor: colors.pageBg as string },
     title: { fontSize: 24, fontWeight: '700', marginBottom: 20, color: colors.textPrimary as string },
     sectionTitle: { fontSize: 18, fontWeight: '700', alignSelf: 'flex-start', marginLeft: '5%', marginBottom: 12, color: colors.textPrimary as string },
-    row: { flexDirection: 'row', gap: 12 },
-    option: { paddingVertical: 16, paddingHorizontal: 22, borderRadius: 16, backgroundColor: gv(c.gray3) as string, borderWidth: 1, borderColor: colors.border as string },
+    row: { flexDirection: 'row', gap: UI.space.sm },
+    option: { paddingVertical: UI.space.md, paddingHorizontal: 22, borderRadius: UI.radius.xl, backgroundColor: gv(c.gray3) as string, borderWidth: 1, borderColor: colors.border as string },
     optionActive: { backgroundColor: isDark ? gv(c.iconBgDark) as string : gv(c.iconBgLight) as string, borderWidth: 1, borderColor: colors.accent as string },
     optionText: { fontSize: 16, color: colors.textSecondary as string },
     optionTextActive: { color: colors.accent as string, fontWeight: '700' },
-    navItem: { marginTop: 24, width: '90%', alignSelf: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14 },
+    navItem: { marginTop: 24, width: '90%', alignSelf: 'center', borderWidth: 1, borderRadius: UI.radius.md, paddingHorizontal: UI.space.md, paddingVertical: UI.space.md },
   })
 }
 
