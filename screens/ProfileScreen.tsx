@@ -116,7 +116,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       color: colors.textPrimary as string,
     },
     item: {
-      width: '90%',
+      width: '100%',
       backgroundColor: colors.cardBg as string,
       padding: UI.space.md * scale,
       borderRadius: UI.radius.lg,

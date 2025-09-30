@@ -158,7 +158,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
     optionActive: { backgroundColor: isDark ? gv(c.iconBgDark) as string : gv(c.iconBgLight) as string, borderWidth: 1, borderColor: colors.accent as string },
     optionText: { fontSize: 16 * scale, color: colors.textSecondary as string, textAlign: 'center' },
     optionTextActive: { color: colors.accent as string, fontWeight: '700' },
-    navItem: { marginTop: 24 * scale, width: '90%', alignSelf: 'center', backgroundColor: colors.cardBg as string, borderWidth: 1, borderColor: colors.border as string, borderRadius: UI.radius.lg, paddingHorizontal: UI.space.md * scale, paddingVertical: UI.space.md * scale },
+    navItem: { marginTop: 24 * scale, width: '100%', backgroundColor: colors.cardBg as string, borderWidth: 1, borderColor: colors.border as string, borderRadius: UI.radius.lg, paddingHorizontal: UI.space.md * scale, paddingVertical: UI.space.md * scale },
     navItemTitle: { fontSize: 16 * scale, fontWeight: '600', color: colors.textPrimary as string },
     navItemSub: { fontSize: 12 * scale, color: colors.textSecondary as string, marginTop: 4 * scale },
   })

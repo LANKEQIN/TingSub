@@ -22,7 +22,7 @@ const ScreenContainer: React.FC<Props> = ({ children, scrollable, contentContain
   const insets = useSafeAreaInsets()
   const { effectiveScheme } = useContext(ThemeContext)
   const scale = useAppSelector(selectDisplayScale)
-  const s = createStyles(effectiveScheme, scale, insets.top)
+  const s = createStyles(effectiveScheme, scale, insets.top, insets.bottom)
 
   if (scrollable) {
     return (
@@ -43,7 +43,7 @@ const ScreenContainer: React.FC<Props> = ({ children, scrollable, contentContain
   )
 }
 
-function createStyles(scheme: 'light' | 'dark', scale: number, topInset: number){
+function createStyles(scheme: 'light' | 'dark', scale: number, topInset: number, bottomInset: number){
   const isDark = scheme === 'dark'
   const c = tamaguiConfig.tokens.color
   const v = getVariableValue
@@ -59,8 +59,8 @@ function createStyles(scheme: 'light' | 'dark', scale: number, topInset: number)
     },
     scrollContent: {
       paddingHorizontal: UI.space.md * scale,
-      // UI.space 没有 xl，统一使用 lg
-      paddingBottom: UI.space.lg * scale,
+      // UI.space 没有 xl，统一使用 lg；底部加入安全区以避免被底部栏遮挡
+      paddingBottom: bottomInset + UI.space.lg * scale,
     },
     staticContent: {
       alignItems: 'center',
