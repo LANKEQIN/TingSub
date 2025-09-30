@@ -9,6 +9,14 @@ i18n.translations = {
     common: { appName: 'Subscriptions' },
     tabs: { home: 'Home', statistics: 'Statistics', notifications: 'Notifications', profile: 'Profile' },
     nav: { settings: 'Settings', theme: 'Theme', paymentMethods: 'Payment Methods' },
+    statistics: {
+      title: 'Statistics',
+      spendAnalysis: 'Spend Analysis',
+      ranges: { m3: 'Last 3 mo', m6: 'Last 6 mo', m12: 'Last 12 mo', this_year: 'This Year', prev_quarter: 'Prev Quarter' },
+      groups: { all: 'All', entertainment: 'Entertainment', work: 'Work', life: 'Life', other: 'Other' },
+      category_all: 'All',
+      axisUnit: 'Unit: {{symbol}}/mo',
+    },
     home: {
       title: 'Subscriptions',
       searchPlaceholder: 'Search subscriptions…',
@@ -47,6 +55,14 @@ i18n.translations = {
     common: { appName: '订阅' },
     tabs: { home: '主页', statistics: '统计', notifications: '通知', profile: '我的' },
     nav: { settings: '应用设置', theme: '主题', paymentMethods: '支付方式' },
+    statistics: {
+      title: '统计',
+      spendAnalysis: '支出分析',
+      ranges: { m3: '近3月', m6: '近6月', m12: '近12月', this_year: '今年', prev_quarter: '上季度' },
+      groups: { all: '全部', entertainment: '影音娱乐', work: '工作', life: '生活', other: '其他' },
+      category_all: '全部',
+      axisUnit: '单位：{{symbol}}/月',
+    },
     home: {
       title: '订阅',
       searchPlaceholder: '搜索订阅…',
