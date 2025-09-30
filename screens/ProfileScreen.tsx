@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'tamagui';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -14,6 +13,7 @@ import { getVariableValue } from '@tamagui/core';
 import tamaguiConfig from '../tamagui.config';
 import { UI } from '../lib/ui';
 import { selectDisplayScale } from '../features/ui/selectors'
+import ScreenContainer from './components/ScreenContainer'
 
 /**
  * 我的屏幕的属性类型定义
@@ -48,7 +48,6 @@ type OptionProps = {
  */
 
 const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
-  const insets = useSafeAreaInsets();
   // 从 ThemeContext 获取当前生效的主题方案
   const { effectiveScheme } = useContext(ThemeContext);
   const { t } = useContext(I18nContext);
@@ -62,7 +61,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
     </TouchableOpacity>
   );
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 32 }]}>
+    <ScreenContainer scrollable>
       <Text style={styles.title}>{t('profile.title')}</Text>
       <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Theme')}>
         <Text style={styles.itemText}>{t('profile.theme')}</Text>
@@ -73,7 +72,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
         <Text style={styles.itemText}>{t('profile.appSettings')}</Text>
         <Text style={styles.itemSub}>{t('profile.appSettingsSub')}</Text>
       </TouchableOpacity>
-    </View>
+    </ScreenContainer>
   );
 };
 
@@ -101,9 +100,6 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
     container: {
       flex: 1,
       alignItems: 'center',
-      justifyContent: 'flex-start',
-      paddingTop: 32 * scale,
-      backgroundColor: colors.pageBg as string,
     },
     title: {
       fontSize: 24 * scale,

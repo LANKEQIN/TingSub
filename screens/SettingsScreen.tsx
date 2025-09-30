@@ -1,7 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, Platform } from 'react-native';
 import { Text } from 'tamagui';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../lib/navigation';
@@ -19,6 +18,7 @@ import { setSubscriptions } from '../features/subscriptions/slice'
 import { setPaymentMethods } from '../features/payment_methods/slice'
 import { selectDisplaySize, selectDisplayScale } from '../features/ui/selectors'
 import { setDisplaySize } from '../features/ui/slice'
+import ScreenContainer from './components/ScreenContainer'
 
 type SettingsScreenProps = {
   route: RouteProp<RootStackParamList, 'Settings'>;
@@ -33,7 +33,6 @@ type OptionProps = {
 };
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
-  const insets = useSafeAreaInsets();
   const { effectiveScheme } = useContext(ThemeContext);
   const { t, setLocale, locale } = useContext(I18nContext);
   const isDark = effectiveScheme === 'dark';
@@ -48,7 +47,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const [importText, setImportText] = useState('')
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 32 }]}> 
+    <ScreenContainer scrollable>
       <Text style={styles.title}>{t('settings.title')}</Text>
 
       <Text style={styles.sectionTitle}>{t('theme.currencyPref')}</Text>
@@ -65,11 +64,11 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
       </View>
 
       <TouchableOpacity
-        style={[styles.navItem, { borderColor: isDark ? '#1f2937' : '#E5E7EB', backgroundColor: isDark ? '#111827' : '#FFFFFF', borderRadius: UI.radius.lg }]}
+        style={styles.navItem}
         onPress={() => navigation.navigate('PaymentMethods')}
       >
-        <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#E5E7EB' : '#111827' }}>{t('nav.paymentMethods')}</Text>
-        <Text style={{ fontSize: 12, color: isDark ? '#94a3b8' : '#6b7280', marginTop: 4 }}>{t('paymentMethods.list')}</Text>
+        <Text style={styles.navItemTitle}>{t('nav.paymentMethods')}</Text>
+        <Text style={styles.navItemSub}>{t('paymentMethods.list')}</Text>
       </TouchableOpacity>
 
       <Text style={[styles.sectionTitle, { marginTop: 24 * scale }]}>{t('settings_data.title', { defaultValue: '数据导出与导入' })}</Text>
@@ -102,7 +101,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
       </View>
 
       <Modal visible={importOpen} animationType="slide" onRequestClose={() => setImportOpen(false)}>
-        <View style={[styles.container, { paddingTop: insets.top + 16 }]}> 
+        <ScreenContainer>
           <Text style={styles.sectionTitle}>{t('settings_data.importJson', { defaultValue: '导入 JSON' })}</Text>
           <TextInput
             style={{ width: '90%', minHeight: 160, borderWidth: 1, borderColor: isDark ? '#374151' : '#D1D5DB', borderRadius: UI.radius.md, padding: UI.space.md, color: isDark ? '#E5E7EB' : '#111827' }}
@@ -125,7 +124,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
               Alert.alert('已导入', '数据已写入本地存储')
             }} />
           </View>
-        </View>
+        </ScreenContainer>
       </Modal>
 
       <Text style={[styles.sectionTitle, { marginTop: 24 * scale }]}>显示大小</Text>
@@ -133,7 +132,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         <Option styles={styles} label="普通" active={displaySize === 'normal'} onPress={() => dispatch(setDisplaySize('normal'))} />
         <Option styles={styles} label="大号" active={displaySize === 'large'} onPress={() => dispatch(setDisplaySize('large'))} />
       </View>
-    </View>
+    </ScreenContainer>
   );
 };
 
@@ -153,13 +152,15 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
   return StyleSheet.create({
     container: { flex: 1, alignItems: 'center', backgroundColor: colors.pageBg as string },
     title: { fontSize: 24 * scale, fontWeight: '700', marginBottom: 20 * scale, color: colors.textPrimary as string },
-    sectionTitle: { fontSize: 18 * scale, fontWeight: '700', alignSelf: 'flex-start', marginLeft: '5%', marginBottom: 12 * scale, color: colors.textPrimary as string },
-    row: { flexDirection: 'row', gap: UI.space.sm * scale },
-    option: { paddingVertical: UI.space.md * scale, paddingHorizontal: 22 * scale, borderRadius: UI.radius.xl, backgroundColor: gv(c.gray3) as string, borderWidth: 1, borderColor: colors.border as string },
+    sectionTitle: { fontSize: 18 * scale, fontWeight: '700', alignSelf: 'flex-start', marginBottom: 12 * scale, color: colors.textPrimary as string },
+    row: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: UI.space.sm * scale },
+    option: { paddingVertical: UI.space.md * scale, paddingHorizontal: 22 * scale, borderRadius: UI.radius.xl, backgroundColor: gv(c.gray3) as string, borderWidth: 1, borderColor: colors.border as string, minWidth: 120 * scale, alignItems: 'center' },
     optionActive: { backgroundColor: isDark ? gv(c.iconBgDark) as string : gv(c.iconBgLight) as string, borderWidth: 1, borderColor: colors.accent as string },
-    optionText: { fontSize: 16 * scale, color: colors.textSecondary as string },
+    optionText: { fontSize: 16 * scale, color: colors.textSecondary as string, textAlign: 'center' },
     optionTextActive: { color: colors.accent as string, fontWeight: '700' },
-    navItem: { marginTop: 24 * scale, width: '90%', alignSelf: 'center', borderWidth: 1, borderRadius: UI.radius.md, paddingHorizontal: UI.space.md * scale, paddingVertical: UI.space.md * scale },
+    navItem: { marginTop: 24 * scale, width: '90%', alignSelf: 'center', backgroundColor: colors.cardBg as string, borderWidth: 1, borderColor: colors.border as string, borderRadius: UI.radius.lg, paddingHorizontal: UI.space.md * scale, paddingVertical: UI.space.md * scale },
+    navItemTitle: { fontSize: 16 * scale, fontWeight: '600', color: colors.textPrimary as string },
+    navItemSub: { fontSize: 12 * scale, color: colors.textSecondary as string, marginTop: 4 * scale },
   })
 }
 

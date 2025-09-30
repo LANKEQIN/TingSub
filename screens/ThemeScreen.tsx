@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'tamagui';
 import { ThemeContext } from '../lib/theme';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../lib/navigation';
@@ -11,6 +10,7 @@ import { getVariableValue } from '@tamagui/core';
 import tamaguiConfig from '../tamagui.config';
 import { useAppSelector } from '../store'
 import { selectDisplayScale } from '../features/ui/selectors'
+import ScreenContainer from './components/ScreenContainer'
 
 /**
  * 主题选项组件的属性类型定义
@@ -65,23 +65,19 @@ type ThemeScreenProps = {
 const ThemeScreen: React.FC<ThemeScreenProps> = ({}) => {
   // 从 ThemeContext 获取当前主题模式、设置函数和生效的主题方案
   const { themeMode, setThemeMode, effectiveScheme } = useContext(ThemeContext);
-  const insets = useSafeAreaInsets();
   const { t } = useContext(I18nContext);
   const scale = useAppSelector(selectDisplayScale)
   const styles = createStyles(effectiveScheme, scale);
 
   return (
-    <View style={[
-      styles.container,
-      { paddingTop: insets.top + 32 }
-    ]}>
+    <ScreenContainer>
       <Text style={styles.title}>{t('theme.title')}</Text>
       <View style={styles.row}>
         <Option styles={styles} label={t('theme.auto')} active={themeMode === 'auto'} onPress={() => setThemeMode('auto')} />
         <Option styles={styles} label={t('theme.light')} active={themeMode === 'light'} onPress={() => setThemeMode('light')} />
         <Option styles={styles} label={t('theme.dark')} active={themeMode === 'dark'} onPress={() => setThemeMode('dark')} />
       </View>
-    </View>
+    </ScreenContainer>
   );
 };
 
@@ -98,7 +94,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
     optionBg: v(isDark ? c.gray3 : c.gray2),
   };
   return StyleSheet.create({
-    container: { flex: 1, alignItems: 'center', backgroundColor: colors.pageBg as string },
+    container: { flex: 1, alignItems: 'center' },
     title: { fontSize: 22 * scale, fontWeight: '700', marginBottom: 24 * scale, color: colors.textPrimary as string },
     // gap 在 RN 类型中不一定存在，这里做类型断言避免 TS 报错
     row: { flexDirection: 'row', gap: 12 * scale } as any,
