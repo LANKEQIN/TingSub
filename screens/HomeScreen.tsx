@@ -30,6 +30,7 @@ import { getCategoriesByGroup } from '../features/subscriptions/categories';
 import { useAppSelector } from '../store';
 import { selectPreferredCurrency } from '../features/currency/slice';
 import { CurrencyService, convertCurrency } from '../features/currency/services';
+import { selectPaymentMethods } from '../features/payment_methods/selectors';
 
 // 计算型工具
 // 类型：订阅分组使用领域类型
@@ -156,7 +157,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     nextDueISO: string;
     autoRenew: boolean;
     currency: 'CNY'|'USD'|'JPY';
-  }>({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+    paymentMethodId?: string;
+  }>({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY', paymentMethodId: undefined });
   // 新增：编辑/操作相关状态（修复 actionOpen 未定义报错）
   const [editMode, setEditMode] = useState(false);
   const [selectedSub, setSelectedSub] = useState<Subscription | null>(null);
@@ -200,6 +202,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     if(!Number.isFinite(num) || num<=0) return ''
     return formatPriceBoth(num, form.cycle, form.currency, preferredCurrency as any)
   }, [form.price, form.cycle, form.currency, preferredCurrency])
+  const paymentMethods = useAppSelector(selectPaymentMethods)
   // 新增：打开某订阅的操作面板
   const openActionFor = (id) => {
     const s = subs.find((x) => x.id === id);
@@ -227,6 +230,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       nextDueISO: selectedSub.nextDueISO ?? '',
       autoRenew: !!selectedSub.autoRenew,
       currency: selectedSub.currency ?? 'CNY',
+      paymentMethodId: selectedSub.paymentMethodId,
     });
     if (selectedSub.nextDueISO) {
       const [y, m, d] = selectedSub.nextDueISO.split('-').map(Number);
@@ -262,6 +266,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         nextDueISO: form.nextDueISO || undefined,
         autoRenew: form.autoRenew,
         currency: form.currency,
+        paymentMethodId: form.paymentMethodId,
       };
       dispatch(updateSubscription(payloadUpdate));
     } else {
@@ -277,11 +282,12 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         nextDueISO: form.nextDueISO || undefined,
         autoRenew: form.autoRenew,
         currency: form.currency,
+        paymentMethodId: form.paymentMethodId,
       };
       dispatch(addSubscription(payload));
     }
     closeModal();
-    setForm({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
+    setForm({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY', paymentMethodId: undefined });
   };
 
   return (
@@ -369,7 +375,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         <View style={styles.modalMask}>
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>{editMode ? '编辑订阅' : '添加新订阅'}</Text>
-            <View style={styles.formRow}><Text style={styles.formLabel}>订阅名称</Text><TextInput style={styles.formInput} value={form.name} onChangeText={(t)=>setForm(v=>({...v,name:t}))} placeholder="例如：网易云音乐VIP" /></View>
+        <View style={styles.formRow}><Text style={styles.formLabel}>订阅名称</Text><TextInput style={styles.formInput} value={form.name} onChangeText={(t)=>setForm(v=>({...v,name:t}))} placeholder="例如：网易云音乐VIP" placeholderTextColor={styles.colors.muted} /></View>
             <View style={styles.formRow}><Text style={styles.formLabel}>订阅类型</Text>
               <View style={styles.selectRow}>
                 {categoryGroupOptions.map((opt)=> (
@@ -392,7 +398,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               )}
               {form.categoryGroup==='其他' ? (
                 <View style={{ marginTop: 8 }}>
-                  <TextInput style={styles.formInput} value={form.categoryLabel} onChangeText={(t)=>setForm(v=>({...v, categoryLabel: t}))} placeholder="自定义类型名称（例如：视频会员/健身会员等）" />
+          <TextInput style={styles.formInput} value={form.categoryLabel} onChangeText={(t)=>setForm(v=>({...v, categoryLabel: t}))} placeholder="自定义类型名称（例如：视频会员/健身会员等）" placeholderTextColor={styles.colors.muted} />
                   <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>提示：保存时底层分类依然归为“其他”</Text>
                 </View>
               ) : null}
@@ -405,6 +411,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                 value={form.price}
                 onChangeText={(t)=>setForm(v=>({...v,price:t}))}
                 placeholder={pricePlaceholder}
+                placeholderTextColor={styles.colors.muted}
               />
               <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
                 按所选币种输入原价（{form.currency}）。当前偏好币种为 {preferredCurrency}，将自动换算展示。
@@ -422,6 +429,19 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                     <Text style={[styles.selectText, form.currency===code?styles.selectTextActive:null]}>
                       {code==='CNY'?'人民币（¥）': code==='USD'?'美元（$）':'日元（¥）'}
                     </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            <View style={styles.formRow}><Text style={styles.formLabel}>支付方式</Text>
+              <View style={styles.selectRow}>
+                {paymentMethods.length === 0 ? (
+                  <Text style={{ fontSize: 12, color: '#6b7280' }}>请先到设置页添加支付方式</Text>
+                ) : paymentMethods.map((m)=> (
+                  <TouchableOpacity key={m.id} style={[styles.selectItem, form.paymentMethodId===m.id?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v, paymentMethodId: m.id}))}>
+                    <Text style={[styles.selectText, form.paymentMethodId===m.id?styles.selectTextActive:null]}>
+                      {m.label ?? `${m.type==='credit_card'?'信用卡': m.type==='debit_card'?'借记卡': m.type==='bank_account'?'银行账户': m.type==='alipay'?'支付宝': m.type==='wechat'?'微信支付':'电子钱包'}${m.last4?` ****${m.last4}`:''}`}
+                  </Text>
                   </TouchableOpacity>
                 ))}
               </View>

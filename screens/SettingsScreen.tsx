@@ -27,7 +27,7 @@ const Option: React.FC<OptionProps> = ({ active, label, onPress }) => (
   </TouchableOpacity>
 );
 
-const SettingsScreen: React.FC<SettingsScreenProps> = () => {
+const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { effectiveScheme } = useContext(ThemeContext);
   const { t, setLocale, locale } = useContext(I18nContext);
@@ -51,6 +51,14 @@ const SettingsScreen: React.FC<SettingsScreenProps> = () => {
         <Option label={t('settings.lang.zh')} active={locale === 'zh'} onPress={() => setLocale('zh')} />
         <Option label={t('settings.lang.en')} active={locale === 'en'} onPress={() => setLocale('en')} />
       </View>
+
+      <TouchableOpacity
+        style={[styles.navItem, { borderColor: isDark ? '#1f2937' : '#e5e7eb', backgroundColor: isDark ? '#111827' : '#ffffff' }]}
+        onPress={() => navigation.navigate('PaymentMethods')}
+      >
+        <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#E5E7EB' : '#111827' }}>{t('nav.paymentMethods')}</Text>
+        <Text style={{ fontSize: 12, color: isDark ? '#94a3b8' : '#6b7280', marginTop: 4 }}>{t('paymentMethods.list')}</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -64,6 +72,7 @@ const styles = StyleSheet.create({
   optionActive: { backgroundColor: '#CFE8E8', borderWidth: 1, borderColor: '#227A7A' },
   optionText: { fontSize: 16, color: '#374151' },
   optionTextActive: { color: '#0f766e', fontWeight: '700' },
+  navItem: { marginTop: 24, width: '90%', alignSelf: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14 },
 });
 
 export default SettingsScreen;
