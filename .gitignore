@@ -42,3 +42,5 @@ yarn-error.*
 /ios
 /android
 .idea/workspace.xml
+bundletool-all-1.18.2.jar
+device-spec.json
