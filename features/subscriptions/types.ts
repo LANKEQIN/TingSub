@@ -13,14 +13,15 @@
 export type Cycle = 'monthly' | 'quarterly' | 'yearly' | 'lifetime' | 'other'
 
 /**
- * 货币类型
+ * 货币类型（引用 Currency 模块）
  * 
- * @typedef {'CNY'} Currency
- * @description
  * 支持的货币代码，使用 ISO 4217 标准：
  * - 'CNY': 人民币
+ * - 'USD': 美元
+ * - 'JPY': 日元
  */
-export type Currency = 'CNY'
+import type { CurrencyCode } from '../currency/types'
+export type Currency = CurrencyCode
 
 /**
  * 分类组类型
@@ -83,3 +84,28 @@ export interface Subscription {
   autoRenew?: boolean
   currency?: Currency
 }
+
+/**
+ * 供应商（Vendor）接口
+ *
+ * @typedef {Object} Vendor
+ * @property {string} id - 供应商唯一标识符
+ * @property {string} name - 供应商名称（如 Microsoft、Adobe、Netflix）
+ * @property {CategoryGroup} group - 主要归属分组（工作/生活/影音娱乐/其他）
+ * @property {string[]} [aliases] - 别名/常见写法（如 MS、M365、Adobe CC）
+ * @property {string[]} [keywords] - 搜索关键字（品牌、产品线、缩写）
+ * @property {string} [icon] - 可选图标资源的键或 URL
+ *
+ * @description
+ * 将供应商与分组解耦，用于在“添加订阅”流程中先选分组、再选供应商、最后选具体产品。
+ */
+export interface Vendor {
+  id: string
+  name: string
+  group: CategoryGroup
+  aliases?: string[]
+  keywords?: string[]
+  icon?: string
+}
+
+export type { Vendor as VendorType }

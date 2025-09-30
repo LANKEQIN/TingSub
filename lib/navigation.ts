@@ -11,6 +11,7 @@
  */
 export type RootStackParamList = {
   Tabs: undefined
+  Settings: undefined
   Theme: undefined
 }
 

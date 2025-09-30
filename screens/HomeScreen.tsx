@@ -26,6 +26,9 @@ import type { RootState, AppDispatch } from '../store';
 import type { Subscription, Cycle } from '../features/subscriptions/slice';
 import type { CategoryGroup } from '../features/subscriptions/types';
 import { getCategoriesByGroup } from '../features/subscriptions/categories';
+import { useAppSelector } from '../store';
+import { selectPreferredCurrency } from '../features/currency/slice';
+import { CurrencyService, convertCurrency } from '../features/currency/services';
 
 // 计算型工具
 // 类型：订阅分组使用领域类型
@@ -36,13 +39,21 @@ const categoryGroupOptions: CategoryGroup[] = ['影音娱乐','工作','生活',
 // 类型守卫与转换器
 const isCategoryGroup = (val: string): val is CategoryGroup => (categoryGroupOptions as string[]).includes(val);
 const toCategoryGroup = (val?: string): CategoryGroup => (val && isCategoryGroup(val) ? val : '其他');
-function formatPrice(price, cycle){
-  if(cycle==='yearly') return `¥${price}/年`;
-  if(cycle==='quarterly') return `¥${price}/季`;
-  if(cycle==='lifetime') return `¥${price}/终身`;
-  if(cycle==='其他') return `¥${price}`;
-  if(cycle==='other') return `¥${price}`;
-  return `¥${price}/月`;
+function formatPriceByPref(price: number, cycle: string, fromCode: 'CNY'|'USD'|'JPY', toCode: 'CNY'|'USD'|'JPY'){
+  const converted = convertCurrency(price, fromCode, toCode)
+  const base = CurrencyService.format(converted, toCode)
+  const suffix = (cycle==='yearly')?'/年': (cycle==='quarterly')?'/季': (cycle==='lifetime')?'/终身': (cycle==='其他'||cycle==='other')?'': '/月'
+  return `${base}${suffix}`
+}
+// 新增：原价 + 换算价的透明显示
+function formatPriceBoth(price: number, cycle: string, fromCode: 'CNY'|'USD'|'JPY', toCode: 'CNY'|'USD'|'JPY'){
+  const orig = CurrencyService.format(price, fromCode)
+  const conv = CurrencyService.convertAndFormat(price, fromCode, toCode)
+  const suffix = (cycle==='yearly')?'/年': (cycle==='quarterly')?'/季': (cycle==='lifetime')?'/终身': (cycle==='其他'||cycle==='other')?'': '/月'
+  if(fromCode===toCode){
+    return `${orig}${suffix}`
+  }
+  return `${orig}${suffix} · ≈ ${conv}${suffix}`
 }
 function daysUntil(dateISO){
   if(!dateISO) return null;
@@ -67,17 +78,32 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const subs = useSelector((state: RootState) => state.subscriptions.list);
   const { effectiveScheme } = useContext(ThemeContext);
   const styles = createStyles(effectiveScheme);
+  const preferredCurrency = useAppSelector(selectPreferredCurrency);
 
   const summaryData = useMemo(() => {
     const totalSubs = subs.length;
-    const monthlySpend = subs.filter(s=>s.cycle==='monthly').reduce((sum,s)=>sum+s.price,0);
-    const yearlySpend = subs.filter(s=>s.cycle==='yearly').reduce((sum,s)=>sum+s.price,0) + monthlySpend*12 + subs.filter(s=>s.cycle==='quarterly').reduce((sum,s)=>sum+s.price*4,0);
+    const monthlySpend = subs.reduce((sum, s) => {
+      const from = s.currency ?? 'CNY'
+      const add = (s.cycle === 'monthly') ? s.price
+        : (s.cycle === 'quarterly') ? s.price/3
+        : (s.cycle === 'yearly') ? s.price/12
+        : 0
+      return sum + convertCurrency(add, from as any, preferredCurrency as any)
+    }, 0)
+    const yearlySpend = subs.reduce((sum, s) => {
+      const from = s.currency ?? 'CNY'
+      const add = (s.cycle === 'monthly') ? s.price*12
+        : (s.cycle === 'quarterly') ? s.price*4
+        : (s.cycle === 'yearly') ? s.price
+        : 0
+      return sum + convertCurrency(add, from as any, preferredCurrency as any)
+    }, 0)
     const upcomingBills = subs.filter(s=>{
       const d = daysUntil(s.nextDueISO);
       return d!==null && d>=0 && d<=7;
     }).length;
     return { totalSubs, monthlySpend, yearlySpend, upcomingBills, deltas: { monthlySpend: '+0', yearlySpend: '+0' } };
-  }, [subs]);
+  }, [subs, preferredCurrency]);
 
   const upcomingList = useMemo(() => subs
     .map(s => {
@@ -87,33 +113,35 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         name: s.name,
         cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
         next: s.nextDueISO ? `${d}天内` : '未设置',
-        price: formatPrice(s.price, s.cycle),
+        price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
         dueDays: d,
       };
     })
     .filter(u => u.dueDays !== null && u.dueDays >= 0 && u.dueDays <= 7)
     .sort((a, b) => a.dueDays - b.dueDays)
-  , [subs]);
+  , [subs, preferredCurrency]);
 
   // 新增：活跃订阅列表（用于 ActiveRow）
   const activeSubs = useMemo(() => subs.map(s => ({
     id: s.id,
     name: s.name,
-    price: formatPrice(s.price, s.cycle),
+    price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
     next: s.nextDueISO ? `${daysUntil(s.nextDueISO)}天内` : '未设置',
-  })), [subs]);
+  })), [subs, preferredCurrency]);
 
   // 新增：支出分析数据（近 6 个月的预计月支出）
   const spendByMonth = useMemo(() => {
     const monthly = subs.reduce((sum, s) => {
-      if (s.cycle === 'monthly') return sum + s.price;
-      if (s.cycle === 'quarterly') return sum + s.price / 3;
-      if (s.cycle === 'yearly') return sum + s.price / 12;
-      return sum; // lifetime/other 不计入月支出
+      const from = s.currency ?? 'CNY'
+      const add = (s.cycle === 'monthly') ? s.price
+        : (s.cycle === 'quarterly') ? s.price/3
+        : (s.cycle === 'yearly') ? s.price/12
+        : 0
+      return sum + convertCurrency(add, from as any, preferredCurrency as any)
     }, 0);
     const val = Math.round(monthly);
     return [val, val, val, val, val, val];
-  }, [subs]);
+  }, [subs, preferredCurrency]);
   // 表单弹窗状态
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<{
@@ -125,7 +153,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     cycle: Cycle;
     nextDueISO: string;
     autoRenew: boolean;
-    currency: 'CNY';
+    currency: 'CNY'|'USD'|'JPY';
   }>({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY' });
   // 新增：编辑/操作相关状态（修复 actionOpen 未定义报错）
   const [editMode, setEditMode] = useState(false);
@@ -159,6 +187,17 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     const iso = `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`;
     setForm((v) => ({ ...v, nextDueISO: iso }));
   };
+  // 价格输入占位示例与预览文本
+  const pricePlaceholder = useMemo(() => {
+    const symbol = CurrencyService.symbol(form.currency as any)
+    const example = form.currency==='JPY' ? '1500' : '15'
+    return `例如：${symbol} ${example}`
+  }, [form.currency])
+  const pricePreview = useMemo(() => {
+    const num = Number(form.price)
+    if(!Number.isFinite(num) || num<=0) return ''
+    return formatPriceBoth(num, form.cycle, form.currency, preferredCurrency as any)
+  }, [form.price, form.cycle, form.currency, preferredCurrency])
   // 新增：打开某订阅的操作面板
   const openActionFor = (id) => {
     const s = subs.find((x) => x.id === id);
@@ -267,9 +306,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         <SectionHeader title="订阅概览" actionText="查看全部" styles={styles} />
         <View style={styles.summaryGrid}>
           <SummaryCard title="总订阅数" value={summaryData.totalSubs} sub="" styles={styles} />
-          <SummaryCard title="本月支出" value={`¥${summaryData.monthlySpend}`} sub={``} styles={styles} />
+          <SummaryCard title="本月支出" value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
           <SummaryCard title="即将到期" value={summaryData.upcomingBills} sub="7天内" styles={styles} />
-          <SummaryCard title="年度支出" value={`¥${summaryData.yearlySpend}`} sub={``} styles={styles} />
+          <SummaryCard title="年度支出" value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
         </View>
 
         {/* 即将到期（仅在7天内有到期项时显示） */}
@@ -356,12 +395,33 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                 </View>
               ) : null}
             </View>
-            <View style={styles.formRow}><Text style={styles.formLabel}>价格</Text><TextInput style={styles.formInput} keyboardType="numeric" value={form.price} onChangeText={(t)=>setForm(v=>({...v,price:t}))} placeholder="例如：15" /></View>
+            <View style={styles.formRow}>
+              <Text style={styles.formLabel}>价格</Text>
+              <TextInput
+                style={styles.formInput}
+                keyboardType="numeric"
+                value={form.price}
+                onChangeText={(t)=>setForm(v=>({...v,price:t}))}
+                placeholder={pricePlaceholder}
+              />
+              <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
+                按所选币种输入原价（{form.currency}）。当前偏好币种为 {preferredCurrency}，将自动换算展示。
+              </Text>
+              {pricePreview ? (
+                <Text style={{ fontSize: 12, color: '#374151', marginTop: 4 }}>
+                  预览：{pricePreview}
+                </Text>
+              ) : null}
+            </View>
             <View style={styles.formRow}><Text style={styles.formLabel}>货币</Text>
               <View style={styles.selectRow}>
-                <TouchableOpacity style={[styles.selectItem, styles.selectItemActive]}>
-                  <Text style={[styles.selectText, styles.selectTextActive]}>人民币（¥）</Text>
-                </TouchableOpacity>
+                {(['CNY','USD','JPY'] as const).map((code)=> (
+                  <TouchableOpacity key={code} style={[styles.selectItem, form.currency===code?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v, currency: code}))}>
+                    <Text style={[styles.selectText, form.currency===code?styles.selectTextActive:null]}>
+                      {code==='CNY'?'人民币（¥）': code==='USD'?'美元（$）':'日元（¥）'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
             <View style={styles.formRow}><Text style={styles.formLabel}>计费周期</Text>
