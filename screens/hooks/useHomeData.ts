@@ -83,7 +83,11 @@ export const useHomeData = (subs: Subscription[], preferredCurrency: CurrencyCod
             id: s.id,
             name: s.name,
             cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
-            next: s.nextDueISO ? `${d}天内` : '未设置',
+            next: s.nextDueISO
+              ? s.autoRenew && d !== null && d >= 0 && d <= 7
+                ? `在${d}天后自动续费`
+                : `${d}天内`
+              : '未设置',
             price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as CurrencyCode, preferredCurrency as CurrencyCode),
             dueDays: d,
           }
@@ -95,12 +99,19 @@ export const useHomeData = (subs: Subscription[], preferredCurrency: CurrencyCod
 
   const activeSubs = useMemo(
     () =>
-      subs.map((s) => ({
-        id: s.id,
-        name: s.name,
-        price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as CurrencyCode, preferredCurrency as CurrencyCode),
-        next: s.nextDueISO ? `${daysUntil(s.nextDueISO)}天内` : '未设置',
-      })),
+      subs.map((s) => {
+        const d = daysUntil(s.nextDueISO)
+        return {
+          id: s.id,
+          name: s.name,
+          price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as CurrencyCode, preferredCurrency as CurrencyCode),
+          next: s.nextDueISO
+            ? s.autoRenew && d !== null && d >= 0 && d <= 7
+              ? `在${d}天后自动续费`
+              : `${d}天内`
+            : '未设置',
+        }
+      }),
     [subs, preferredCurrency]
   )
 

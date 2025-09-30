@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useContext } from 'react';
+import React, { useMemo, useState, useContext, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { Text } from 'tamagui';
 import {
@@ -30,6 +30,7 @@ import { useAppSelector } from '../store';
 import { selectPreferredCurrency } from '../features/currency/slice';
 import { CurrencyService, convertCurrency } from '../features/currency/services';
 import { selectPaymentMethods } from '../features/payment_methods/selectors';
+import { advanceNextDueISO } from './utils/subscriptions';
 
 // 计算型工具
 // 类型：订阅分组使用领域类型
@@ -82,6 +83,23 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const styles = createStyles(effectiveScheme);
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
 
+  // 自动续费：当到期（或今天到期）且开启自动续费时，推进 nextDueISO 到下一个周期
+  useEffect(() => {
+    const updates: Subscription[] = []
+    subs.forEach((s) => {
+      const d = daysUntil(s.nextDueISO)
+      if (s.autoRenew && d !== null && d <= 0 && s.nextDueISO) {
+        const nextISO = advanceNextDueISO(s.nextDueISO, s.cycle)
+        if (nextISO !== s.nextDueISO) {
+          updates.push({ ...s, nextDueISO: nextISO })
+        }
+      }
+    })
+    if (updates.length > 0) {
+      updates.forEach((u) => dispatch(updateSubscription(u)))
+    }
+  }, [subs])
+
   const summaryData = useMemo(() => {
     const totalSubs = subs.length;
     const monthlySpend = subs.reduce((sum, s) => {
@@ -114,7 +132,11 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         id: s.id,
         name: s.name,
         cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
-        next: s.nextDueISO ? `${d}天内` : '未设置',
+        next: s.nextDueISO
+          ? (s.autoRenew && d !== null && d >= 0 && d <= 7
+              ? `在${d}天后自动续费`
+              : `${d}天内`)
+          : '未设置',
         price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
         dueDays: d,
       };
@@ -128,7 +150,14 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     id: s.id,
     name: s.name,
     price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
-    next: s.nextDueISO ? `${daysUntil(s.nextDueISO)}天内` : '未设置',
+    next: (() => {
+      const d = daysUntil(s.nextDueISO);
+      return s.nextDueISO
+        ? (s.autoRenew && d !== null && d >= 0 && d <= 7
+            ? `在${d}天后自动续费`
+            : `${d}天内`)
+        : '未设置';
+    })(),
   })), [subs, preferredCurrency]);
 
   // 新增：支出分析数据（近 6 个月的预计月支出）
