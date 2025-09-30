@@ -9,6 +9,7 @@ import { useAppSelector } from '../store'
 import { selectPreferredCurrency } from '../features/currency/slice'
 import { convertCurrency, getSymbol } from '../features/currency/services'
 import { ThemeContext } from '../lib/theme'
+import { I18nContext } from '../lib/i18n'
 import type { RouteProp } from '@react-navigation/native'
 import type { TabParamList } from '../lib/navigation'
 import type { RootState } from '../store'
@@ -23,6 +24,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   const subs = useSelector((state: RootState) => state.subscriptions.list)
   const [chartW, setChartW] = useState(330)
   const { effectiveScheme } = useContext(ThemeContext)
+  const { t, locale } = useContext(I18nContext)
   const styles = createStyles(effectiveScheme)
   const isDark = effectiveScheme === 'dark'
   const preferredCurrency = useAppSelector(selectPreferredCurrency)
@@ -68,7 +70,15 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   const monthLabels = useMemo(() => {
     const now = new Date()
     const labels: string[] = []
-    const pushMonth = (y: number, m: number) => { labels.push(`${m}月`) }
+    const pushMonth = (y: number, m: number) => {
+      // 根据当前语言显示月份标签（中文："n月"；英文：缩写月份）
+      if (locale === 'zh') {
+        labels.push(`${m}月`)
+      } else {
+        const d = new Date(y, m - 1, 1)
+        labels.push(d.toLocaleString('en-US', { month: 'short' }))
+      }
+    }
     if (timeRange === '3m' || timeRange === '6m' || timeRange === '12m') {
       const n = timeRange === '3m' ? 3 : timeRange === '6m' ? 6 : 12
       for (let i = n - 1; i >= 0; i--) {
@@ -99,18 +109,18 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>统计</Text>
+        <Text style={styles.title}>{t('statistics.title')}</Text>
 
         {/* 支出分析 */}
-        <SectionHeader title="支出分析" styles={styles} />
+        <SectionHeader title={t('statistics.spendAnalysis')} styles={styles} />
         {/* 过滤器：时间范围 */}
         <View style={styles.filterRow}>
           {[
-            { key: '3m', label: '近3月' },
-            { key: '6m', label: '近6月' },
-            { key: '12m', label: '近12月' },
-            { key: 'this_year', label: '今年' },
-            { key: 'prev_quarter', label: '上季度' },
+            { key: '3m', label: t('statistics.ranges.m3') },
+            { key: '6m', label: t('statistics.ranges.m6') },
+            { key: '12m', label: t('statistics.ranges.m12') },
+            { key: 'this_year', label: t('statistics.ranges.this_year') },
+            { key: 'prev_quarter', label: t('statistics.ranges.prev_quarter') },
           ].map((opt: any) => (
             <TouchableOpacity key={opt.key} style={[styles.chip, timeRange === opt.key ? styles.chipActive : null]} onPress={() => setTimeRange(opt.key)}>
               <Text style={[styles.chipText, timeRange === opt.key ? styles.chipTextActive : null]}>{opt.label}</Text>
@@ -119,16 +129,27 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
         </View>
         {/* 过滤器：分类分组与分类 */}
         <View style={styles.filterRow}>
-          {categoryGroups.map((g) => (
-            <TouchableOpacity key={g} style={[styles.chip, group === g ? styles.chipActive : null]} onPress={() => { setGroup(g); setCategory('全部') }}>
-              <Text style={[styles.chipText, group === g ? styles.chipTextActive : null]}>{g}</Text>
-            </TouchableOpacity>
-          ))}
+          {categoryGroups.map((g) => {
+            const label = g === '全部'
+              ? t('statistics.groups.all')
+              : g === '影音娱乐'
+                ? t('statistics.groups.entertainment')
+                : g === '工作'
+                  ? t('statistics.groups.work')
+                  : g === '生活'
+                    ? t('statistics.groups.life')
+                    : t('statistics.groups.other')
+            return (
+              <TouchableOpacity key={g} style={[styles.chip, group === g ? styles.chipActive : null]} onPress={() => { setGroup(g); setCategory('全部') }}>
+                <Text style={[styles.chipText, group === g ? styles.chipTextActive : null]}>{label}</Text>
+              </TouchableOpacity>
+            )
+          })}
         </View>
         <View style={styles.filterRow}>
           {categoryOptions.map((c) => (
             <TouchableOpacity key={c} style={[styles.chipSm, category === c ? styles.chipActive : null]} onPress={() => setCategory(c)}>
-              <Text style={[styles.chipTextSm, category === c ? styles.chipTextActive : null]}>{c}</Text>
+              <Text style={[styles.chipTextSm, category === c ? styles.chipTextActive : null]}>{c === '全部' ? t('statistics.category_all') : c}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -138,7 +159,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
           setChartW(Math.max(280, Math.floor(w - 24)))
         }}>
           <BarChart data={chartData} labels={monthLabels} width={chartW} height={200} barColor={isDark ? '#4DB6FF' : '#4f46e5'} gridColor={isDark ? '#2A2E33' : '#E5E7EB'} axisLabelColor={isDark ? '#A7B0B8' : '#6b7280'} currencySymbol={getSymbol(preferredCurrency as any)} />
-          <Text style={styles.chartAxis}>单位：{getSymbol(preferredCurrency as any)}/月</Text>
+          <Text style={styles.chartAxis}>{t('statistics.axisUnit', { symbol: getSymbol(preferredCurrency as any) })}</Text>
         </View>
       </ScrollView>
     </View>
