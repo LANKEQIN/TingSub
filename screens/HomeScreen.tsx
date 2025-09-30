@@ -5,20 +5,17 @@ import {
   Bell,
   User,
   Search,
-  Plus,
-  Check
+  Plus
 } from '@tamagui/lucide-icons';
 import SectionHeader from './components/SectionHeader';
 import SummaryCard from './components/SummaryCard';
 import UpcomingCard from './components/UpcomingCard';
 import ActiveRow from './components/ActiveRow';
-import BarChart from './components/BarChart';
 import SubscriptionActionSheet from './components/SubscriptionActionSheet';
 import SubscriptionFormModal from './components/SubscriptionFormModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { addSubscription, updateSubscription, removeSubscription } from '../features/subscriptions/slice';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { ThemeContext } from '../lib/theme';
 import { I18nContext } from '../lib/i18n';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -135,18 +132,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   })), [subs, preferredCurrency]);
 
   // 新增：支出分析数据（近 6 个月的预计月支出）
-  const spendByMonth = useMemo(() => {
-    const monthly = subs.reduce((sum, s) => {
-      const from = s.currency ?? 'CNY'
-      const add = (s.cycle === 'monthly') ? s.price
-        : (s.cycle === 'quarterly') ? s.price/3
-        : (s.cycle === 'yearly') ? s.price/12
-        : 0
-      return sum + convertCurrency(add, from as any, preferredCurrency as any)
-    }, 0);
-    const val = Math.round(monthly);
-    return [val, val, val, val, val, val];
-  }, [subs, preferredCurrency]);
+  //（已移至统计页，移除未使用的支出分析计算）
   // 表单弹窗状态
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<{
@@ -460,9 +446,6 @@ const styles = StyleSheet.create({
   badgeInfo: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F3F4F6', paddingVertical: 6, paddingHorizontal: 8, borderRadius: 8 },
   badgeText: { fontSize: 12, color: '#374151' },
 
-  chartCard: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: '#E5E7EB', alignItems: 'center' },
-  chartAxis: { fontSize: 12, color: '#6b7280', marginTop: 8 },
-
   activeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -477,10 +460,6 @@ const styles = StyleSheet.create({
   activeName: { fontSize: 15, fontWeight: '700', color: '#111827' },
   activeHint: { fontSize: 12, color: '#6b7280' },
   activeNext: { fontSize: 12, color: '#10b981' },
-
-  todoBox: { marginTop: 18, backgroundColor: '#F9FAFB', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#E5E7EB' },
-  todoTitle: { fontSize: 14, fontWeight: '700', color: '#111827', marginBottom: 6 },
-  todoItem: { fontSize: 12, color: '#374151', marginTop: 2 },
 
   fab: {
     position: 'absolute',
