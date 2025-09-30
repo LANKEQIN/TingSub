@@ -13,6 +13,8 @@ import SummaryCard from './components/SummaryCard';
 import UpcomingCard from './components/UpcomingCard';
 import ActiveRow from './components/ActiveRow';
 import BarChart from './components/BarChart';
+import SubscriptionActionSheet from './components/SubscriptionActionSheet';
+import SubscriptionFormModal from './components/SubscriptionFormModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { addSubscription, updateSubscription, removeSubscription } from '../features/subscriptions/slice';
@@ -351,167 +353,38 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       </TouchableOpacity>
 
       {/* 操作弹窗：编辑或删除 */}
-      {actionOpen && (
-        <View style={styles.modalMask}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>选择操作</Text>
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.btnGhost} onPress={() => { setActionOpen(false); setSelectedSub(null); }}>
-                <Text style={styles.btnGhostText}>取消</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.btnPrimary} onPress={startEditSelected}>
-                <Text style={styles.btnPrimaryText}>编辑</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.btnPrimary, { backgroundColor: '#EF4444' }]} onPress={deleteSelected}>
-                <Text style={styles.btnPrimaryText}>删除</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
+      <SubscriptionActionSheet
+        visible={actionOpen}
+        styles={styles}
+        onCancel={() => { setActionOpen(false); setSelectedSub(null); }}
+        onEdit={startEditSelected}
+        onDelete={deleteSelected}
+      />
 
       {/* 添加/编辑订阅弹窗（简易） */}
-      {modalOpen && (
-        <View style={styles.modalMask}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>{editMode ? '编辑订阅' : '添加新订阅'}</Text>
-        <View style={styles.formRow}><Text style={styles.formLabel}>订阅名称</Text><TextInput style={styles.formInput} value={form.name} onChangeText={(t)=>setForm(v=>({...v,name:t}))} placeholder="例如：网易云音乐VIP" placeholderTextColor={styles.colors.muted} /></View>
-            <View style={styles.formRow}><Text style={styles.formLabel}>订阅类型</Text>
-              <View style={styles.selectRow}>
-                {categoryGroupOptions.map((opt)=> (
-                  <TouchableOpacity key={opt} style={[styles.selectItem, form.categoryGroup===opt?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v, categoryGroup: opt, categoryId: undefined, categoryLabel: ''}))}>
-                    <Text style={[styles.selectText, form.categoryGroup===opt?styles.selectTextActive:null]}>{opt}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              {form.categoryGroup!=='其他' && (
-                <View style={{ marginTop: 8 }}>
-                  <Text style={styles.formLabel}>分类标签</Text>
-                  <View style={styles.selectRow}>
-                    {getCategoriesByGroup(form.categoryGroup).map((c)=> (
-                      <TouchableOpacity key={c.id} style={[styles.selectItem, form.categoryId===c.id?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v, categoryId: c.id, categoryLabel: ''}))}>
-                        <Text style={[styles.selectText, form.categoryId===c.id?styles.selectTextActive:null]}>{c.label}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              )}
-              {form.categoryGroup==='其他' ? (
-                <View style={{ marginTop: 8 }}>
-          <TextInput style={styles.formInput} value={form.categoryLabel} onChangeText={(t)=>setForm(v=>({...v, categoryLabel: t}))} placeholder="自定义类型名称（例如：视频会员/健身会员等）" placeholderTextColor={styles.colors.muted} />
-                  <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>提示：保存时底层分类依然归为“其他”</Text>
-                </View>
-              ) : null}
-            </View>
-            <View style={styles.formRow}>
-              <Text style={styles.formLabel}>价格</Text>
-              <TextInput
-                style={styles.formInput}
-                keyboardType="numeric"
-                value={form.price}
-                onChangeText={(t)=>setForm(v=>({...v,price:t}))}
-                placeholder={pricePlaceholder}
-                placeholderTextColor={styles.colors.muted}
-              />
-              <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
-                按所选币种输入原价（{form.currency}）。当前偏好币种为 {preferredCurrency}，将自动换算展示。
-              </Text>
-              {pricePreview ? (
-                <Text style={{ fontSize: 12, color: '#374151', marginTop: 4 }}>
-                  预览：{pricePreview}
-                </Text>
-              ) : null}
-            </View>
-            <View style={styles.formRow}><Text style={styles.formLabel}>货币</Text>
-              <View style={styles.selectRow}>
-                {(['CNY','USD','JPY'] as const).map((code)=> (
-                  <TouchableOpacity key={code} style={[styles.selectItem, form.currency===code?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v, currency: code}))}>
-                    <Text style={[styles.selectText, form.currency===code?styles.selectTextActive:null]}>
-                      {code==='CNY'?'人民币（¥）': code==='USD'?'美元（$）':'日元（¥）'}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-            <View style={styles.formRow}><Text style={styles.formLabel}>支付方式</Text>
-              <View style={styles.selectRow}>
-                {paymentMethods.length === 0 ? (
-                  <Text style={{ fontSize: 12, color: '#6b7280' }}>请先到设置页添加支付方式</Text>
-                ) : paymentMethods.map((m)=> (
-                  <TouchableOpacity key={m.id} style={[styles.selectItem, form.paymentMethodId===m.id?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v, paymentMethodId: m.id}))}>
-                    <Text style={[styles.selectText, form.paymentMethodId===m.id?styles.selectTextActive:null]}>
-                      {m.label ?? `${m.type==='credit_card'?'信用卡': m.type==='debit_card'?'借记卡': m.type==='bank_account'?'银行账户': m.type==='alipay'?'支付宝': m.type==='wechat'?'微信支付':'电子钱包'}${m.last4?` ****${m.last4}`:''}`}
-                  </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-            <View style={styles.formRow}><Text style={styles.formLabel}>计费周期</Text>
-              <View style={styles.selectRow}>
-                {(Object.entries(cycleLabelMap) as [Cycle, string][]).map(([key,label])=> (
-                  <TouchableOpacity key={key} style={[styles.selectItem, form.cycle===key?styles.selectItemActive:null]} onPress={()=>setForm(v=>({...v,cycle:key}))}>
-                    <Text style={[styles.selectText, form.cycle===key?styles.selectTextActive:null]}>{label}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-            <View style={styles.formRow}><Text style={styles.formLabel}>到期日期</Text>
-              {Platform.OS === 'web' ? (
-                <>
-                  <input
-                    type="date"
-                    value={form.nextDueISO || `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`}
-                    onChange={(e)=>{
-                      const val = e.target.value;
-                      setForm(v=>({...v, nextDueISO: val }));
-                      if(val){
-                        const [y,m,d] = val.split('-').map(Number);
-                        setDateParts({ year: y, month: m, day: d });
-                      }
-                    }}
-                    style={{ width: '100%', border: '1px solid #E5E7EB', borderRadius: 8, padding: '8px 10px' }}
-                  />
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
-                    <TouchableOpacity onPress={()=>{ setForm(v=>({...v, nextDueISO: ''})); }}>
-                      <Text style={{ color: '#0ea5e9', fontSize: 12 }}>清除</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={()=>{ const t=new Date(); const iso=`${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`; setForm(v=>({...v, nextDueISO: iso})); setDateParts({ year: t.getFullYear(), month: t.getMonth()+1, day: t.getDate() }); }}>
-                      <Text style={{ color: '#0ea5e9', fontSize: 12 }}>今天</Text>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              ) : (
-                <>
-                  <TouchableOpacity style={[styles.selectItem, styles.selectItemActive]} onPress={() => setShowPicker(true)}>
-                    <Text style={[styles.selectText, styles.selectTextActive]}>{form.nextDueISO || `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`}</Text>
-                  </TouchableOpacity>
-                  {showPicker && (
-                    <DateTimePicker
-                      value={new Date(dateParts.year, dateParts.month - 1, dateParts.day)}
-                      mode="date"
-                      display="calendar"
-                      onChange={onAndroidDateChange}
-                    />
-                  )}
-                </>
-              )}
-            </View>
-            <View style={styles.formRow}>
-              <TouchableOpacity onPress={()=>setForm(v=>({...v,autoRenew:!v.autoRenew}))} style={styles.checkboxRow}>
-                <View style={[styles.checkboxBox, form.autoRenew?styles.checkboxBoxChecked:null]}>
-                  {form.autoRenew ? <Check size={14} color="#fff" /> : null}
-                </View>
-                <Text style={styles.checkboxText}>自动续费</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.btnGhost} onPress={closeModal}><Text style={styles.btnGhostText}>取消</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.btnPrimary} onPress={submitForm}><Text style={styles.btnPrimaryText}>{editMode ? '保存' : '添加'}</Text></TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
+      <SubscriptionFormModal
+        visible={modalOpen}
+        editMode={!!editMode}
+        styles={styles}
+        form={form}
+        setForm={(updater)=>setForm(updater as any)}
+        pricePlaceholder={pricePlaceholder}
+        pricePreview={pricePreview}
+        preferredCurrency={preferredCurrency as any}
+        categoryGroupOptions={categoryGroupOptions as any}
+        getCategoriesByGroup={getCategoriesByGroup}
+        years={years}
+        months={months}
+        days={days}
+        dateParts={dateParts}
+        setDateParts={setDateParts}
+        showPicker={showPicker}
+        setShowPicker={setShowPicker}
+        onAndroidDateChange={onAndroidDateChange}
+        paymentMethods={paymentMethods as any}
+        onSubmit={submitForm}
+        onClose={closeModal}
+      />
     </View>
   );
 };
