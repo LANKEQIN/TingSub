@@ -15,6 +15,10 @@ import UpcomingCard from './components/UpcomingCard';
 import ActiveRow from './components/ActiveRow';
 import SubscriptionActionSheet from './components/SubscriptionActionSheet';
 import SubscriptionFormModal from './components/SubscriptionFormModal';
+import ErrorBoundary from './components/ErrorBoundary';
+import ErrorState from './components/ErrorState';
+import EmptyState from './components/EmptyState';
+import LoadingSkeleton from './components/LoadingSkeleton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { addSubscription, updateSubscription, removeSubscription } from '../features/subscriptions/slice';
@@ -84,6 +88,14 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const { t } = useContext(I18nContext);
   const styles = createStyles(effectiveScheme);
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
+  // 错误边界重置计数
+  const [retryCount, setRetryCount] = useState(0);
+  // 首屏轻量骨架演示：短暂显示骨架屏，后续可接入真实加载态
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   // 自动续费：当到期（或今天到期）且开启自动续费时，推进 nextDueISO 到下一个周期
   useEffect(() => {
@@ -314,6 +326,10 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   };
 
   return (
+    <ErrorBoundary
+      resetKeys={[retryCount, subs.length]}
+      fallback={<ErrorState styles={styles} onRetry={() => setRetryCount((c) => c + 1)} />}
+    >
     <View style={[styles.container, { paddingTop: insets.top }]}> 
       {/* 顶部导航 */}
       <View style={styles.topbar}>
@@ -333,39 +349,53 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* 订阅概览 */}
-        <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
-        <View style={styles.summaryGrid}>
-          <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
-          <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
-          <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
-          <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
-        </View>
-
-        {/* 即将到期（仅在7天内有到期项时显示） */}
-        {upcomingList.length > 0 && (
+        {loading ? (
+          <LoadingSkeleton styles={styles} />
+        ) : subs.length === 0 ? (
           <>
-            <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
-            <View style={{ gap: 12 }}>
-              {upcomingList.map((u) => (
-                <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+            <SectionHeader title={t('home.overview')} styles={styles} />
+            <EmptyState
+              title={t('home.emptyTitle') || '暂无订阅'}
+              description={t('home.emptyDesc') || '添加你的第一个订阅以开始统计与提醒'}
+              actionLabel={t('home.addSub') || '添加订阅'}
+              onAction={openModal}
+              styles={styles}
+            />
+          </>
+        ) : (
+          <>
+            {/* 订阅概览 */}
+            <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
+            <View style={styles.summaryGrid}>
+              <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
+              <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+              <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
+              <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+            </View>
+
+            {/* 即将到期（仅在7天内有到期项时显示） */}
+            {upcomingList.length > 0 && (
+              <>
+                <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
+                <View style={{ gap: 12 }}>
+                  {upcomingList.map((u) => (
+                    <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                  ))}
+                </View>
+              </>
+            )}
+
+            {/* 活跃订阅 */}
+            <SectionHeader title={t('home.active')} styles={styles} />
+            <View style={{ gap: 8 }}>
+              {activeSubs.map((s, idx) => (
+                <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
               ))}
             </View>
+
+            <View style={{ height: 80 }} />
           </>
         )}
-
-        {/* 支出分析已移至统计页 */}
-
-        {/* 活跃订阅 */}
-        <SectionHeader title={t('home.active')} styles={styles} />
-        <View style={{ gap: 8 }}>
-          {activeSubs.map((s, idx) => (
-            <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
-          ))}
-        </View>
-
-
-        <View style={{ height: 80 }} />
       </ScrollView>
 
       {/* 悬浮添加按钮 */}
@@ -407,6 +437,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         onClose={closeModal}
       />
     </View>
+    </ErrorBoundary>
   );
 };
 
