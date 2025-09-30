@@ -142,11 +142,12 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     categoryLabel: string;
     price: string;
     cycle: Cycle;
+    startISO: string;
     nextDueISO: string;
     autoRenew: boolean;
     currency: 'CNY'|'USD'|'JPY';
     paymentMethodId?: string;
-  }>({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY', paymentMethodId: undefined });
+  }>({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', startISO: '', nextDueISO: '', autoRenew: false, currency: 'CNY', paymentMethodId: undefined });
   // 新增：编辑/操作相关状态（修复 actionOpen 未定义报错）
   const [editMode, setEditMode] = useState(false);
   const [selectedSub, setSelectedSub] = useState<Subscription | null>(null);
@@ -215,6 +216,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         : (isGroupOption ? '' : (selectedSub.category ?? '')),
       price: String(selectedSub.price),
       cycle: selectedSub.cycle,
+      startISO: selectedSub.startISO ?? '',
       nextDueISO: selectedSub.nextDueISO ?? '',
       autoRenew: !!selectedSub.autoRenew,
       currency: selectedSub.currency ?? 'CNY',
@@ -251,6 +253,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         categoryGroup: form.categoryGroup,
         price: Number(form.price),
         cycle: form.cycle,
+        startISO: form.startISO || undefined,
         nextDueISO: form.nextDueISO || undefined,
         autoRenew: form.autoRenew,
         currency: form.currency,
@@ -267,6 +270,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         categoryGroup: form.categoryGroup,
         price: Number(form.price),
         cycle: form.cycle,
+        startISO: form.startISO || undefined,
         nextDueISO: form.nextDueISO || undefined,
         autoRenew: form.autoRenew,
         currency: form.currency,
@@ -275,7 +279,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       dispatch(addSubscription(payload));
     }
     closeModal();
-    setForm({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY', paymentMethodId: undefined });
+    setForm({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', startISO: '', nextDueISO: '', autoRenew: false, currency: 'CNY', paymentMethodId: undefined });
   };
 
   return (
@@ -629,7 +633,7 @@ function createStyles(scheme){
     },
 
     modalMask: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: isDark ? 'rgba(0,0,0,0.50)' : 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
-    modalBox: { width: '90%', backgroundColor: colors.modalBg, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: colors.border },
+    modalBox: { width: '90%', maxHeight: '85%', backgroundColor: colors.modalBg, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: colors.border },
     modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 12, color: colors.textPrimary },
     formRow: { marginBottom: 10 },
     formLabel: { fontSize: 13, color: colors.textSecondary, marginBottom: 6 },

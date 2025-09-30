@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, TouchableOpacity, TextInput, Platform } from 'react-native'
+import { View, TouchableOpacity, TextInput, Platform, ScrollView } from 'react-native'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { Text } from 'tamagui'
 import { Check } from '@tamagui/lucide-icons'
@@ -18,6 +18,7 @@ type Props = {
     categoryLabel: string
     price: string
     cycle: Cycle
+    startISO: string
     nextDueISO: string
     autoRenew: boolean
     currency: CurrencyCode
@@ -73,6 +74,8 @@ const SubscriptionFormModal: React.FC<Props> = ({
       <View style={styles.modalBox}>
         <Text style={styles.modalTitle}>{editMode ? '编辑订阅' : '添加新订阅'}</Text>
 
+        {/* 将表单主体包裹在可滚动容器中，避免内容过长无法滑动 */}
+        <ScrollView style={{ maxHeight: '100%' }} contentContainerStyle={{ paddingBottom: 8 }}>
         <View style={styles.formRow}>
           <Text style={styles.formLabel}>订阅名称</Text>
           <TextInput
@@ -176,6 +179,35 @@ const SubscriptionFormModal: React.FC<Props> = ({
         </View>
 
         <View style={styles.formRow}>
+          <Text style={styles.formLabel}>购入/开始日期</Text>
+          {Platform.OS === 'web' && (
+            <View style={{ marginTop: 8 }}>
+              <input
+                type="date"
+                value={form.startISO || ''}
+                onChange={(e: any) => {
+                  const v = e.target?.value
+                  if (!v) return
+                  setForm((prev: any) => ({ ...prev, startISO: v }))
+                }}
+              />
+            </View>
+          )}
+          {Platform.OS !== 'web' && (
+            <View style={{ marginTop: 8 }}>
+              <TextInput
+                style={styles.formInput}
+                value={form.startISO}
+                onChangeText={(t) => setForm((v) => ({ ...v, startISO: t }))}
+                placeholder="例如：2025-02-15"
+                placeholderTextColor={styles.colors.muted}
+              />
+              <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>格式：YYYY-MM-DD</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.formRow}>
           <Text style={styles.formLabel}>下次扣费日期</Text>
           {Platform.OS === 'web' && (
             <View style={{ marginTop: 8 }}>
@@ -198,7 +230,7 @@ const SubscriptionFormModal: React.FC<Props> = ({
           {Platform.OS !== 'web' && (
             <View style={{ marginTop: 8 }}>
               <TouchableOpacity style={styles.btnPrimary} onPress={() => setShowPicker(true)}>
-                <Text style={styles.btnPrimaryText}>使用系统日期选择器</Text>
+                <Text style={styles.btnPrimaryText}>选择日期</Text>
               </TouchableOpacity>
               {showPicker && <DateTimePicker value={new Date(iso)} mode="date" display="default" onChange={onAndroidDateChange} />}
             </View>
@@ -231,6 +263,7 @@ const SubscriptionFormModal: React.FC<Props> = ({
             ))}
           </View>
         </View>
+        </ScrollView>
 
         <View style={styles.modalActions}>
           <TouchableOpacity style={styles.btnGhost} onPress={onClose}>

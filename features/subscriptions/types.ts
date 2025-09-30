@@ -63,6 +63,7 @@ export interface Category {
  * @property {CategoryGroup} [categoryGroup] - 分组，限定为四类之一
  * @property {number} price - 订阅价格
  * @property {Cycle} cycle - 订阅周期
+ * @property {string} [startISO] - 购入/开始日期 (ISO 8601 格式)
  * @property {string} [nextDueISO] - 下次到期日期 (ISO 8601 格式)
  * @property {boolean} [autoRenew] - 是否自动续订
  * @property {Currency} [currency] - 货币类型
@@ -81,6 +82,8 @@ export interface Subscription {
   categoryGroup?: CategoryGroup
   price: number
   cycle: Cycle
+  // 购入/开始日期 (ISO 8601 格式)
+  startISO?: string
   nextDueISO?: string
   autoRenew?: boolean
   currency?: Currency
