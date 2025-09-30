@@ -1,6 +1,6 @@
 # 汀阅 (TingSub)
 
-这是一个基于 Expo React Native 的 Hello World 应用。
+这是一个基于 Expo React Native 的应用。
 
 ## 项目信息
 
@@ -95,16 +95,3 @@ CurrencyService.convertAndFormat(1000, 'JPY', 'USD') // 约 "$6.94"
    yarn ios
    yarn web
    ```
-## ErrorBoundary 类型错误修复
-
-如果在 `screens/components/ErrorBoundary.tsx` 中遇到 TS2339 错误（"类型 Readonly<ErrorBoundaryProps> 上不存在属性 children"），已通过在 `ErrorBoundaryProps` 中补充 `children: React.ReactNode` 解决。具体改动如下：
-
-```ts
-type ErrorBoundaryProps = {
-  fallback: React.ReactNode
-  resetKeys?: any[]
-  children: React.ReactNode
-}
-```
-
-这样 `this.props.children` 的类型得到明确，类组件可以正常编译。备选方案是将组件定义更改为使用 `React.PropsWithChildren<ErrorBoundaryProps>`。
