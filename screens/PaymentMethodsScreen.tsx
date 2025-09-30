@@ -13,6 +13,7 @@ import { addPaymentMethod, removePaymentMethod, updatePaymentMethod } from '../f
 import type { PaymentMethod } from '../features/payment_methods/types'
 import { getVariableValue } from '@tamagui/core'
 import tamaguiConfig from '../tamagui.config'
+import { selectDisplayScale } from '../features/ui/selectors'
 
 type PaymentMethodsScreenProps = {
   route: RouteProp<RootStackParamList, 'PaymentMethods'>
@@ -23,7 +24,8 @@ const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = () => {
   const insets = useSafeAreaInsets()
   const { effectiveScheme } = useContext(ThemeContext)
   const { t } = useContext(I18nContext)
-  const styles = createStyles(effectiveScheme)
+  const scale = useAppSelector(selectDisplayScale)
+  const styles = createStyles(effectiveScheme, scale)
   const dispatch = useAppDispatch()
   const methods = useAppSelector(selectPaymentMethods)
 
@@ -123,7 +125,7 @@ const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = () => {
   )
 }
 
-const createStyles = (scheme: 'light' | 'dark') => {
+const createStyles = (scheme: 'light' | 'dark', scale: number) => {
   const isDark = scheme === 'dark'
   const c = tamaguiConfig.tokens.color
   const s = tamaguiConfig.tokens.space
@@ -141,23 +143,23 @@ const createStyles = (scheme: 'light' | 'dark') => {
   }
   const sheet = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background as string },
-    scroll: { paddingHorizontal: v(s[4]) as number, paddingVertical: v(s[4]) as number },
-    title: { fontSize: 20, fontWeight: '600', color: colors.textPrimary as string, marginBottom: v(s[3]) as number },
-    sectionTitle: { fontSize: 16, fontWeight: '600', color: colors.textPrimary as string, marginBottom: v(s[2]) as number },
-    card: { backgroundColor: colors.card as string, borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[3]) as number, padding: v(s[3]) as number },
-    row: { flexDirection: 'row', flexWrap: 'wrap', gap: v(s[2]) as number } as any,
-    inputRow: { marginTop: v(s[2]) as number },
-    label: { fontSize: 14, color: colors.textPrimary as string, marginBottom: v(s[2]) as number },
-    input: { backgroundColor: colors.inputBg as string, borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[2]) as number, paddingHorizontal: v(s[3]) as number, paddingVertical: v(s[3]) as number },
-    selectItem: { borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[7]) as number, paddingHorizontal: v(s[3]) as number, paddingVertical: v(s[2]) as number },
+    scroll: { paddingHorizontal: (v(s[4]) as number) * scale, paddingVertical: (v(s[4]) as number) * scale },
+    title: { fontSize: 20 * scale, fontWeight: '600', color: colors.textPrimary as string, marginBottom: (v(s[3]) as number) * scale },
+    sectionTitle: { fontSize: 16 * scale, fontWeight: '600', color: colors.textPrimary as string, marginBottom: (v(s[2]) as number) * scale },
+    card: { backgroundColor: colors.card as string, borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[3]) as number, padding: (v(s[3]) as number) * scale },
+    row: { flexDirection: 'row', flexWrap: 'wrap', gap: (v(s[2]) as number) * scale } as any,
+    inputRow: { marginTop: (v(s[2]) as number) * scale },
+    label: { fontSize: 14 * scale, color: colors.textPrimary as string, marginBottom: (v(s[2]) as number) * scale },
+    input: { backgroundColor: colors.inputBg as string, borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[2]) as number, paddingHorizontal: (v(s[3]) as number) * scale, paddingVertical: (v(s[3]) as number) * scale },
+    selectItem: { borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[7]) as number, paddingHorizontal: (v(s[3]) as number) * scale, paddingVertical: (v(s[2]) as number) * scale },
     selectItemActive: { backgroundColor: colors.accent as string },
-    selectText: { fontSize: 12, color: colors.textPrimary as string },
+    selectText: { fontSize: 12 * scale, color: colors.textPrimary as string },
     selectTextActive: { color: colors.white as string },
-    btn: { marginTop: v(s[3]) as number, backgroundColor: colors.accent as string, borderRadius: v(r[2]) as number, paddingVertical: v(s[3]) as number, alignItems: 'center' },
+    btn: { marginTop: (v(s[3]) as number) * scale, backgroundColor: colors.accent as string, borderRadius: v(r[2]) as number, paddingVertical: (v(s[3]) as number) * scale, alignItems: 'center' },
     btnText: { color: colors.white as string, fontWeight: '600' },
-    methodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card as string, borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[3]) as number, paddingHorizontal: v(s[3]) as number, paddingVertical: v(s[3]) as number },
-    methodTitle: { fontSize: 14, color: colors.textPrimary as string },
-    methodSub: { fontSize: 12, color: colors.muted as string },
+    methodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card as string, borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[3]) as number, paddingHorizontal: (v(s[3]) as number) * scale, paddingVertical: (v(s[3]) as number) * scale },
+    methodTitle: { fontSize: 14 * scale, color: colors.textPrimary as string },
+    methodSub: { fontSize: 12 * scale, color: colors.muted as string },
   })
   return { ...sheet, colors }
 }

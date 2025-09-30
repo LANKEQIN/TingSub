@@ -9,6 +9,8 @@ import type { RootStackParamList } from '../lib/navigation';
 import { I18nContext } from '../lib/i18n';
 import { getVariableValue } from '@tamagui/core';
 import tamaguiConfig from '../tamagui.config';
+import { useAppSelector } from '../store'
+import { selectDisplayScale } from '../features/ui/selectors'
 
 /**
  * 主题选项组件的属性类型定义
@@ -65,7 +67,8 @@ const ThemeScreen: React.FC<ThemeScreenProps> = ({}) => {
   const { themeMode, setThemeMode, effectiveScheme } = useContext(ThemeContext);
   const insets = useSafeAreaInsets();
   const { t } = useContext(I18nContext);
-  const styles = createStyles(effectiveScheme);
+  const scale = useAppSelector(selectDisplayScale)
+  const styles = createStyles(effectiveScheme, scale);
 
   return (
     <View style={[
@@ -82,7 +85,7 @@ const ThemeScreen: React.FC<ThemeScreenProps> = ({}) => {
   );
 };
 
-function createStyles(scheme: 'light' | 'dark'){
+function createStyles(scheme: 'light' | 'dark', scale: number){
   const isDark = scheme === 'dark';
   const c = tamaguiConfig.tokens.color;
   const v = getVariableValue;
@@ -96,12 +99,12 @@ function createStyles(scheme: 'light' | 'dark'){
   };
   return StyleSheet.create({
     container: { flex: 1, alignItems: 'center', backgroundColor: colors.pageBg as string },
-    title: { fontSize: 22, fontWeight: '700', marginBottom: 24, color: colors.textPrimary as string },
+    title: { fontSize: 22 * scale, fontWeight: '700', marginBottom: 24 * scale, color: colors.textPrimary as string },
     // gap 在 RN 类型中不一定存在，这里做类型断言避免 TS 报错
-    row: { flexDirection: 'row', gap: 12 } as any,
-    option: { paddingVertical: 16, paddingHorizontal: 22, borderRadius: 16, backgroundColor: colors.optionBg as string, borderWidth: 1, borderColor: colors.border as string },
+    row: { flexDirection: 'row', gap: 12 * scale } as any,
+    option: { paddingVertical: 16 * scale, paddingHorizontal: 22 * scale, borderRadius: 16, backgroundColor: colors.optionBg as string, borderWidth: 1, borderColor: colors.border as string },
     optionActive: { backgroundColor: isDark ? v(c.iconBgDark) as string : v(c.iconBgLight) as string, borderWidth: 1, borderColor: colors.accent as string },
-    optionText: { fontSize: 16, color: colors.textSecondary as string },
+    optionText: { fontSize: 16 * scale, color: colors.textSecondary as string },
     optionTextActive: { color: colors.accent as string, fontWeight: '700' },
   });
 }

@@ -1,4 +1,5 @@
 import { getVariableValue } from '@tamagui/core'
+import { useWindowDimensions } from 'react-native'
 import tamaguiConfig from '../tamagui.config'
 
 // 统一的间距与圆角辅助：将常用尺寸映射到 Tamagui Tokens
@@ -26,3 +27,12 @@ export type UIRadiusKey = keyof typeof UI.radius
 
 export const s = (key: UISpaceKey) => UI.space[key]
 export const r = (key: UIRadiusKey) => UI.radius[key]
+
+// 响应式：用于判断是否为大屏并提供布局信息
+export const LARGE_WIDTH_BREAKPOINT = 900
+export function useResponsiveLayout() {
+  const { width } = useWindowDimensions()
+  const isLarge = width >= LARGE_WIDTH_BREAKPOINT
+  const columns = isLarge ? 2 : 1
+  return { isLarge, columns, width }
+}

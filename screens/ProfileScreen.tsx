@@ -13,6 +13,7 @@ import { selectPreferredCurrency, setPreferredCurrency } from '../features/curre
 import { getVariableValue } from '@tamagui/core';
 import tamaguiConfig from '../tamagui.config';
 import { UI } from '../lib/ui';
+import { selectDisplayScale } from '../features/ui/selectors'
 
 /**
  * 我的屏幕的属性类型定义
@@ -51,7 +52,8 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   // 从 ThemeContext 获取当前生效的主题方案
   const { effectiveScheme } = useContext(ThemeContext);
   const { t } = useContext(I18nContext);
-  const styles = createStyles(effectiveScheme);
+  const scale = useAppSelector(selectDisplayScale)
+  const styles = createStyles(effectiveScheme, scale);
   const dispatch = useAppDispatch();
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
   const Option: React.FC<OptionProps> = ({ active, label, onPress }) => (
@@ -81,7 +83,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
  * @param {('light' | 'dark')} scheme - 当前的主题方案
  * @returns {StyleSheet.NamedStyles} 返回适配指定主题的样式对象
  */
-function createStyles(scheme: 'light' | 'dark'){
+function createStyles(scheme: 'light' | 'dark', scale: number){
   // 判断是否为深色主题
   const isDark = scheme === 'dark';
   const c = tamaguiConfig.tokens.color;
@@ -100,44 +102,44 @@ function createStyles(scheme: 'light' | 'dark'){
       flex: 1,
       alignItems: 'center',
       justifyContent: 'flex-start',
-      paddingTop: 32,
+      paddingTop: 32 * scale,
       backgroundColor: colors.pageBg as string,
     },
     title: {
-      fontSize: 24,
+      fontSize: 24 * scale,
       fontWeight: 'bold',
-      marginBottom: 20,
+      marginBottom: 20 * scale,
       color: colors.textPrimary as string,
     },
     sectionTitle: {
-      fontSize: 18,
+      fontSize: 18 * scale,
       fontWeight: '700',
       alignSelf: 'flex-start',
       marginLeft: '5%',
-      marginBottom: UI.space.sm,
+      marginBottom: UI.space.sm * scale,
       color: colors.textPrimary as string,
     },
     item: {
       width: '90%',
       backgroundColor: colors.cardBg as string,
-      padding: UI.space.md,
+      padding: UI.space.md * scale,
       borderRadius: UI.radius.lg,
       borderWidth: 1,
       borderColor: colors.border as string,
     },
     itemText: {
-      fontSize: 18,
+      fontSize: 18 * scale,
       fontWeight: '600',
-      marginBottom: 6,
+      marginBottom: 6 * scale,
       color: colors.textPrimary as string,
     },
     itemSub: {
       color: colors.textSecondary as string,
     },
-    row: { flexDirection: 'row', gap: UI.space.sm },
+    row: { flexDirection: 'row', gap: UI.space.sm * scale },
     option: {
-      paddingVertical: UI.space.sm,
-      paddingHorizontal: 18,
+      paddingVertical: UI.space.sm * scale,
+      paddingHorizontal: 18 * scale,
       borderRadius: UI.radius.lg,
       backgroundColor: colors.iconBg as string,
       borderWidth: 1,
@@ -148,7 +150,7 @@ function createStyles(scheme: 'light' | 'dark'){
       borderWidth: 1,
       borderColor: colors.accent as string,
     },
-    optionText: { fontSize: 14, color: colors.textSecondary as string },
+    optionText: { fontSize: 14 * scale, color: colors.textSecondary as string },
     optionTextActive: { color: colors.accent as string, fontWeight: '700' },
   });
 }

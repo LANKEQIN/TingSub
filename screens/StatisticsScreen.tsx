@@ -16,6 +16,7 @@ import type { RootState } from '../store'
 import type { CategoryGroup } from '../features/subscriptions/types'
 import { getVariableValue } from '@tamagui/core'
 import tamaguiConfig from '../tamagui.config'
+import { selectDisplayScale } from '../features/ui/selectors'
 
 type StatisticsScreenProps = {
   route: RouteProp<TabParamList, 'Statistics'>
@@ -27,7 +28,8 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   const [chartW, setChartW] = useState(330)
   const { effectiveScheme } = useContext(ThemeContext)
   const { t, locale } = useContext(I18nContext)
-  const styles = createStyles(effectiveScheme)
+  const scale = useAppSelector(selectDisplayScale)
+  const styles = createStyles(effectiveScheme, scale)
   const isDark = effectiveScheme === 'dark'
   const preferredCurrency = useAppSelector(selectPreferredCurrency)
 
@@ -168,7 +170,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   )
 }
 
-function createStyles(scheme: 'light' | 'dark'){
+function createStyles(scheme: 'light' | 'dark', scale: number){
   const isDark = scheme === 'dark'
   const c = tamaguiConfig.tokens.color
   const gv = getVariableValue
@@ -183,20 +185,20 @@ function createStyles(scheme: 'light' | 'dark'){
   }
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.pageBg },
-    scroll: { paddingHorizontal: 16, paddingBottom: 24 },
-    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'left', color: colors.textPrimary },
-    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, marginBottom: 12 },
-    sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary },
-    link: { color: colors.accent as string, fontSize: 13 },
-    filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
-    chip: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, borderWidth: 1, borderColor: colors.border as string, backgroundColor: colors.cardBg as string },
-    chipSm: { paddingVertical: 4, paddingHorizontal: 8, borderRadius: 999, borderWidth: 1, borderColor: colors.border as string, backgroundColor: colors.cardBg as string },
+    scroll: { paddingHorizontal: 16 * scale, paddingBottom: 24 * scale },
+    title: { fontSize: 24 * scale, fontWeight: 'bold', marginBottom: 20 * scale, textAlign: 'left', color: colors.textPrimary },
+    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 * scale, marginBottom: 12 * scale },
+    sectionTitle: { fontSize: 18 * scale, fontWeight: '700', color: colors.textPrimary },
+    link: { color: colors.accent as string, fontSize: 13 * scale },
+    filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 * scale, marginBottom: 10 * scale },
+    chip: { paddingVertical: 6 * scale, paddingHorizontal: 10 * scale, borderRadius: 999, borderWidth: 1, borderColor: colors.border as string, backgroundColor: colors.cardBg as string },
+    chipSm: { paddingVertical: 4 * scale, paddingHorizontal: 8 * scale, borderRadius: 999, borderWidth: 1, borderColor: colors.border as string, backgroundColor: colors.cardBg as string },
     chipActive: { borderColor: colors.accent as string, backgroundColor: isDark ? gv(c.iconBgDark) as string : gv(c.iconBgLight) as string },
-    chipText: { fontSize: 13, color: colors.textSecondary },
-    chipTextSm: { fontSize: 12, color: colors.textSecondary },
+    chipText: { fontSize: 13 * scale, color: colors.textSecondary },
+    chipTextSm: { fontSize: 12 * scale, color: colors.textSecondary },
     chipTextActive: { color: colors.accent as string, fontWeight: '600' },
-    chartCard: { backgroundColor: colors.cardBg as string, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: colors.border as string, alignItems: 'center' },
-    chartAxis: { fontSize: 12, color: colors.muted as string, marginTop: 8 },
+    chartCard: { backgroundColor: colors.cardBg as string, borderRadius: 14, padding: 12 * scale, borderWidth: 1, borderColor: colors.border as string, alignItems: 'center' },
+    chartAxis: { fontSize: 12 * scale, color: colors.muted as string, marginTop: 8 * scale },
   })
 }
 

@@ -21,6 +21,7 @@ import counterReducer from './features/counter/slice'
 import subscriptionsReducer from './features/subscriptions/slice'
 import currencyReducer from './features/currency/slice'
 import paymentMethodsReducer from './features/payment_methods/slice'
+import uiReducer from './features/ui/slice'
 import { subscriptionsApi } from './features/subscriptions/services'
 
 /**
@@ -56,6 +57,14 @@ const persistConfigPaymentMethods = {
 }
 
 /**
+ * UI 偏好持久化配置（例如显示大小）
+ */
+const persistConfigUI = {
+  key: 'ui',
+  storage: AsyncStorage,
+}
+
+/**
  * 持久化的订阅 reducer
  * 
  * @constant
@@ -67,6 +76,7 @@ const persistConfigPaymentMethods = {
 const persistedSubscriptionsReducer = persistReducer(persistConfigSubs, subscriptionsReducer)
 const persistedCurrencyReducer = persistReducer(persistConfigCurrency, currencyReducer)
 const persistedPaymentMethodsReducer = persistReducer(persistConfigPaymentMethods, paymentMethodsReducer)
+const persistedUIReducer = persistReducer(persistConfigUI, uiReducer)
 
 /**
  * 根 reducer
@@ -85,6 +95,7 @@ const rootReducer = combineReducers({
   subscriptions: persistedSubscriptionsReducer,
   currency: persistedCurrencyReducer,
   paymentMethods: persistedPaymentMethodsReducer,
+  ui: persistedUIReducer,
   [subscriptionsApi.reducerPath]: subscriptionsApi.reducer,
 })
 
@@ -107,7 +118,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         // 可选：忽略持久化标记路径，减少序列化检查噪音
-        ignoredPaths: ['subscriptions._persist', 'currency._persist', 'paymentMethods._persist'],
+        ignoredPaths: ['subscriptions._persist', 'currency._persist', 'paymentMethods._persist', 'ui._persist'],
       },
     }).concat(subscriptionsApi.middleware),
 })

@@ -17,6 +17,8 @@ import { selectSubscriptions } from '../features/subscriptions/selectors'
 import { selectPaymentMethods } from '../features/payment_methods/selectors'
 import { setSubscriptions } from '../features/subscriptions/slice'
 import { setPaymentMethods } from '../features/payment_methods/slice'
+import { selectDisplaySize, selectDisplayScale } from '../features/ui/selectors'
+import { setDisplaySize } from '../features/ui/slice'
 
 type SettingsScreenProps = {
   route: RouteProp<RootStackParamList, 'Settings'>;
@@ -39,7 +41,9 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
   const subscriptions = useAppSelector(selectSubscriptions)
   const paymentMethods = useAppSelector(selectPaymentMethods)
-  const styles = createStyles(effectiveScheme);
+  const displaySize = useAppSelector(selectDisplaySize)
+  const scale = useAppSelector(selectDisplayScale)
+  const styles = createStyles(effectiveScheme, scale);
   const [importOpen, setImportOpen] = useState(false)
   const [importText, setImportText] = useState('')
 
@@ -54,7 +58,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         <Option styles={styles} label="日元（JPY）" active={preferredCurrency === 'JPY'} onPress={() => dispatch(setPreferredCurrency('JPY'))} />
       </View>
 
-      <Text style={[styles.sectionTitle, { marginTop: 24 }]}>语言</Text>
+      <Text style={[styles.sectionTitle, { marginTop: 24 * scale }]}>语言</Text>
       <View style={styles.row as any}>
         <Option styles={styles} label={t('settings.lang.zh')} active={locale === 'zh'} onPress={() => setLocale('zh')} />
         <Option styles={styles} label={t('settings.lang.en')} active={locale === 'en'} onPress={() => setLocale('en')} />
@@ -68,7 +72,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         <Text style={{ fontSize: 12, color: isDark ? '#94a3b8' : '#6b7280', marginTop: 4 }}>{t('paymentMethods.list')}</Text>
       </TouchableOpacity>
 
-      <Text style={[styles.sectionTitle, { marginTop: 24 }]}>{t('settings_data.title', { defaultValue: '数据导出与导入' })}</Text>
+      <Text style={[styles.sectionTitle, { marginTop: 24 * scale }]}>{t('settings_data.title', { defaultValue: '数据导出与导入' })}</Text>
       <View style={styles.row as any}>
         <Option
           styles={styles}
@@ -108,7 +112,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
             value={importText}
             onChangeText={setImportText}
           />
-          <View style={[styles.row as any, { marginTop: 16 }]}> 
+          <View style={[styles.row as any, { marginTop: 16 * scale }]}> 
             <Option styles={styles} label={t('settings_data.cancel', { defaultValue: '取消' })} active={false} onPress={() => setImportOpen(false)} />
             <Option styles={styles} label={t('settings_data.confirmImport', { defaultValue: '确认导入' })} active={false} onPress={() => {
               const parsed = parseImportJSON(importText)
@@ -123,11 +127,17 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+
+      <Text style={[styles.sectionTitle, { marginTop: 24 * scale }]}>显示大小</Text>
+      <View style={styles.row as any}>
+        <Option styles={styles} label="普通" active={displaySize === 'normal'} onPress={() => dispatch(setDisplaySize('normal'))} />
+        <Option styles={styles} label="大号" active={displaySize === 'large'} onPress={() => dispatch(setDisplaySize('large'))} />
+      </View>
     </View>
   );
 };
 
-function createStyles(scheme: 'light' | 'dark'){
+function createStyles(scheme: 'light' | 'dark', scale: number){
   const isDark = scheme === 'dark'
   const c = tamaguiConfig.tokens.color
   const gv = getVariableValue
@@ -142,14 +152,14 @@ function createStyles(scheme: 'light' | 'dark'){
   }
   return StyleSheet.create({
     container: { flex: 1, alignItems: 'center', backgroundColor: colors.pageBg as string },
-    title: { fontSize: 24, fontWeight: '700', marginBottom: 20, color: colors.textPrimary as string },
-    sectionTitle: { fontSize: 18, fontWeight: '700', alignSelf: 'flex-start', marginLeft: '5%', marginBottom: 12, color: colors.textPrimary as string },
-    row: { flexDirection: 'row', gap: UI.space.sm },
-    option: { paddingVertical: UI.space.md, paddingHorizontal: 22, borderRadius: UI.radius.xl, backgroundColor: gv(c.gray3) as string, borderWidth: 1, borderColor: colors.border as string },
+    title: { fontSize: 24 * scale, fontWeight: '700', marginBottom: 20 * scale, color: colors.textPrimary as string },
+    sectionTitle: { fontSize: 18 * scale, fontWeight: '700', alignSelf: 'flex-start', marginLeft: '5%', marginBottom: 12 * scale, color: colors.textPrimary as string },
+    row: { flexDirection: 'row', gap: UI.space.sm * scale },
+    option: { paddingVertical: UI.space.md * scale, paddingHorizontal: 22 * scale, borderRadius: UI.radius.xl, backgroundColor: gv(c.gray3) as string, borderWidth: 1, borderColor: colors.border as string },
     optionActive: { backgroundColor: isDark ? gv(c.iconBgDark) as string : gv(c.iconBgLight) as string, borderWidth: 1, borderColor: colors.accent as string },
-    optionText: { fontSize: 16, color: colors.textSecondary as string },
+    optionText: { fontSize: 16 * scale, color: colors.textSecondary as string },
     optionTextActive: { color: colors.accent as string, fontWeight: '700' },
-    navItem: { marginTop: 24, width: '90%', alignSelf: 'center', borderWidth: 1, borderRadius: UI.radius.md, paddingHorizontal: UI.space.md, paddingVertical: UI.space.md },
+    navItem: { marginTop: 24 * scale, width: '90%', alignSelf: 'center', borderWidth: 1, borderRadius: UI.radius.md, paddingHorizontal: UI.space.md * scale, paddingVertical: UI.space.md * scale },
   })
 }
 

@@ -2,7 +2,7 @@ import React, { useMemo, useState, useContext, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { Text, getVariableValue } from 'tamagui';
 import tamaguiConfig from '../tamagui.config'
-import { UI } from '../lib/ui'
+import { UI, useResponsiveLayout } from '../lib/ui'
 import {
   Bell,
   User,
@@ -37,6 +37,7 @@ import { selectPreferredCurrency } from '../features/currency/slice';
 import { CurrencyService, convertCurrency } from '../features/currency/services';
 import { selectPaymentMethods } from '../features/payment_methods/selectors';
 import { advanceNextDueISO } from './utils/subscriptions';
+import { selectDisplayScale } from '../features/ui/selectors'
 
 // 计算型工具
 // 类型：订阅分组使用领域类型
@@ -86,7 +87,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const subs = useSelector((state: RootState) => state.subscriptions.list);
   const { effectiveScheme } = useContext(ThemeContext);
   const { t } = useContext(I18nContext);
-  const styles = createStyles(effectiveScheme);
+  const scale = useAppSelector(selectDisplayScale)
+  const styles = createStyles(effectiveScheme, scale);
+  const { isLarge } = useResponsiveLayout();
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
   // 错误边界重置计数
   const [retryCount, setRetryCount] = useState(0);
@@ -348,55 +351,111 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         <TextInput style={styles.searchInput} placeholder={t('home.searchPlaceholder')} placeholderTextColor={styles.colors.muted} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {loading ? (
-          <LoadingSkeleton styles={styles} />
-        ) : subs.length === 0 ? (
-          <>
-            <SectionHeader title={t('home.overview')} styles={styles} />
-            <EmptyState
-              title={t('home.emptyTitle') || '暂无订阅'}
-              description={t('home.emptyDesc') || '添加你的第一个订阅以开始统计与提醒'}
-              actionLabel={t('home.addSub') || '添加订阅'}
-              onAction={openModal}
-              styles={styles}
-            />
-          </>
-        ) : (
-          <>
-            {/* 订阅概览 */}
-            <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
-            <View style={styles.summaryGrid}>
-              <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
-              <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
-              <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
-              <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
-            </View>
-
-            {/* 即将到期（仅在7天内有到期项时显示） */}
-            {upcomingList.length > 0 && (
+      {isLarge ? (
+        <View style={{ flexDirection: 'row', gap: UI.space.md }}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+            {loading ? (
+              <LoadingSkeleton styles={styles} />
+            ) : subs.length === 0 ? (
               <>
-                <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
-                <View style={{ gap: 12 }}>
-                  {upcomingList.map((u) => (
-                    <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                <SectionHeader title={t('home.overview')} styles={styles} />
+                <EmptyState
+                  title={t('home.emptyTitle') || '暂无订阅'}
+                  description={t('home.emptyDesc') || '添加你的第一个订阅以开始统计与提醒'}
+                  actionLabel={t('home.addSub') || '添加订阅'}
+                  onAction={openModal}
+                  styles={styles}
+                />
+              </>
+            ) : (
+              <>
+                <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
+                <View style={styles.summaryGrid}>
+                  <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
+                  <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+                  <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
+                  <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+                </View>
+
+                {upcomingList.length > 0 && (
+                  <>
+                    <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
+                    <View style={{ gap: 12 }}>
+                      {upcomingList.map((u) => (
+                        <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                      ))}
+                    </View>
+                  </>
+                )}
+              </>
+            )}
+          </ScrollView>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+            {loading ? (
+              <LoadingSkeleton styles={styles} />
+            ) : subs.length === 0 ? (
+              <View />
+            ) : (
+              <>
+                <SectionHeader title={t('home.active')} styles={styles} />
+                <View style={{ gap: 8 }}>
+                  {activeSubs.map((s, idx) => (
+                    <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
                   ))}
                 </View>
               </>
             )}
-
-            {/* 活跃订阅 */}
-            <SectionHeader title={t('home.active')} styles={styles} />
-            <View style={{ gap: 8 }}>
-              {activeSubs.map((s, idx) => (
-                <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
-              ))}
-            </View>
-
             <View style={{ height: 80 }} />
-          </>
-        )}
-      </ScrollView>
+          </ScrollView>
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          {loading ? (
+            <LoadingSkeleton styles={styles} />
+          ) : subs.length === 0 ? (
+            <>
+              <SectionHeader title={t('home.overview')} styles={styles} />
+              <EmptyState
+                title={t('home.emptyTitle') || '暂无订阅'}
+                description={t('home.emptyDesc') || '添加你的第一个订阅以开始统计与提醒'}
+                actionLabel={t('home.addSub') || '添加订阅'}
+                onAction={openModal}
+                styles={styles}
+              />
+            </>
+          ) : (
+            <>
+              <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
+              <View style={styles.summaryGrid}>
+                <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
+                <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+                <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
+                <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+              </View>
+
+              {upcomingList.length > 0 && (
+                <>
+                  <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
+                  <View style={{ gap: 12 }}>
+                    {upcomingList.map((u) => (
+                      <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                    ))}
+                  </View>
+                </>
+              )}
+
+              <SectionHeader title={t('home.active')} styles={styles} />
+              <View style={{ gap: 8 }}>
+                {activeSubs.map((s, idx) => (
+                  <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
+                ))}
+              </View>
+
+              <View style={{ height: 80 }} />
+            </>
+          )}
+        </ScrollView>
+      )}
 
       {/* 悬浮添加按钮 */}
       <TouchableOpacity style={styles.fab} onPress={openModal}>
@@ -457,7 +516,7 @@ type ColorPalette = {
 };
 
 // 替换为按主题生成样式（深色/浅色）
-function createStyles(scheme: 'light' | 'dark'){
+function createStyles(scheme: 'light' | 'dark', scale: number){
   const isDark = scheme === 'dark';
   const c = tamaguiConfig.tokens.color;
   const gv = getVariableValue;
@@ -480,17 +539,17 @@ function createStyles(scheme: 'light' | 'dark'){
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingHorizontal: UI.space.md,
-      paddingTop: UI.space.md,
-      paddingBottom: UI.space.xs,
+      paddingHorizontal: UI.space.md * scale,
+      paddingTop: UI.space.md * scale,
+      paddingBottom: UI.space.xs * scale,
     },
     logoBox: {
       backgroundColor: colors.iconBg,
       borderRadius: UI.radius.sm,
-      paddingHorizontal: UI.space.sm,
-      paddingVertical: UI.space.xs,
+      paddingHorizontal: UI.space.sm * scale,
+      paddingVertical: UI.space.xs * scale,
     },
-    logoText: { fontSize: 14, fontWeight: '700', color: colors.accent },
+    logoText: { fontSize: 14 * scale, fontWeight: '700', color: colors.accent },
     iconBtn: {
       backgroundColor: gv(c.gray3),
       padding: UI.space.xs,
