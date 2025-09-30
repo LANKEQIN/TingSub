@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "TingSub",
-    "slug": "TingSub",
+    "slug": "tingsub",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,10 +20,17 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.shindoamane.tingsub"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7a2d9db3-9e20-4a10-ad7f-38cae7d60fb2"
+      }
+    },
+    "owner": "shindoamane"
   }
 }
