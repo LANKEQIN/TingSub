@@ -5,6 +5,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import BarChart from './components/BarChart'
 import SectionHeader from './components/SectionHeader'
 import { useSelector } from 'react-redux'
+import { useAppSelector } from '../store'
+import { selectPreferredCurrency } from '../features/currency/slice'
+import { convertCurrency, getSymbol } from '../features/currency/services'
 import { ThemeContext } from '../lib/theme'
 import type { RouteProp } from '@react-navigation/native'
 import type { TabParamList } from '../lib/navigation'
@@ -22,6 +25,7 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   const { effectiveScheme } = useContext(ThemeContext)
   const styles = createStyles(effectiveScheme)
   const isDark = effectiveScheme === 'dark'
+  const preferredCurrency = useAppSelector(selectPreferredCurrency)
 
   // 过滤器：时间范围与分类
   type TimeRange = '3m' | '6m' | '12m' | 'this_year' | 'prev_quarter'
@@ -50,13 +54,15 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   // 月等效支出（过滤后）
   const monthlyEquivalent = useMemo(() => {
     const monthly = filteredSubs.reduce((sum, s) => {
-      if (s.cycle === 'monthly') return sum + s.price
-      if (s.cycle === 'quarterly') return sum + s.price / 3
-      if (s.cycle === 'yearly') return sum + s.price / 12
-      return sum // lifetime/other 不计入月支出
+      const from = s.currency ?? 'CNY'
+      const base = (s.cycle === 'monthly') ? s.price
+        : (s.cycle === 'quarterly') ? s.price / 3
+        : (s.cycle === 'yearly') ? s.price / 12
+        : 0
+      return sum + convertCurrency(base, from as any, preferredCurrency as any)
     }, 0)
     return Math.round(monthly)
-  }, [filteredSubs])
+  }, [filteredSubs, preferredCurrency])
 
   // 根据时间范围生成月份标签
   const monthLabels = useMemo(() => {
@@ -131,8 +137,8 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
           // chartCard 有左右各 12 的内边距，此处减去 24 作为图表宽度，设定最小宽度以保证可读性
           setChartW(Math.max(280, Math.floor(w - 24)))
         }}>
-          <BarChart data={chartData} labels={monthLabels} width={chartW} height={200} barColor={isDark ? '#4DB6FF' : '#4f46e5'} gridColor={isDark ? '#2A2E33' : '#E5E7EB'} axisLabelColor={isDark ? '#A7B0B8' : '#6b7280'} />
-          <Text style={styles.chartAxis}>单位：¥/月</Text>
+          <BarChart data={chartData} labels={monthLabels} width={chartW} height={200} barColor={isDark ? '#4DB6FF' : '#4f46e5'} gridColor={isDark ? '#2A2E33' : '#E5E7EB'} axisLabelColor={isDark ? '#A7B0B8' : '#6b7280'} currencySymbol={getSymbol(preferredCurrency as any)} />
+          <Text style={styles.chartAxis}>单位：{getSymbol(preferredCurrency as any)}/月</Text>
         </View>
       </ScrollView>
     </View>

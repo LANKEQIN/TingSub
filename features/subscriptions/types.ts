@@ -13,14 +13,15 @@
 export type Cycle = 'monthly' | 'quarterly' | 'yearly' | 'lifetime' | 'other'
 
 /**
- * 货币类型
+ * 货币类型（引用 Currency 模块）
  * 
- * @typedef {'CNY'} Currency
- * @description
  * 支持的货币代码，使用 ISO 4217 标准：
  * - 'CNY': 人民币
+ * - 'USD': 美元
+ * - 'JPY': 日元
  */
-export type Currency = 'CNY'
+import type { CurrencyCode } from '../currency/types'
+export type Currency = CurrencyCode
 
 /**
  * 分类组类型

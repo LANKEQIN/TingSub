@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../lib/navigation';
+import { useAppDispatch, useAppSelector } from '../store';
+import { selectPreferredCurrency, setPreferredCurrency } from '../features/currency/slice';
 
 /**
  * 主题选项组件的属性类型定义
@@ -60,6 +62,8 @@ const ThemeScreen: React.FC<ThemeScreenProps> = ({}) => {
   // 从 ThemeContext 获取当前主题模式、设置函数和生效的主题方案
   const { themeMode, setThemeMode, effectiveScheme } = useContext(ThemeContext);
   const insets = useSafeAreaInsets();
+  const dispatch = useAppDispatch();
+  const preferredCurrency = useAppSelector(selectPreferredCurrency);
 
   return (
     <View style={[
@@ -72,6 +76,13 @@ const ThemeScreen: React.FC<ThemeScreenProps> = ({}) => {
         <Option label="自动" active={themeMode === 'auto'} onPress={() => setThemeMode('auto')} />
         <Option label="浅色" active={themeMode === 'light'} onPress={() => setThemeMode('light')} />
         <Option label="深色" active={themeMode === 'dark'} onPress={() => setThemeMode('dark')} />
+      </View>
+
+      <Text style={[styles.title, { marginTop: 28 }]}>偏好货币</Text>
+      <View style={styles.row}>
+        <Option label="人民币（CNY）" active={preferredCurrency === 'CNY'} onPress={() => dispatch(setPreferredCurrency('CNY'))} />
+        <Option label="美元（USD）" active={preferredCurrency === 'USD'} onPress={() => dispatch(setPreferredCurrency('USD'))} />
+        <Option label="日元（JPY）" active={preferredCurrency === 'JPY'} onPress={() => dispatch(setPreferredCurrency('JPY'))} />
       </View>
     </View>
   );
