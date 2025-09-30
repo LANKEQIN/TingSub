@@ -10,6 +10,8 @@ import { ThemeContext } from '../lib/theme';
 import { I18nContext } from '../lib/i18n';
 import { useAppDispatch, useAppSelector } from '../store';
 import { selectPreferredCurrency, setPreferredCurrency } from '../features/currency/slice';
+import { getVariableValue } from '@tamagui/core';
+import tamaguiConfig from '../tamagui.config';
 
 /**
  * 我的屏幕的属性类型定义
@@ -81,19 +83,30 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
 function createStyles(scheme: 'light' | 'dark'){
   // 判断是否为深色主题
   const isDark = scheme === 'dark';
+  const c = tamaguiConfig.tokens.color;
+  const v = getVariableValue;
+  const colors = {
+    pageBg: v(isDark ? c.bgPageDark : c.bgPageLight),
+    cardBg: v(isDark ? c.cardBgDark : c.cardBgLight),
+    border: v(isDark ? c.borderDark : c.borderLight),
+    textPrimary: v(isDark ? c.textPrimaryDark : c.textPrimaryLight),
+    textSecondary: v(isDark ? c.textSecondaryDark : c.textSecondaryLight),
+    accent: v(isDark ? c.accentDark : c.accentLight),
+    iconBg: v(isDark ? c.iconBgDark : c.iconBgLight),
+  };
   return StyleSheet.create({
     container: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'flex-start',
       paddingTop: 32,
-      backgroundColor: isDark ? '#0F1416' : '#F8FAFC',
+      backgroundColor: colors.pageBg as string,
     },
     title: {
       fontSize: 24,
       fontWeight: 'bold',
       marginBottom: 20,
-      color: isDark ? '#E5E7EB' : '#111827',
+      color: colors.textPrimary as string,
     },
     sectionTitle: {
       fontSize: 18,
@@ -101,41 +114,41 @@ function createStyles(scheme: 'light' | 'dark'){
       alignSelf: 'flex-start',
       marginLeft: '5%',
       marginBottom: 12,
-      color: isDark ? '#E5E7EB' : '#111827',
+      color: colors.textPrimary as string,
     },
     item: {
       width: '90%',
-      backgroundColor: isDark ? '#1C1F24' : '#FFFFFF',
+      backgroundColor: colors.cardBg as string,
       padding: 16,
       borderRadius: 14,
       borderWidth: 1,
-      borderColor: isDark ? '#2A2E33' : '#E5E7EB',
+      borderColor: colors.border as string,
     },
     itemText: {
       fontSize: 18,
       fontWeight: '600',
       marginBottom: 6,
-      color: isDark ? '#E5E7EB' : '#111827',
+      color: colors.textPrimary as string,
     },
     itemSub: {
-      color: isDark ? '#A7B0B8' : '#6b7280',
+      color: colors.textSecondary as string,
     },
     row: { flexDirection: 'row', gap: 12 },
     option: {
       paddingVertical: 12,
       paddingHorizontal: 18,
       borderRadius: 14,
-      backgroundColor: isDark ? '#22262B' : '#EAEAEA',
+      backgroundColor: colors.iconBg as string,
       borderWidth: 1,
-      borderColor: isDark ? '#30343A' : '#E5E7EB',
+      borderColor: colors.border as string,
     },
     optionActive: {
-      backgroundColor: isDark ? '#1F2A2E' : '#CFE8E8',
+      backgroundColor: colors.cardBg as string,
       borderWidth: 1,
-      borderColor: isDark ? '#0f766e' : '#227A7A',
+      borderColor: colors.accent as string,
     },
-    optionText: { fontSize: 14, color: isDark ? '#C9D1D9' : '#374151' },
-    optionTextActive: { color: '#0f766e', fontWeight: '700' },
+    optionText: { fontSize: 14, color: colors.textSecondary as string },
+    optionTextActive: { color: colors.accent as string, fontWeight: '700' },
   });
 }
 

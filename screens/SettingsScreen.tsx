@@ -9,6 +9,8 @@ import { ThemeContext } from '../lib/theme';
 import { I18nContext } from '../lib/i18n';
 import { useAppDispatch, useAppSelector } from '../store';
 import { selectPreferredCurrency, setPreferredCurrency } from '../features/currency/slice';
+import { getVariableValue } from '@tamagui/core';
+import tamaguiConfig from '../tamagui.config';
 
 type SettingsScreenProps = {
   route: RouteProp<RootStackParamList, 'Settings'>;
@@ -19,13 +21,8 @@ type OptionProps = {
   active: boolean;
   label: string;
   onPress: () => void;
+  styles: any;
 };
-
-const Option: React.FC<OptionProps> = ({ active, label, onPress }) => (
-  <TouchableOpacity onPress={onPress} style={[styles.option, active ? styles.optionActive : null]}>
-    <Text style={[styles.optionText, active ? styles.optionTextActive : null]}>{label}</Text>
-  </TouchableOpacity>
-);
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -34,21 +31,22 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const isDark = effectiveScheme === 'dark';
   const dispatch = useAppDispatch();
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
+  const styles = createStyles(effectiveScheme);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 32, backgroundColor: isDark ? '#0F1416' : '#F8FAFC' }]}> 
-      <Text style={[styles.title, { color: isDark ? '#E5E7EB' : '#111827' }]}>{t('settings.title')}</Text>
+    <View style={[styles.container, { paddingTop: insets.top + 32 }]}> 
+      <Text style={styles.title}>{t('settings.title')}</Text>
 
-      <Text style={[styles.sectionTitle, { color: isDark ? '#E5E7EB' : '#111827' }]}>{t('theme.currencyPref')}</Text>
+      <Text style={styles.sectionTitle}>{t('theme.currencyPref')}</Text>
       <View style={styles.row as any}>
-        <Option label="人民币（CNY）" active={preferredCurrency === 'CNY'} onPress={() => dispatch(setPreferredCurrency('CNY'))} />
-        <Option label="美元（USD）" active={preferredCurrency === 'USD'} onPress={() => dispatch(setPreferredCurrency('USD'))} />
-        <Option label="日元（JPY）" active={preferredCurrency === 'JPY'} onPress={() => dispatch(setPreferredCurrency('JPY'))} />
+        <Option styles={styles} label="人民币（CNY）" active={preferredCurrency === 'CNY'} onPress={() => dispatch(setPreferredCurrency('CNY'))} />
+        <Option styles={styles} label="美元（USD）" active={preferredCurrency === 'USD'} onPress={() => dispatch(setPreferredCurrency('USD'))} />
+        <Option styles={styles} label="日元（JPY）" active={preferredCurrency === 'JPY'} onPress={() => dispatch(setPreferredCurrency('JPY'))} />
       </View>
 
-      <Text style={[styles.sectionTitle, { color: isDark ? '#E5E7EB' : '#111827', marginTop: 24 }]}>语言</Text>
+      <Text style={[styles.sectionTitle, { marginTop: 24 }]}>语言</Text>
       <View style={styles.row as any}>
-        <Option label={t('settings.lang.zh')} active={locale === 'zh'} onPress={() => setLocale('zh')} />
+        <Option styles={styles} label={t('settings.lang.zh')} active={locale === 'zh'} onPress={() => setLocale('zh')} />
         <Option label={t('settings.lang.en')} active={locale === 'en'} onPress={() => setLocale('en')} />
       </View>
 
@@ -63,16 +61,36 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: '700', marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', alignSelf: 'flex-start', marginLeft: '5%', marginBottom: 12 },
-  row: { flexDirection: 'row', gap: 12 },
-  option: { paddingVertical: 16, paddingHorizontal: 22, borderRadius: 16, backgroundColor: '#EAEAEA', borderWidth: 1, borderColor: '#E5E7EB' },
-  optionActive: { backgroundColor: '#CFE8E8', borderWidth: 1, borderColor: '#227A7A' },
-  optionText: { fontSize: 16, color: '#374151' },
-  optionTextActive: { color: '#0f766e', fontWeight: '700' },
-  navItem: { marginTop: 24, width: '90%', alignSelf: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14 },
-});
+function createStyles(scheme: 'light' | 'dark'){
+  const isDark = scheme === 'dark'
+  const c = tamaguiConfig.tokens.color
+  const gv = getVariableValue
+  const colors = {
+    pageBg: gv(isDark ? c.bgPageDark : c.bgPageLight),
+    cardBg: gv(isDark ? c.cardBgDark : c.cardBgLight),
+    border: gv(isDark ? c.borderDark : c.borderLight),
+    textPrimary: gv(isDark ? c.textPrimaryDark : c.textPrimaryLight),
+    textSecondary: gv(isDark ? c.textSecondaryDark : c.textSecondaryLight),
+    muted: gv(isDark ? c.mutedDark : c.mutedLight),
+    accent: gv(isDark ? c.accentDark : c.accentLight),
+  }
+  return StyleSheet.create({
+    container: { flex: 1, alignItems: 'center', backgroundColor: colors.pageBg as string },
+    title: { fontSize: 24, fontWeight: '700', marginBottom: 20, color: colors.textPrimary as string },
+    sectionTitle: { fontSize: 18, fontWeight: '700', alignSelf: 'flex-start', marginLeft: '5%', marginBottom: 12, color: colors.textPrimary as string },
+    row: { flexDirection: 'row', gap: 12 },
+    option: { paddingVertical: 16, paddingHorizontal: 22, borderRadius: 16, backgroundColor: gv(c.gray3) as string, borderWidth: 1, borderColor: colors.border as string },
+    optionActive: { backgroundColor: isDark ? gv(c.iconBgDark) as string : gv(c.iconBgLight) as string, borderWidth: 1, borderColor: colors.accent as string },
+    optionText: { fontSize: 16, color: colors.textSecondary as string },
+    optionTextActive: { color: colors.accent as string, fontWeight: '700' },
+    navItem: { marginTop: 24, width: '90%', alignSelf: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14 },
+  })
+}
+
+const Option: React.FC<OptionProps> = ({ active, label, onPress, styles }) => (
+  <TouchableOpacity onPress={onPress} style={[styles.option, active ? styles.optionActive : null]}>
+    <Text style={[styles.optionText, active ? styles.optionTextActive : null]}>{label}</Text>
+  </TouchableOpacity>
+);
 
 export default SettingsScreen;
