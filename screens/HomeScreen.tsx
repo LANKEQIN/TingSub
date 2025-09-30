@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useContext, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
-import { Text } from 'tamagui';
+import { Text, getVariableValue } from 'tamagui';
+import tamaguiConfig from '../tamagui.config'
 import {
   Bell,
   User,
@@ -408,149 +409,38 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   );
 };
 
-// 样式补充
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
-  topbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  logoBox: {
-    backgroundColor: '#E6F2FF',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  logoText: { fontSize: 14, fontWeight: '700', color: '#0ea5e9' },
-  iconBtn: {
-    backgroundColor: '#EEF2F7',
-    padding: 8,
-    borderRadius: 10,
-  },
-  searchBox: {
-    marginHorizontal: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  searchInput: { flex: 1, fontSize: 15, color: '#111827' },
-  scroll: { paddingHorizontal: 16, paddingBottom: 24 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, marginBottom: 12 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
-  link: { color: '#0ea5e9', fontSize: 13 },
-  summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  summaryCard: {
-    width: '47%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  summaryTitle: { fontSize: 13, color: '#6b7280', marginBottom: 6 },
-  summaryValue: { fontSize: 20, fontWeight: '700', color: '#111827' },
-  summarySub: { fontSize: 12, color: '#10b981', marginTop: 4 },
-
-  upcomingCard: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  upcomingIconBox: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E6F2FF' },
-  upcomingName: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  upcomingCycle: { fontSize: 12, color: '#6b7280', marginTop: 2 },
-  upcomingMetaRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
-  badgeInfo: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F3F4F6', paddingVertical: 6, paddingHorizontal: 8, borderRadius: 8 },
-  badgeText: { fontSize: 12, color: '#374151' },
-
-  activeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  activeIconBox: { width: 30, height: 30, borderRadius: 8, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  activeName: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  activeHint: { fontSize: 12, color: '#6b7280' },
-  activeNext: { fontSize: 12, color: '#10b981' },
-
-  fab: {
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#2563EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-
-  // 弹窗样式
-  modalMask: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
-  modalBox: { width: '90%', backgroundColor: '#fff', borderRadius: 12, padding: 16 },
-  modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 12 },
-  formRow: { marginBottom: 10 },
-  formLabel: { fontSize: 13, color: '#6b7280', marginBottom: 6 },
-  formInput: { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 },
-  selectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  selectItem: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB' },
-  selectItemActive: { backgroundColor: '#E6F2FF', borderColor: '#60A5FA' },
-  selectText: { fontSize: 12, color: '#374151' },
-  selectTextActive: { color: '#1D4ED8', fontWeight: '700' },
-  // 新增复选框样式
-  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
-  checkboxBox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-  checkboxBoxChecked: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
-  checkbox: { paddingVertical: 8 },
-  checkboxText: { fontSize: 13, color: '#374151' },
-  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 6 },
-  btnGhost: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB' },
-  btnGhostText: { color: '#374151' },
-  btnPrimary: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, backgroundColor: '#2563EB' },
-  btnPrimaryText: { color: '#fff', fontWeight: '700' },
-});
+// 明确样式返回类型，包含颜色调色板
+type ColorPalette = {
+  pageBg: string;
+  cardBg: string;
+  border: string;
+  textPrimary: string;
+  textSecondary: string;
+  muted: string;
+  accent: string;
+  badgeBg: string;
+  iconBg: string;
+  fabBg: string;
+  modalBg: string;
+};
 
 // 替换为按主题生成样式（深色/浅色）
-function createStyles(scheme){
+function createStyles(scheme: 'light' | 'dark'){
   const isDark = scheme === 'dark';
-  const colors = {
-    pageBg: isDark ? '#0F1416' : '#F8FAFC',
-    cardBg: isDark ? '#1C1F24' : '#FFFFFF',
-    border: isDark ? '#2A2E33' : '#E5E7EB',
-    textPrimary: isDark ? '#E5E7EB' : '#111827',
-    textSecondary: isDark ? '#A7B0B8' : '#6b7280',
-    muted: isDark ? '#78828A' : '#9CA3AF',
-    accent: isDark ? '#4DB6FF' : '#0ea5e9',
-    badgeBg: isDark ? '#28313A' : '#F3F4F6',
-    iconBg: isDark ? '#22303C' : '#E6F2FF',
-    fabBg: isDark ? '#2563EB' : '#2563EB',
-    modalBg: isDark ? '#1C1F24' : '#FFFFFF',
+  const c = tamaguiConfig.tokens.color;
+  const gv = getVariableValue;
+  const colors: ColorPalette = {
+    pageBg: gv(isDark ? c.bgPageDark : c.bgPageLight),
+    cardBg: gv(isDark ? c.cardBgDark : c.cardBgLight),
+    border: gv(isDark ? c.borderDark : c.borderLight),
+    textPrimary: gv(isDark ? c.textPrimaryDark : c.textPrimaryLight),
+    textSecondary: gv(isDark ? c.textSecondaryDark : c.textSecondaryLight),
+    muted: gv(isDark ? c.mutedDark : c.mutedLight),
+    accent: gv(isDark ? c.accentDark : c.accentLight),
+    badgeBg: gv(isDark ? c.badgeBgDark : c.badgeBgLight),
+    iconBg: gv(isDark ? c.iconBgDark : c.iconBgLight),
+    fabBg: gv(c.fabBg),
+    modalBg: gv(isDark ? c.modalBgDark : c.modalBgLight),
   };
   const sheet = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.pageBg },
@@ -563,14 +453,14 @@ function createStyles(scheme){
       paddingBottom: 8,
     },
     logoBox: {
-      backgroundColor: isDark ? '#163957' : '#E6F2FF',
-      borderRadius: 8,
-      paddingHorizontal: 8,
+      backgroundColor: colors.iconBg,
+      borderRadius: 10,
+      paddingHorizontal: 10,
       paddingVertical: 6,
     },
     logoText: { fontSize: 14, fontWeight: '700', color: colors.accent },
     iconBtn: {
-      backgroundColor: isDark ? '#1F2830' : '#EEF2F7',
+      backgroundColor: gv(c.gray3),
       padding: 8,
       borderRadius: 10,
     },
@@ -580,7 +470,7 @@ function createStyles(scheme){
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-      borderRadius: 12,
+      borderRadius: 14,
       paddingHorizontal: 12,
       paddingVertical: 10,
       backgroundColor: colors.cardBg,
@@ -596,14 +486,14 @@ function createStyles(scheme){
     summaryCard: {
       width: '47%',
       backgroundColor: colors.cardBg,
-      borderRadius: 14,
+      borderRadius: 16,
       padding: 14,
       borderWidth: 1,
       borderColor: colors.border,
     },
     summaryTitle: { fontSize: 13, color: colors.textSecondary, marginBottom: 6 },
     summaryValue: { fontSize: 20, fontWeight: '700', color: colors.textPrimary },
-    summarySub: { fontSize: 12, color: isDark ? '#34D399' : '#10b981', marginTop: 4 },
+    summarySub: { fontSize: 12, color: gv(isDark ? c.successDark : c.success), marginTop: 4 },
 
     upcomingCard: {
       flexDirection: 'row',
@@ -638,7 +528,7 @@ function createStyles(scheme){
     activeIconBox: { width: 30, height: 30, borderRadius: 8, backgroundColor: colors.badgeBg, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
     activeName: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
     activeHint: { fontSize: 12, color: colors.textSecondary },
-    activeNext: { fontSize: 12, color: isDark ? '#34D399' : '#10b981' },
+    activeNext: { fontSize: 12, color: gv(isDark ? c.successDark : c.success) },
 
     todoBox: { marginTop: 18, backgroundColor: colors.cardBg, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.border },
     todoTitle: { fontSize: 14, fontWeight: '700', color: colors.textPrimary, marginBottom: 6 },
@@ -669,7 +559,7 @@ function createStyles(scheme){
     formInput: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, color: colors.textPrimary, backgroundColor: colors.cardBg },
     selectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     selectItem: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg },
-    selectItemActive: { backgroundColor: isDark ? '#163957' : '#E6F2FF', borderColor: isDark ? '#2B78C2' : '#60A5FA' },
+    selectItemActive: { backgroundColor: isDark ? gv(c.iconBgDark) : gv(c.primarySoft), borderColor: gv(c.primarySolid) },
     selectText: { fontSize: 12, color: colors.textSecondary },
     selectTextActive: { color: isDark ? '#93C5FD' : '#1D4ED8', fontWeight: '700' },
 
@@ -684,7 +574,7 @@ function createStyles(scheme){
     btnPrimary: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, backgroundColor: colors.fabBg },
     btnPrimaryText: { color: '#fff', fontWeight: '700' },
   });
-  return { ...sheet, colors };
+  return { ...sheet, colors } as ReturnType<typeof StyleSheet.create> & { colors: ColorPalette };
 }
 
 export default HomeScreen;

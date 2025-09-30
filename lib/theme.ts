@@ -1,4 +1,5 @@
 import React from 'react'
+import tamaguiConfig from '../tamagui.config'
 
 /**
  * 主题模式类型
@@ -43,6 +44,9 @@ export type ThemeContextType = {
  */
 export const ThemeContext = React.createContext<ThemeContextType>({
   themeMode: 'auto',
-  setThemeMode: (() => {}) as React.Dispatch<React.SetStateAction<ThemeMode>>,
+  setThemeMode: (() => {}) as React.Dispatch<React.SetStateAction<ThemeMode>>, 
   effectiveScheme: 'light',
 })
+
+// 暴露 Tamagui Tokens，便于在非 Tamagui 组件（如 StyleSheet）中使用
+export const TamaguiTokens = tamaguiConfig.tokens

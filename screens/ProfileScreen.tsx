@@ -87,7 +87,7 @@ function createStyles(scheme: 'light' | 'dark'){
       alignItems: 'center',
       justifyContent: 'flex-start',
       paddingTop: 32,
-      backgroundColor: isDark ? '#0F1416' : '#FFFFFF',
+      backgroundColor: isDark ? '#0F1416' : '#F8FAFC',
     },
     title: {
       fontSize: 24,
@@ -105,11 +105,11 @@ function createStyles(scheme: 'light' | 'dark'){
     },
     item: {
       width: '90%',
-      backgroundColor: isDark ? '#1C1F24' : '#F5F5F7',
+      backgroundColor: isDark ? '#1C1F24' : '#FFFFFF',
       padding: 16,
-      borderRadius: 12,
+      borderRadius: 14,
       borderWidth: 1,
-      borderColor: isDark ? '#2A2E33' : 'transparent',
+      borderColor: isDark ? '#2A2E33' : '#E5E7EB',
     },
     itemText: {
       fontSize: 18,

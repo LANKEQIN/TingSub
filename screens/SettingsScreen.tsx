@@ -36,7 +36,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 32, backgroundColor: isDark ? '#0F1416' : '#F7FAFA' }]}> 
+    <View style={[styles.container, { paddingTop: insets.top + 32, backgroundColor: isDark ? '#0F1416' : '#F8FAFC' }]}> 
       <Text style={[styles.title, { color: isDark ? '#E5E7EB' : '#111827' }]}>{t('settings.title')}</Text>
 
       <Text style={[styles.sectionTitle, { color: isDark ? '#E5E7EB' : '#111827' }]}>{t('theme.currencyPref')}</Text>
@@ -53,7 +53,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
       </View>
 
       <TouchableOpacity
-        style={[styles.navItem, { borderColor: isDark ? '#1f2937' : '#e5e7eb', backgroundColor: isDark ? '#111827' : '#ffffff' }]}
+        style={[styles.navItem, { borderColor: isDark ? '#1f2937' : '#E5E7EB', backgroundColor: isDark ? '#111827' : '#FFFFFF', borderRadius: 14 }]}
         onPress={() => navigation.navigate('PaymentMethods')}
       >
         <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#E5E7EB' : '#111827' }}>{t('nav.paymentMethods')}</Text>

@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { StyleSheet } from 'react-native'
 import { TamaguiProvider } from 'tamagui'
+import { getVariableValue } from '@tamagui/core'
 import tamaguiConfig from './tamagui.config'
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
@@ -47,6 +48,8 @@ const Stack = createNativeStackNavigator<RootStackParamList, 'root-stack'>()
  */
 function MainTabs({ effectiveScheme }: { effectiveScheme: 'light' | 'dark' }) {
   const insets = useSafeAreaInsets()
+  const c = tamaguiConfig.tokens.color
+  const isDark = effectiveScheme === 'dark'
   return (
     <Tab.Navigator
       id="main-tabs"
@@ -64,13 +67,13 @@ function MainTabs({ effectiveScheme }: { effectiveScheme: 'light' | 'dark' }) {
           }
           return <IconComponent size={size} color={color} />
         },
-        tabBarActiveTintColor: effectiveScheme === 'dark' ? '#4DB6FF' : '#007AFF',
-        tabBarInactiveTintColor: effectiveScheme === 'dark' ? '#B0B0B8' : '#8E8E93',
+        tabBarActiveTintColor: getVariableValue(isDark ? c.accentDark : c.accentLight) as string,
+        tabBarInactiveTintColor: getVariableValue(isDark ? c.secondaryDark : c.textSecondaryLight) as string,
         tabBarStyle: {
-          backgroundColor: effectiveScheme === 'dark' ? '#121212' : '#FFFFFF',
+          backgroundColor: getVariableValue(isDark ? c.darkCard : c.cardBgLight) as string,
           borderTopWidth: 0,
           elevation: 20,
-          shadowColor: effectiveScheme === 'dark' ? '#000' : '#000',
+          shadowColor: getVariableValue(c.black) as string,
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 10,
@@ -79,8 +82,12 @@ function MainTabs({ effectiveScheme }: { effectiveScheme: 'light' | 'dark' }) {
           height: 70 + insets.bottom,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
+          // 轻微边框以更现代的层次分隔
+          borderColor: getVariableValue(isDark ? c.borderDark : c.borderLight) as string,
+          borderWidth: 1,
         },
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '500', marginTop: 4 },
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: 4 },
+        tabBarHideOnKeyboard: true,
         headerShown: false,
       })}
     >
@@ -117,6 +124,15 @@ export default function App() {
   const effectiveScheme = useMemo(() => (themeMode === 'auto' ? (systemScheme ?? 'light') : themeMode), [themeMode, systemScheme]) as 'light' | 'dark'
 
   const navigationTheme = effectiveScheme === 'dark' ? DarkTheme : DefaultTheme
+  const isDark = effectiveScheme === 'dark'
+  const c = tamaguiConfig.tokens.color
+  const stackOptions = {
+    headerStyle: { backgroundColor: getVariableValue(isDark ? c.darkCard : c.cardBgLight) as string },
+    headerTitleStyle: { color: getVariableValue(isDark ? c.textPrimaryDark : c.textPrimaryLight) as string, fontWeight: '600' },
+    headerTintColor: getVariableValue(isDark ? c.accentDark : c.accentLight) as string,
+    headerShadowVisible: false,
+    contentStyle: { backgroundColor: getVariableValue(isDark ? c.bgPageDark : c.bgPageLight) as string },
+  } as const
 
   return (
     <I18nProvider>
@@ -126,7 +142,7 @@ export default function App() {
             <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveScheme}>
               <SafeAreaProvider>
                 <NavigationContainer theme={navigationTheme}>
-                  <Stack.Navigator id="root-stack">
+                  <Stack.Navigator id="root-stack" screenOptions={stackOptions as any}>
                     <Stack.Screen name="Tabs" options={{ headerShown: false }}>
                       {() => <MainTabs effectiveScheme={effectiveScheme} />}
                     </Stack.Screen>
