@@ -14,6 +14,9 @@ import type { RouteProp } from '@react-navigation/native'
 import type { TabParamList } from '../lib/navigation'
 import type { RootState } from '../store'
 import type { CategoryGroup } from '../features/subscriptions/types'
+import { getVariableValue } from '@tamagui/core'
+import tamaguiConfig from '../tamagui.config'
+import { selectDisplayScale } from '../features/ui/selectors'
 
 type StatisticsScreenProps = {
   route: RouteProp<TabParamList, 'Statistics'>
@@ -25,7 +28,8 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   const [chartW, setChartW] = useState(330)
   const { effectiveScheme } = useContext(ThemeContext)
   const { t, locale } = useContext(I18nContext)
-  const styles = createStyles(effectiveScheme)
+  const scale = useAppSelector(selectDisplayScale)
+  const styles = createStyles(effectiveScheme, scale)
   const isDark = effectiveScheme === 'dark'
   const preferredCurrency = useAppSelector(selectPreferredCurrency)
 
@@ -166,24 +170,35 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   )
 }
 
-function createStyles(scheme: 'light' | 'dark'){
+function createStyles(scheme: 'light' | 'dark', scale: number){
   const isDark = scheme === 'dark'
+  const c = tamaguiConfig.tokens.color
+  const gv = getVariableValue
+  const colors = {
+    pageBg: gv(isDark ? c.bgPageDark : c.bgPageLight),
+    cardBg: gv(isDark ? c.cardBgDark : c.cardBgLight),
+    border: gv(isDark ? c.borderDark : c.borderLight),
+    textPrimary: gv(isDark ? c.textPrimaryDark : c.textPrimaryLight),
+    textSecondary: gv(isDark ? c.textSecondaryDark : c.textSecondaryLight),
+    muted: gv(isDark ? c.mutedDark : c.mutedLight),
+    accent: gv(isDark ? c.accentDark : c.accentLight),
+  }
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: isDark ? '#0F1416' : '#F8FAFC' },
-    scroll: { paddingHorizontal: 16, paddingBottom: 24 },
-    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'left', color: isDark ? '#E5E7EB' : '#111827' },
-    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, marginBottom: 12 },
-    sectionTitle: { fontSize: 18, fontWeight: '700', color: isDark ? '#E5E7EB' : '#111827' },
-    link: { color: isDark ? '#4DB6FF' : '#0ea5e9', fontSize: 13 },
-    filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
-    chip: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, borderWidth: 1, borderColor: isDark ? '#2A2E33' : '#E5E7EB', backgroundColor: isDark ? '#1C1F24' : '#FFFFFF' },
-    chipSm: { paddingVertical: 4, paddingHorizontal: 8, borderRadius: 999, borderWidth: 1, borderColor: isDark ? '#2A2E33' : '#E5E7EB', backgroundColor: isDark ? '#1C1F24' : '#FFFFFF' },
-    chipActive: { borderColor: isDark ? '#4DB6FF' : '#4f46e5', backgroundColor: isDark ? '#142633' : '#EEF2FF' },
-    chipText: { fontSize: 13, color: isDark ? '#A7B0B8' : '#374151' },
-    chipTextSm: { fontSize: 12, color: isDark ? '#A7B0B8' : '#374151' },
-    chipTextActive: { color: isDark ? '#4DB6FF' : '#4f46e5', fontWeight: '600' },
-    chartCard: { backgroundColor: isDark ? '#1C1F24' : '#FFFFFF', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: isDark ? '#2A2E33' : '#E5E7EB', alignItems: 'center' },
-    chartAxis: { fontSize: 12, color: isDark ? '#A7B0B8' : '#6b7280', marginTop: 8 },
+    container: { flex: 1, backgroundColor: colors.pageBg },
+    scroll: { paddingHorizontal: 16 * scale, paddingBottom: 24 * scale },
+    title: { fontSize: 24 * scale, fontWeight: 'bold', marginBottom: 20 * scale, textAlign: 'left', color: colors.textPrimary },
+    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 * scale, marginBottom: 12 * scale },
+    sectionTitle: { fontSize: 18 * scale, fontWeight: '700', color: colors.textPrimary },
+    link: { color: colors.accent as string, fontSize: 13 * scale },
+    filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 * scale, marginBottom: 10 * scale },
+    chip: { paddingVertical: 6 * scale, paddingHorizontal: 10 * scale, borderRadius: 999, borderWidth: 1, borderColor: colors.border as string, backgroundColor: colors.cardBg as string },
+    chipSm: { paddingVertical: 4 * scale, paddingHorizontal: 8 * scale, borderRadius: 999, borderWidth: 1, borderColor: colors.border as string, backgroundColor: colors.cardBg as string },
+    chipActive: { borderColor: colors.accent as string, backgroundColor: isDark ? gv(c.iconBgDark) as string : gv(c.iconBgLight) as string },
+    chipText: { fontSize: 13 * scale, color: colors.textSecondary },
+    chipTextSm: { fontSize: 12 * scale, color: colors.textSecondary },
+    chipTextActive: { color: colors.accent as string, fontWeight: '600' },
+    chartCard: { backgroundColor: colors.cardBg as string, borderRadius: 14, padding: 12 * scale, borderWidth: 1, borderColor: colors.border as string, alignItems: 'center' },
+    chartAxis: { fontSize: 12 * scale, color: colors.muted as string, marginTop: 8 * scale },
   })
 }
 

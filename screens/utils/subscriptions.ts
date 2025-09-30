@@ -54,5 +54,40 @@ export function daysUntil(dateISO?: string | null) {
   return diff
 }
 
+// Cycle 类型已从 slice 统一导出，这里无需再次从 types 导入
+
+const pad2 = (n: number) => String(n).padStart(2, '0')
+const formatISO = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+
+function addMonthsSafe(date: Date, months: number): Date {
+  const y = date.getFullYear()
+  const m = date.getMonth()
+  const day = date.getDate()
+  const base = new Date(y, m + months, 1)
+  const lastDay = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate()
+  const safeDay = Math.min(day, lastDay)
+  return new Date(base.getFullYear(), base.getMonth(), safeDay)
+}
+
+/**
+ * 根据周期推进到期日（用于自动续费）
+ * - monthly: +1 月
+ * - quarterly: +3 月
+ * - yearly: +12 月
+ * - lifetime/other: 不推进
+ * 若当前到期日已过去，会循环推进直至未来日期
+ */
+export function advanceNextDueISO(currentISO: string, cycle: Cycle): string {
+  if (!currentISO) return currentISO
+  let due = new Date(currentISO)
+  const today = new Date()
+  const months = cycle === 'monthly' ? 1 : cycle === 'quarterly' ? 3 : cycle === 'yearly' ? 12 : 0
+  if (months <= 0) return currentISO
+  while (due.getTime() <= today.getTime()) {
+    due = addMonthsSafe(due, months)
+  }
+  return formatISO(due)
+}
+
 // 便捷类型导出（如组件/Hook 需要）
 export type { Subscription, CategoryGroup, Cycle, CurrencyCode }

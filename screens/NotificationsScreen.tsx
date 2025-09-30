@@ -6,6 +6,8 @@ import type { RouteProp } from '@react-navigation/native';
 import type { TabParamList } from '../lib/navigation';
 import { ThemeContext } from '../lib/theme';
 import { I18nContext } from '../lib/i18n';
+import { getVariableValue } from '@tamagui/core';
+import tamaguiConfig from '../tamagui.config';
 
 /**
  * 通知屏幕的属性类型定义
@@ -51,21 +53,28 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = () => {
 function createStyles(scheme: 'light' | 'dark'){
   // 判断是否为深色主题
   const isDark = scheme === 'dark';
+  const c = tamaguiConfig.tokens.color;
+  const v = getVariableValue;
+  const colors = {
+    pageBg: v(isDark ? c.bgPageDark : c.bgPageLight),
+    textPrimary: v(isDark ? c.textPrimaryDark : c.textPrimaryLight),
+    textSecondary: v(isDark ? c.textSecondaryDark : c.textSecondaryLight),
+  };
   return StyleSheet.create({
     container: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: isDark ? '#0F1416' : '#FFFFFF',
+      backgroundColor: colors.pageBg as string,
     },
     title: {
       fontSize: 24,
       fontWeight: 'bold',
       marginBottom: 20,
-      color: isDark ? '#E5E7EB' : '#111827',
+      color: colors.textPrimary as string,
     },
     text: {
-      color: isDark ? '#A7B0B8' : '#111827',
+      color: colors.textSecondary as string,
     }
   })
 }

@@ -14,8 +14,9 @@
  */
 
 import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Text } from 'tamagui';
+import { UI } from '../../lib/ui'
 
 /**
  * SectionHeader 组件的属性接口
@@ -33,12 +34,18 @@ type SectionHeaderProps = {
   styles: any
 }
 
+const fallback = StyleSheet.create({
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: UI.space.sm, marginBottom: UI.space.sm },
+  sectionTitle: { fontSize: 18, fontWeight: '700' },
+  link: { fontSize: 13 },
+})
+
 const SectionHeader: React.FC<SectionHeaderProps> = ({ title, actionText, onPress, styles }) => (
-  <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>{title}</Text>
+  <View style={styles.sectionHeader ?? fallback.sectionHeader}>
+    <Text style={styles.sectionTitle ?? fallback.sectionTitle}>{title}</Text>
     {actionText ? (
       <TouchableOpacity onPress={onPress}>
-        <Text style={styles.link}>{actionText}</Text>
+        <Text style={styles.link ?? fallback.link}>{actionText}</Text>
       </TouchableOpacity>
     ) : (
       <View />

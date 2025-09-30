@@ -1,24 +1,27 @@
-import React, { useMemo, useState, useContext } from 'react';
+import React, { useMemo, useState, useContext, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
-import { Text } from 'tamagui';
+import { Text, getVariableValue } from 'tamagui';
+import tamaguiConfig from '../tamagui.config'
+import { UI, useResponsiveLayout } from '../lib/ui'
 import {
   Bell,
   User,
   Search,
-  Plus,
-  Check
+  Plus
 } from '@tamagui/lucide-icons';
 import SectionHeader from './components/SectionHeader';
 import SummaryCard from './components/SummaryCard';
 import UpcomingCard from './components/UpcomingCard';
 import ActiveRow from './components/ActiveRow';
-import BarChart from './components/BarChart';
 import SubscriptionActionSheet from './components/SubscriptionActionSheet';
 import SubscriptionFormModal from './components/SubscriptionFormModal';
+import ErrorBoundary from './components/ErrorBoundary';
+import ErrorState from './components/ErrorState';
+import EmptyState from './components/EmptyState';
+import LoadingSkeleton from './components/LoadingSkeleton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { addSubscription, updateSubscription, removeSubscription } from '../features/subscriptions/slice';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { ThemeContext } from '../lib/theme';
 import { I18nContext } from '../lib/i18n';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -33,6 +36,8 @@ import { useAppSelector } from '../store';
 import { selectPreferredCurrency } from '../features/currency/slice';
 import { CurrencyService, convertCurrency } from '../features/currency/services';
 import { selectPaymentMethods } from '../features/payment_methods/selectors';
+import { advanceNextDueISO } from './utils/subscriptions';
+import { selectDisplayScale } from '../features/ui/selectors'
 
 // 计算型工具
 // 类型：订阅分组使用领域类型
@@ -82,8 +87,35 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const subs = useSelector((state: RootState) => state.subscriptions.list);
   const { effectiveScheme } = useContext(ThemeContext);
   const { t } = useContext(I18nContext);
-  const styles = createStyles(effectiveScheme);
+  const scale = useAppSelector(selectDisplayScale)
+  const styles = createStyles(effectiveScheme, scale);
+  const { isLarge } = useResponsiveLayout();
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
+  // 错误边界重置计数
+  const [retryCount, setRetryCount] = useState(0);
+  // 首屏轻量骨架演示：短暂显示骨架屏，后续可接入真实加载态
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 自动续费：当到期（或今天到期）且开启自动续费时，推进 nextDueISO 到下一个周期
+  useEffect(() => {
+    const updates: Subscription[] = []
+    subs.forEach((s) => {
+      const d = daysUntil(s.nextDueISO)
+      if (s.autoRenew && d !== null && d <= 0 && s.nextDueISO) {
+        const nextISO = advanceNextDueISO(s.nextDueISO, s.cycle)
+        if (nextISO !== s.nextDueISO) {
+          updates.push({ ...s, nextDueISO: nextISO })
+        }
+      }
+    })
+    if (updates.length > 0) {
+      updates.forEach((u) => dispatch(updateSubscription(u)))
+    }
+  }, [subs])
 
   const summaryData = useMemo(() => {
     const totalSubs = subs.length;
@@ -117,7 +149,11 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         id: s.id,
         name: s.name,
         cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
-        next: s.nextDueISO ? `${d}天内` : '未设置',
+        next: s.nextDueISO
+          ? (s.autoRenew && d !== null && d >= 0 && d <= 7
+              ? `在${d}天后自动续费`
+              : `${d}天内`)
+          : '未设置',
         price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
         dueDays: d,
       };
@@ -131,22 +167,18 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     id: s.id,
     name: s.name,
     price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
-    next: s.nextDueISO ? `${daysUntil(s.nextDueISO)}天内` : '未设置',
+    next: (() => {
+      const d = daysUntil(s.nextDueISO);
+      return s.nextDueISO
+        ? (s.autoRenew && d !== null && d >= 0 && d <= 7
+            ? `在${d}天后自动续费`
+            : `${d}天内`)
+        : '未设置';
+    })(),
   })), [subs, preferredCurrency]);
 
   // 新增：支出分析数据（近 6 个月的预计月支出）
-  const spendByMonth = useMemo(() => {
-    const monthly = subs.reduce((sum, s) => {
-      const from = s.currency ?? 'CNY'
-      const add = (s.cycle === 'monthly') ? s.price
-        : (s.cycle === 'quarterly') ? s.price/3
-        : (s.cycle === 'yearly') ? s.price/12
-        : 0
-      return sum + convertCurrency(add, from as any, preferredCurrency as any)
-    }, 0);
-    const val = Math.round(monthly);
-    return [val, val, val, val, val, val];
-  }, [subs, preferredCurrency]);
+  //（已移至统计页，移除未使用的支出分析计算）
   // 表单弹窗状态
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<{
@@ -156,11 +188,12 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     categoryLabel: string;
     price: string;
     cycle: Cycle;
+    startISO: string;
     nextDueISO: string;
     autoRenew: boolean;
     currency: 'CNY'|'USD'|'JPY';
     paymentMethodId?: string;
-  }>({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY', paymentMethodId: undefined });
+  }>({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', startISO: '', nextDueISO: '', autoRenew: false, currency: 'CNY', paymentMethodId: undefined });
   // 新增：编辑/操作相关状态（修复 actionOpen 未定义报错）
   const [editMode, setEditMode] = useState(false);
   const [selectedSub, setSelectedSub] = useState<Subscription | null>(null);
@@ -229,6 +262,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         : (isGroupOption ? '' : (selectedSub.category ?? '')),
       price: String(selectedSub.price),
       cycle: selectedSub.cycle,
+      startISO: selectedSub.startISO ?? '',
       nextDueISO: selectedSub.nextDueISO ?? '',
       autoRenew: !!selectedSub.autoRenew,
       currency: selectedSub.currency ?? 'CNY',
@@ -265,6 +299,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         categoryGroup: form.categoryGroup,
         price: Number(form.price),
         cycle: form.cycle,
+        startISO: form.startISO || undefined,
         nextDueISO: form.nextDueISO || undefined,
         autoRenew: form.autoRenew,
         currency: form.currency,
@@ -281,6 +316,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         categoryGroup: form.categoryGroup,
         price: Number(form.price),
         cycle: form.cycle,
+        startISO: form.startISO || undefined,
         nextDueISO: form.nextDueISO || undefined,
         autoRenew: form.autoRenew,
         currency: form.currency,
@@ -289,10 +325,14 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       dispatch(addSubscription(payload));
     }
     closeModal();
-    setForm({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', nextDueISO: '', autoRenew: false, currency: 'CNY', paymentMethodId: undefined });
+    setForm({ name: '', categoryGroup: '影音娱乐', categoryId: undefined, categoryLabel: '', price: '', cycle: 'monthly', startISO: '', nextDueISO: '', autoRenew: false, currency: 'CNY', paymentMethodId: undefined });
   };
 
   return (
+    <ErrorBoundary
+      resetKeys={[retryCount, subs.length]}
+      fallback={<ErrorState styles={styles} onRetry={() => setRetryCount((c) => c + 1)} />}
+    >
     <View style={[styles.container, { paddingTop: insets.top }]}> 
       {/* 顶部导航 */}
       <View style={styles.topbar}>
@@ -311,41 +351,111 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         <TextInput style={styles.searchInput} placeholder={t('home.searchPlaceholder')} placeholderTextColor={styles.colors.muted} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* 订阅概览 */}
-        <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
-        <View style={styles.summaryGrid}>
-          <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
-          <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
-          <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
-          <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+      {isLarge ? (
+        <View style={{ flexDirection: 'row', gap: UI.space.md }}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+            {loading ? (
+              <LoadingSkeleton styles={styles} />
+            ) : subs.length === 0 ? (
+              <>
+                <SectionHeader title={t('home.overview')} styles={styles} />
+                <EmptyState
+                  title={t('home.emptyTitle') || '暂无订阅'}
+                  description={t('home.emptyDesc') || '添加你的第一个订阅以开始统计与提醒'}
+                  actionLabel={t('home.addSub') || '添加订阅'}
+                  onAction={openModal}
+                  styles={styles}
+                />
+              </>
+            ) : (
+              <>
+                <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
+                <View style={styles.summaryGrid}>
+                  <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
+                  <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+                  <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
+                  <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+                </View>
+
+                {upcomingList.length > 0 && (
+                  <>
+                    <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
+                    <View style={{ gap: 12 }}>
+                      {upcomingList.map((u) => (
+                        <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                      ))}
+                    </View>
+                  </>
+                )}
+              </>
+            )}
+          </ScrollView>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+            {loading ? (
+              <LoadingSkeleton styles={styles} />
+            ) : subs.length === 0 ? (
+              <View />
+            ) : (
+              <>
+                <SectionHeader title={t('home.active')} styles={styles} />
+                <View style={{ gap: 8 }}>
+                  {activeSubs.map((s, idx) => (
+                    <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
+                  ))}
+                </View>
+              </>
+            )}
+            <View style={{ height: 80 }} />
+          </ScrollView>
         </View>
+      ) : (
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          {loading ? (
+            <LoadingSkeleton styles={styles} />
+          ) : subs.length === 0 ? (
+            <>
+              <SectionHeader title={t('home.overview')} styles={styles} />
+              <EmptyState
+                title={t('home.emptyTitle') || '暂无订阅'}
+                description={t('home.emptyDesc') || '添加你的第一个订阅以开始统计与提醒'}
+                actionLabel={t('home.addSub') || '添加订阅'}
+                onAction={openModal}
+                styles={styles}
+              />
+            </>
+          ) : (
+            <>
+              <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
+              <View style={styles.summaryGrid}>
+                <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
+                <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+                <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
+                <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+              </View>
 
-        {/* 即将到期（仅在7天内有到期项时显示） */}
-        {upcomingList.length > 0 && (
-          <>
-            <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
-            <View style={{ gap: 12 }}>
-              {upcomingList.map((u) => (
-                <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
-              ))}
-            </View>
-          </>
-        )}
+              {upcomingList.length > 0 && (
+                <>
+                  <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
+                  <View style={{ gap: 12 }}>
+                    {upcomingList.map((u) => (
+                      <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                    ))}
+                  </View>
+                </>
+              )}
 
-        {/* 支出分析已移至统计页 */}
+              <SectionHeader title={t('home.active')} styles={styles} />
+              <View style={{ gap: 8 }}>
+                {activeSubs.map((s, idx) => (
+                  <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
+                ))}
+              </View>
 
-        {/* 活跃订阅 */}
-        <SectionHeader title={t('home.active')} styles={styles} />
-        <View style={{ gap: 8 }}>
-          {activeSubs.map((s, idx) => (
-            <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
-          ))}
-        </View>
-
-
-        <View style={{ height: 80 }} />
-      </ScrollView>
+              <View style={{ height: 80 }} />
+            </>
+          )}
+        </ScrollView>
+      )}
 
       {/* 悬浮添加按钮 */}
       <TouchableOpacity style={styles.fab} onPress={openModal}>
@@ -386,159 +496,42 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         onClose={closeModal}
       />
     </View>
+    </ErrorBoundary>
   );
 };
 
-// 样式补充
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
-  topbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  logoBox: {
-    backgroundColor: '#E6F2FF',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  logoText: { fontSize: 14, fontWeight: '700', color: '#0ea5e9' },
-  iconBtn: {
-    backgroundColor: '#EEF2F7',
-    padding: 8,
-    borderRadius: 10,
-  },
-  searchBox: {
-    marginHorizontal: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  searchInput: { flex: 1, fontSize: 15, color: '#111827' },
-  scroll: { paddingHorizontal: 16, paddingBottom: 24 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, marginBottom: 12 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
-  link: { color: '#0ea5e9', fontSize: 13 },
-  summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  summaryCard: {
-    width: '47%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  summaryTitle: { fontSize: 13, color: '#6b7280', marginBottom: 6 },
-  summaryValue: { fontSize: 20, fontWeight: '700', color: '#111827' },
-  summarySub: { fontSize: 12, color: '#10b981', marginTop: 4 },
-
-  upcomingCard: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  upcomingIconBox: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E6F2FF' },
-  upcomingName: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  upcomingCycle: { fontSize: 12, color: '#6b7280', marginTop: 2 },
-  upcomingMetaRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
-  badgeInfo: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F3F4F6', paddingVertical: 6, paddingHorizontal: 8, borderRadius: 8 },
-  badgeText: { fontSize: 12, color: '#374151' },
-
-  chartCard: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: '#E5E7EB', alignItems: 'center' },
-  chartAxis: { fontSize: 12, color: '#6b7280', marginTop: 8 },
-
-  activeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  activeIconBox: { width: 30, height: 30, borderRadius: 8, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  activeName: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  activeHint: { fontSize: 12, color: '#6b7280' },
-  activeNext: { fontSize: 12, color: '#10b981' },
-
-  todoBox: { marginTop: 18, backgroundColor: '#F9FAFB', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#E5E7EB' },
-  todoTitle: { fontSize: 14, fontWeight: '700', color: '#111827', marginBottom: 6 },
-  todoItem: { fontSize: 12, color: '#374151', marginTop: 2 },
-
-  fab: {
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#2563EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-
-  // 弹窗样式
-  modalMask: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
-  modalBox: { width: '90%', backgroundColor: '#fff', borderRadius: 12, padding: 16 },
-  modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 12 },
-  formRow: { marginBottom: 10 },
-  formLabel: { fontSize: 13, color: '#6b7280', marginBottom: 6 },
-  formInput: { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 },
-  selectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  selectItem: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB' },
-  selectItemActive: { backgroundColor: '#E6F2FF', borderColor: '#60A5FA' },
-  selectText: { fontSize: 12, color: '#374151' },
-  selectTextActive: { color: '#1D4ED8', fontWeight: '700' },
-  // 新增复选框样式
-  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
-  checkboxBox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-  checkboxBoxChecked: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
-  checkbox: { paddingVertical: 8 },
-  checkboxText: { fontSize: 13, color: '#374151' },
-  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 6 },
-  btnGhost: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB' },
-  btnGhostText: { color: '#374151' },
-  btnPrimary: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, backgroundColor: '#2563EB' },
-  btnPrimaryText: { color: '#fff', fontWeight: '700' },
-});
+// 明确样式返回类型，包含颜色调色板
+type ColorPalette = {
+  pageBg: string;
+  cardBg: string;
+  border: string;
+  textPrimary: string;
+  textSecondary: string;
+  muted: string;
+  accent: string;
+  badgeBg: string;
+  iconBg: string;
+  fabBg: string;
+  modalBg: string;
+};
 
 // 替换为按主题生成样式（深色/浅色）
-function createStyles(scheme){
+function createStyles(scheme: 'light' | 'dark', scale: number){
   const isDark = scheme === 'dark';
-  const colors = {
-    pageBg: isDark ? '#0F1416' : '#F8FAFC',
-    cardBg: isDark ? '#1C1F24' : '#FFFFFF',
-    border: isDark ? '#2A2E33' : '#E5E7EB',
-    textPrimary: isDark ? '#E5E7EB' : '#111827',
-    textSecondary: isDark ? '#A7B0B8' : '#6b7280',
-    muted: isDark ? '#78828A' : '#9CA3AF',
-    accent: isDark ? '#4DB6FF' : '#0ea5e9',
-    badgeBg: isDark ? '#28313A' : '#F3F4F6',
-    iconBg: isDark ? '#22303C' : '#E6F2FF',
-    fabBg: isDark ? '#2563EB' : '#2563EB',
-    modalBg: isDark ? '#1C1F24' : '#FFFFFF',
+  const c = tamaguiConfig.tokens.color;
+  const gv = getVariableValue;
+  const colors: ColorPalette = {
+    pageBg: gv(isDark ? c.bgPageDark : c.bgPageLight),
+    cardBg: gv(isDark ? c.cardBgDark : c.cardBgLight),
+    border: gv(isDark ? c.borderDark : c.borderLight),
+    textPrimary: gv(isDark ? c.textPrimaryDark : c.textPrimaryLight),
+    textSecondary: gv(isDark ? c.textSecondaryDark : c.textSecondaryLight),
+    muted: gv(isDark ? c.mutedDark : c.mutedLight),
+    accent: gv(isDark ? c.accentDark : c.accentLight),
+    badgeBg: gv(isDark ? c.badgeBgDark : c.badgeBgLight),
+    iconBg: gv(isDark ? c.iconBgDark : c.iconBgLight),
+    fabBg: gv(c.fabBg),
+    modalBg: gv(isDark ? c.modalBgDark : c.modalBgLight),
   };
   const sheet = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.pageBg },
@@ -546,90 +539,90 @@ function createStyles(scheme){
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 8,
+      paddingHorizontal: UI.space.md * scale,
+      paddingTop: UI.space.md * scale,
+      paddingBottom: UI.space.xs * scale,
     },
     logoBox: {
-      backgroundColor: isDark ? '#163957' : '#E6F2FF',
-      borderRadius: 8,
-      paddingHorizontal: 8,
-      paddingVertical: 6,
+      backgroundColor: colors.iconBg,
+      borderRadius: UI.radius.sm,
+      paddingHorizontal: UI.space.sm * scale,
+      paddingVertical: UI.space.xs * scale,
     },
-    logoText: { fontSize: 14, fontWeight: '700', color: colors.accent },
+    logoText: { fontSize: 14 * scale, fontWeight: '700', color: colors.accent },
     iconBtn: {
-      backgroundColor: isDark ? '#1F2830' : '#EEF2F7',
-      padding: 8,
-      borderRadius: 10,
+      backgroundColor: gv(c.gray3),
+      padding: UI.space.xs,
+      borderRadius: UI.radius.sm,
     },
     searchBox: {
-      marginHorizontal: 16,
-      marginBottom: 12,
+      marginHorizontal: UI.space.md,
+      marginBottom: UI.space.sm,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
-      borderRadius: 12,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
+      gap: UI.space.xs,
+      borderRadius: UI.radius.lg,
+      paddingHorizontal: UI.space.sm,
+      paddingVertical: UI.space.sm,
       backgroundColor: colors.cardBg,
       borderWidth: 1,
       borderColor: colors.border,
     },
     searchInput: { flex: 1, fontSize: 15, color: colors.textPrimary },
-    scroll: { paddingHorizontal: 16, paddingBottom: 24 },
-    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, marginBottom: 12 },
+    scroll: { paddingHorizontal: UI.space.md, paddingBottom: UI.space.lg },
+    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: UI.space.xs, marginBottom: UI.space.sm },
     sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary },
     link: { color: colors.accent, fontSize: 13 },
-    summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+    summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: UI.space.sm },
     summaryCard: {
       width: '47%',
       backgroundColor: colors.cardBg,
-      borderRadius: 14,
-      padding: 14,
+      borderRadius: UI.radius.xl,
+      padding: UI.space.md,
       borderWidth: 1,
       borderColor: colors.border,
     },
     summaryTitle: { fontSize: 13, color: colors.textSecondary, marginBottom: 6 },
     summaryValue: { fontSize: 20, fontWeight: '700', color: colors.textPrimary },
-    summarySub: { fontSize: 12, color: isDark ? '#34D399' : '#10b981', marginTop: 4 },
+    summarySub: { fontSize: 12, color: gv(isDark ? c.successDark : c.success), marginTop: 4 },
 
     upcomingCard: {
       flexDirection: 'row',
-      gap: 12,
+      gap: UI.space.sm,
       alignItems: 'center',
       backgroundColor: colors.cardBg,
-      borderRadius: 14,
-      padding: 12,
+      borderRadius: UI.radius.lg,
+      padding: UI.space.sm,
       borderWidth: 1,
       borderColor: colors.border,
     },
-    upcomingIconBox: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.iconBg },
+    upcomingIconBox: { width: 36, height: 36, borderRadius: UI.radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.iconBg },
     upcomingName: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
     upcomingCycle: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
-    upcomingMetaRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
-    badgeInfo: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.badgeBg, paddingVertical: 6, paddingHorizontal: 8, borderRadius: 8 },
+    upcomingMetaRow: { flexDirection: 'row', gap: UI.space.sm, marginTop: UI.space.xs },
+    badgeInfo: { flexDirection: 'row', alignItems: 'center', gap: UI.space.xs, backgroundColor: colors.badgeBg, paddingVertical: UI.space.xs, paddingHorizontal: UI.space.xs, borderRadius: UI.radius.xs },
     badgeText: { fontSize: 12, color: colors.textSecondary },
 
-    chartCard: { backgroundColor: colors.cardBg, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
-    chartAxis: { fontSize: 12, color: colors.textSecondary, marginTop: 8 },
+    chartCard: { backgroundColor: colors.cardBg, borderRadius: UI.radius.lg, padding: UI.space.sm, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
+    chartAxis: { fontSize: 12, color: colors.textSecondary, marginTop: UI.space.xs },
 
     activeRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 12,
+      paddingVertical: UI.space.sm,
+      paddingHorizontal: UI.space.sm,
       backgroundColor: colors.cardBg,
-      borderRadius: 12,
+      borderRadius: UI.radius.md,
       borderWidth: 1,
       borderColor: colors.border,
     },
-    activeIconBox: { width: 30, height: 30, borderRadius: 8, backgroundColor: colors.badgeBg, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+    activeIconBox: { width: 30, height: 30, borderRadius: UI.radius.xs, backgroundColor: colors.badgeBg, alignItems: 'center', justifyContent: 'center', marginRight: UI.space.sm },
     activeName: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
     activeHint: { fontSize: 12, color: colors.textSecondary },
-    activeNext: { fontSize: 12, color: isDark ? '#34D399' : '#10b981' },
+    activeNext: { fontSize: 12, color: gv(isDark ? c.successDark : c.success) },
 
-    todoBox: { marginTop: 18, backgroundColor: colors.cardBg, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.border },
-    todoTitle: { fontSize: 14, fontWeight: '700', color: colors.textPrimary, marginBottom: 6 },
+    todoBox: { marginTop: UI.space.md, backgroundColor: colors.cardBg, borderRadius: UI.radius.md, padding: UI.space.sm, borderWidth: 1, borderColor: colors.border },
+    todoTitle: { fontSize: 14, fontWeight: '700', color: colors.textPrimary, marginBottom: UI.space.xs },
     todoItem: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
 
     fab: {
@@ -650,29 +643,29 @@ function createStyles(scheme){
     },
 
     modalMask: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: isDark ? 'rgba(0,0,0,0.50)' : 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
-    modalBox: { width: '90%', backgroundColor: colors.modalBg, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: colors.border },
-    modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 12, color: colors.textPrimary },
-    formRow: { marginBottom: 10 },
-    formLabel: { fontSize: 13, color: colors.textSecondary, marginBottom: 6 },
-    formInput: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, color: colors.textPrimary, backgroundColor: colors.cardBg },
-    selectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-    selectItem: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg },
-    selectItemActive: { backgroundColor: isDark ? '#163957' : '#E6F2FF', borderColor: isDark ? '#2B78C2' : '#60A5FA' },
+    modalBox: { width: '90%', maxHeight: '85%', backgroundColor: colors.modalBg, borderRadius: UI.radius.md, padding: UI.space.md, borderWidth: 1, borderColor: colors.border },
+    modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: UI.space.sm, color: colors.textPrimary },
+    formRow: { marginBottom: UI.space.sm },
+    formLabel: { fontSize: 13, color: colors.textSecondary, marginBottom: UI.space.xs },
+    formInput: { borderWidth: 1, borderColor: colors.border, borderRadius: UI.radius.xs, paddingHorizontal: UI.space.sm, paddingVertical: UI.space.xs, color: colors.textPrimary, backgroundColor: colors.cardBg },
+    selectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: UI.space.xs },
+    selectItem: { paddingHorizontal: UI.space.sm, paddingVertical: UI.space.xs, borderRadius: UI.radius.xs, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg },
+    selectItemActive: { backgroundColor: isDark ? gv(c.iconBgDark) : gv(c.primarySoft), borderColor: gv(c.primarySolid) },
     selectText: { fontSize: 12, color: colors.textSecondary },
     selectTextActive: { color: isDark ? '#93C5FD' : '#1D4ED8', fontWeight: '700' },
 
-    checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
+    checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: UI.space.xs, paddingVertical: UI.space.xs },
     checkboxBox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg, alignItems: 'center', justifyContent: 'center' },
     checkboxBoxChecked: { backgroundColor: colors.fabBg, borderColor: colors.fabBg },
-    checkbox: { paddingVertical: 8 },
+    checkbox: { paddingVertical: UI.space.xs },
     checkboxText: { fontSize: 13, color: colors.textSecondary },
-    modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 6 },
-    btnGhost: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg },
+    modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: UI.space.sm, marginTop: UI.space.xs },
+    btnGhost: { paddingHorizontal: UI.space.md, paddingVertical: UI.space.sm, borderRadius: UI.radius.xs, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg },
     btnGhostText: { color: colors.textSecondary },
-    btnPrimary: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, backgroundColor: colors.fabBg },
+    btnPrimary: { paddingHorizontal: UI.space.md, paddingVertical: UI.space.sm, borderRadius: UI.radius.xs, backgroundColor: colors.fabBg },
     btnPrimaryText: { color: '#fff', fontWeight: '700' },
   });
-  return { ...sheet, colors };
+  return { ...sheet, colors } as ReturnType<typeof StyleSheet.create> & { colors: ColorPalette };
 }
 
 export default HomeScreen;

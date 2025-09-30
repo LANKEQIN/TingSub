@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'tamagui';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -10,6 +9,11 @@ import { ThemeContext } from '../lib/theme';
 import { I18nContext } from '../lib/i18n';
 import { useAppDispatch, useAppSelector } from '../store';
 import { selectPreferredCurrency, setPreferredCurrency } from '../features/currency/slice';
+import { getVariableValue } from '@tamagui/core';
+import tamaguiConfig from '../tamagui.config';
+import { UI } from '../lib/ui';
+import { selectDisplayScale } from '../features/ui/selectors'
+import ScreenContainer from './components/ScreenContainer'
 
 /**
  * 我的屏幕的属性类型定义
@@ -44,11 +48,11 @@ type OptionProps = {
  */
 
 const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
-  const insets = useSafeAreaInsets();
   // 从 ThemeContext 获取当前生效的主题方案
   const { effectiveScheme } = useContext(ThemeContext);
   const { t } = useContext(I18nContext);
-  const styles = createStyles(effectiveScheme);
+  const scale = useAppSelector(selectDisplayScale)
+  const styles = createStyles(effectiveScheme, scale);
   const dispatch = useAppDispatch();
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
   const Option: React.FC<OptionProps> = ({ active, label, onPress }) => (
@@ -57,7 +61,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
     </TouchableOpacity>
   );
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 32 }]}>
+    <ScreenContainer scrollable>
       <Text style={styles.title}>{t('profile.title')}</Text>
       <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Theme')}>
         <Text style={styles.itemText}>{t('profile.theme')}</Text>
@@ -68,7 +72,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
         <Text style={styles.itemText}>{t('profile.appSettings')}</Text>
         <Text style={styles.itemSub}>{t('profile.appSettingsSub')}</Text>
       </TouchableOpacity>
-    </View>
+    </ScreenContainer>
   );
 };
 
@@ -78,64 +82,72 @@ const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
  * @param {('light' | 'dark')} scheme - 当前的主题方案
  * @returns {StyleSheet.NamedStyles} 返回适配指定主题的样式对象
  */
-function createStyles(scheme: 'light' | 'dark'){
+function createStyles(scheme: 'light' | 'dark', scale: number){
   // 判断是否为深色主题
   const isDark = scheme === 'dark';
+  const c = tamaguiConfig.tokens.color;
+  const v = getVariableValue;
+  const colors = {
+    pageBg: v(isDark ? c.bgPageDark : c.bgPageLight),
+    cardBg: v(isDark ? c.cardBgDark : c.cardBgLight),
+    border: v(isDark ? c.borderDark : c.borderLight),
+    textPrimary: v(isDark ? c.textPrimaryDark : c.textPrimaryLight),
+    textSecondary: v(isDark ? c.textSecondaryDark : c.textSecondaryLight),
+    accent: v(isDark ? c.accentDark : c.accentLight),
+    iconBg: v(isDark ? c.iconBgDark : c.iconBgLight),
+  };
   return StyleSheet.create({
     container: {
       flex: 1,
       alignItems: 'center',
-      justifyContent: 'flex-start',
-      paddingTop: 32,
-      backgroundColor: isDark ? '#0F1416' : '#FFFFFF',
     },
     title: {
-      fontSize: 24,
+      fontSize: 24 * scale,
       fontWeight: 'bold',
-      marginBottom: 20,
-      color: isDark ? '#E5E7EB' : '#111827',
+      marginBottom: 20 * scale,
+      color: colors.textPrimary as string,
     },
     sectionTitle: {
-      fontSize: 18,
+      fontSize: 18 * scale,
       fontWeight: '700',
       alignSelf: 'flex-start',
       marginLeft: '5%',
-      marginBottom: 12,
-      color: isDark ? '#E5E7EB' : '#111827',
+      marginBottom: UI.space.sm * scale,
+      color: colors.textPrimary as string,
     },
     item: {
       width: '90%',
-      backgroundColor: isDark ? '#1C1F24' : '#F5F5F7',
-      padding: 16,
-      borderRadius: 12,
+      backgroundColor: colors.cardBg as string,
+      padding: UI.space.md * scale,
+      borderRadius: UI.radius.lg,
       borderWidth: 1,
-      borderColor: isDark ? '#2A2E33' : 'transparent',
+      borderColor: colors.border as string,
     },
     itemText: {
-      fontSize: 18,
+      fontSize: 18 * scale,
       fontWeight: '600',
-      marginBottom: 6,
-      color: isDark ? '#E5E7EB' : '#111827',
+      marginBottom: 6 * scale,
+      color: colors.textPrimary as string,
     },
     itemSub: {
-      color: isDark ? '#A7B0B8' : '#6b7280',
+      color: colors.textSecondary as string,
     },
-    row: { flexDirection: 'row', gap: 12 },
+    row: { flexDirection: 'row', gap: UI.space.sm * scale },
     option: {
-      paddingVertical: 12,
-      paddingHorizontal: 18,
-      borderRadius: 14,
-      backgroundColor: isDark ? '#22262B' : '#EAEAEA',
+      paddingVertical: UI.space.sm * scale,
+      paddingHorizontal: 18 * scale,
+      borderRadius: UI.radius.lg,
+      backgroundColor: colors.iconBg as string,
       borderWidth: 1,
-      borderColor: isDark ? '#30343A' : '#E5E7EB',
+      borderColor: colors.border as string,
     },
     optionActive: {
-      backgroundColor: isDark ? '#1F2A2E' : '#CFE8E8',
+      backgroundColor: colors.cardBg as string,
       borderWidth: 1,
-      borderColor: isDark ? '#0f766e' : '#227A7A',
+      borderColor: colors.accent as string,
     },
-    optionText: { fontSize: 14, color: isDark ? '#C9D1D9' : '#374151' },
-    optionTextActive: { color: '#0f766e', fontWeight: '700' },
+    optionText: { fontSize: 14 * scale, color: colors.textSecondary as string },
+    optionTextActive: { color: colors.accent as string, fontWeight: '700' },
   });
 }
 

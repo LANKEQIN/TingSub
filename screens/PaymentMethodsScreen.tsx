@@ -11,6 +11,9 @@ import { useAppSelector, useAppDispatch } from '../store'
 import { selectPaymentMethods } from '../features/payment_methods/selectors'
 import { addPaymentMethod, removePaymentMethod, updatePaymentMethod } from '../features/payment_methods/slice'
 import type { PaymentMethod } from '../features/payment_methods/types'
+import { getVariableValue } from '@tamagui/core'
+import tamaguiConfig from '../tamagui.config'
+import { selectDisplayScale } from '../features/ui/selectors'
 
 type PaymentMethodsScreenProps = {
   route: RouteProp<RootStackParamList, 'PaymentMethods'>
@@ -21,7 +24,8 @@ const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = () => {
   const insets = useSafeAreaInsets()
   const { effectiveScheme } = useContext(ThemeContext)
   const { t } = useContext(I18nContext)
-  const styles = createStyles(effectiveScheme)
+  const scale = useAppSelector(selectDisplayScale)
+  const styles = createStyles(effectiveScheme, scale)
   const dispatch = useAppDispatch()
   const methods = useAppSelector(selectPaymentMethods)
 
@@ -109,7 +113,7 @@ const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = () => {
                 <Text style={styles.methodSub}>{[m.issuer, m.holder, m.provider].filter(Boolean).join(' · ')}</Text>
               </View>
               <TouchableOpacity onPress={()=>dispatch(removePaymentMethod(m.id))}>
-                <Text style={{ color: '#ef4444' }}>{t('common.delete')}</Text>
+                <Text style={{ color: getVariableValue(tamaguiConfig.tokens.color.danger) }}>{t('common.delete')}</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -121,41 +125,41 @@ const PaymentMethodsScreen: React.FC<PaymentMethodsScreenProps> = () => {
   )
 }
 
-const createStyles = (scheme: 'light' | 'dark') => {
-  const colors = scheme==='dark' ? {
-    background: '#0f172a',
-    card: '#111827',
-    textPrimary: '#f8fafc',
-    muted: '#94a3b8',
-    border: '#1f2937',
-    accent: '#2563eb',
-  } : {
-    background: '#f8fafc',
-    card: '#ffffff',
-    textPrimary: '#111827',
-    muted: '#6b7280',
-    border: '#e5e7eb',
-    accent: '#2563eb',
+const createStyles = (scheme: 'light' | 'dark', scale: number) => {
+  const isDark = scheme === 'dark'
+  const c = tamaguiConfig.tokens.color
+  const s = tamaguiConfig.tokens.space
+  const r = tamaguiConfig.tokens.radius
+  const v = getVariableValue
+  const colors = {
+    background: v(isDark ? c.bgPageDark : c.bgPageLight),
+    card: v(isDark ? c.cardBgDark : c.cardBgLight),
+    textPrimary: v(isDark ? c.textPrimaryDark : c.textPrimaryLight),
+    muted: v(isDark ? c.mutedDark : c.mutedLight),
+    border: v(isDark ? c.borderDark : c.borderLight),
+    accent: v(isDark ? c.accentDark : c.accentLight),
+    inputBg: v(isDark ? c.modalBgDark : c.modalBgLight),
+    white: v(c.white),
   }
   const sheet = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    scroll: { paddingHorizontal: 16, paddingVertical: 16 },
-    title: { fontSize: 20, fontWeight: '600', color: colors.textPrimary, marginBottom: 12 },
-    sectionTitle: { fontSize: 16, fontWeight: '600', color: colors.textPrimary, marginBottom: 8 },
-    card: { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1, borderRadius: 10, padding: 12 },
-    row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-    inputRow: { marginTop: 8 },
-    label: { fontSize: 14, color: colors.textPrimary, marginBottom: 6 },
-    input: { backgroundColor: '#fff', borderColor: colors.border, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 },
-    selectItem: { borderColor: colors.border, borderWidth: 1, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 6 },
-    selectItemActive: { backgroundColor: colors.accent },
-    selectText: { fontSize: 12, color: colors.textPrimary },
-    selectTextActive: { color: '#fff' },
-    btn: { marginTop: 12, backgroundColor: colors.accent, borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-    btnText: { color: '#fff', fontWeight: '600' },
-    methodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
-    methodTitle: { fontSize: 14, color: colors.textPrimary },
-    methodSub: { fontSize: 12, color: colors.muted },
+    container: { flex: 1, backgroundColor: colors.background as string },
+    scroll: { paddingHorizontal: (v(s[4]) as number) * scale, paddingVertical: (v(s[4]) as number) * scale },
+    title: { fontSize: 20 * scale, fontWeight: '600', color: colors.textPrimary as string, marginBottom: (v(s[3]) as number) * scale },
+    sectionTitle: { fontSize: 16 * scale, fontWeight: '600', color: colors.textPrimary as string, marginBottom: (v(s[2]) as number) * scale },
+    card: { backgroundColor: colors.card as string, borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[3]) as number, padding: (v(s[3]) as number) * scale },
+    row: { flexDirection: 'row', flexWrap: 'wrap', gap: (v(s[2]) as number) * scale } as any,
+    inputRow: { marginTop: (v(s[2]) as number) * scale },
+    label: { fontSize: 14 * scale, color: colors.textPrimary as string, marginBottom: (v(s[2]) as number) * scale },
+    input: { backgroundColor: colors.inputBg as string, borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[2]) as number, paddingHorizontal: (v(s[3]) as number) * scale, paddingVertical: (v(s[3]) as number) * scale },
+    selectItem: { borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[7]) as number, paddingHorizontal: (v(s[3]) as number) * scale, paddingVertical: (v(s[2]) as number) * scale },
+    selectItemActive: { backgroundColor: colors.accent as string },
+    selectText: { fontSize: 12 * scale, color: colors.textPrimary as string },
+    selectTextActive: { color: colors.white as string },
+    btn: { marginTop: (v(s[3]) as number) * scale, backgroundColor: colors.accent as string, borderRadius: v(r[2]) as number, paddingVertical: (v(s[3]) as number) * scale, alignItems: 'center' },
+    btnText: { color: colors.white as string, fontWeight: '600' },
+    methodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card as string, borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[3]) as number, paddingHorizontal: (v(s[3]) as number) * scale, paddingVertical: (v(s[3]) as number) * scale },
+    methodTitle: { fontSize: 14 * scale, color: colors.textPrimary as string },
+    methodSub: { fontSize: 12 * scale, color: colors.muted as string },
   })
   return { ...sheet, colors }
 }

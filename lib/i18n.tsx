@@ -29,11 +29,16 @@ i18n.translations = {
       monthlySpend: 'Monthly Spend',
       yearlySpend: 'Yearly Spend',
       upcomingIn7Days: 'In 7 days',
+      emptyTitle: 'No subscriptions yet',
+      emptyDesc: 'Add your first subscription to start tracking and reminders',
+      addSub: 'Add Subscription',
     },
     notifications: { title: 'Notifications', content: 'This is the notifications page' },
     profile: { title: 'Profile', theme: 'Theme', appSettings: 'App Settings', appSettingsSub: 'Currency preference etc.' },
     theme: { title: 'Theme', auto: 'Auto', light: 'Light', dark: 'Dark', currencyPref: 'Preferred Currency' },
     settings: { title: 'Settings', lang: { zh: '中文', en: 'English' } },
+    // 数据导出/导入
+    settings_data: { title: 'Data Export & Import', exportJson: 'Export JSON', exportCsv: 'Export CSV', importJson: 'Import JSON', cancel: 'Cancel', confirmImport: 'Confirm Import' },
     paymentMethods: {
       title: 'Payment Methods',
       add: 'Add Payment Method',
@@ -75,11 +80,16 @@ i18n.translations = {
       monthlySpend: '本月支出',
       yearlySpend: '年度支出',
       upcomingIn7Days: '7天内',
+      emptyTitle: '暂无订阅',
+      emptyDesc: '添加你的第一个订阅以开始统计与提醒',
+      addSub: '添加订阅',
     },
     notifications: { title: '通知', content: '这是通知页面内容' },
     profile: { title: '我的', theme: '主题', appSettings: '应用设置', appSettingsSub: '偏好货币等应用偏好设置' },
     theme: { title: '主题模式', auto: '自动', light: '浅色', dark: '深色', currencyPref: '偏好货币' },
     settings: { title: '应用设置', lang: { zh: '中文', en: '英语' } },
+    // 数据导出/导入
+    settings_data: { title: '数据导出与导入', exportJson: '导出 JSON', exportCsv: '导出 CSV', importJson: '导入 JSON', cancel: '取消', confirmImport: '确认导入' },
     paymentMethods: {
       title: '支付方式',
       add: '新增支付方式',
