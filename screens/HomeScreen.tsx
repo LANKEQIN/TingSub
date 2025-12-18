@@ -35,7 +35,7 @@ import { getCategoriesByGroup } from '../features/subscriptions/categories';
 import { useAppSelector } from '../store';
 import { selectPreferredCurrency } from '../features/currency/slice';
 import { CurrencyService, convertCurrency } from '../features/currency/services';
-import { selectPaymentMethods } from '../features/payment_methods/selectors';
+import { selectPaymentMethods } from '../features/paymentMethods/selectors';
 import { advanceNextDueISO } from './utils/subscriptions';
 import { selectDisplayScale } from '../features/ui/selectors'
 

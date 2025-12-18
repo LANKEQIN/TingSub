@@ -13,9 +13,9 @@ import tamaguiConfig from '../tamagui.config';
 import { UI } from '../lib/ui';
 import { buildJSONPayload, exportJSON, exportSubscriptionsCSV, parseImportJSON } from '../lib/dataTransfer'
 import { selectSubscriptions } from '../features/subscriptions/selectors'
-import { selectPaymentMethods } from '../features/payment_methods/selectors'
+import { selectPaymentMethods } from '../features/paymentMethods/selectors'
 import { setSubscriptions } from '../features/subscriptions/slice'
-import { setPaymentMethods } from '../features/payment_methods/slice'
+import { setPaymentMethods } from '../features/paymentMethods/slice'
 import { selectDisplaySize, selectDisplayScale } from '../features/ui/selectors'
 import { setDisplaySize } from '../features/ui/slice'
 import ScreenContainer from './components/ScreenContainer'

@@ -1,7 +1,7 @@
 import { Platform, Share } from 'react-native'
 import type { CurrencyCode } from '../features/currency/types'
 import type { Subscription } from '../features/subscriptions/types'
-import type { PaymentMethod } from '../features/payment_methods/types'
+import type { PaymentMethod } from '../features/paymentMethods/types'
 
 export type ExportPayload = {
   version: 1

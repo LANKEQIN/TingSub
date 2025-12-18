@@ -31,6 +31,9 @@
         "projectId": "7a2d9db3-9e20-4a10-ad7f-38cae7d60fb2"
       }
     },
-    "owner": "shindoamane"
+    "owner": "shindoamane",
+    "plugins": [
+      "expo-localization"
+    ]
   }
 }

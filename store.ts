@@ -20,7 +20,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
 import counterReducer from './features/counter/slice'
 import subscriptionsReducer from './features/subscriptions/slice'
 import currencyReducer from './features/currency/slice'
-import paymentMethodsReducer from './features/payment_methods/slice'
+import paymentMethodsReducer from './features/paymentMethods/slice'
 import uiReducer from './features/ui/slice'
 import { subscriptionsApi } from './features/subscriptions/services'
 
