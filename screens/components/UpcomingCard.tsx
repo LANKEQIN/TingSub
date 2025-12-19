@@ -31,18 +31,18 @@ type UpcomingCardProps = {
 const UpcomingCard: React.FC<UpcomingCardProps> = ({ item, onLongPress, styles }) => (
   <TouchableOpacity style={styles.upcomingCard} onLongPress={onLongPress}>
     <View style={styles.upcomingIconBox}>
-      <Music size={20} color="#0ea5e9" />
+      <Music size={20} color={styles?.colors?.accent ?? '#0ea5e9'} />
     </View>
     <View style={{ flex: 1 }}>
       <Text style={styles.upcomingName}>{item.name}</Text>
       <Text style={styles.upcomingCycle}>{item.cycle}</Text>
       <View style={styles.upcomingMetaRow}>
         <View style={styles.badgeInfo}>
-          <CalendarDays size={14} color="#6b7280" />
+          <CalendarDays size={14} color={styles?.colors?.muted ?? '#6b7280'} />
           <Text style={styles.badgeText}>{item.next}</Text>
         </View>
         <View style={styles.badgeInfo}>
-          <CreditCard size={14} color="#6b7280" />
+          <CreditCard size={14} color={styles?.colors?.muted ?? '#6b7280'} />
           <Text style={styles.badgeText}>{item.price}</Text>
         </View>
       </View>

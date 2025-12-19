@@ -91,6 +91,10 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const styles = createStyles(effectiveScheme, scale);
   const { isLarge } = useResponsiveLayout();
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
+  const scrollContentStyle = useMemo(
+    () => [styles.scroll, { paddingBottom: UI.space.lg * scale + insets.bottom + 96 }],
+    [styles.scroll, insets.bottom, scale]
+  )
   // 错误边界重置计数
   const [retryCount, setRetryCount] = useState(0);
   // 首屏轻量骨架演示：短暂显示骨架屏，后续可接入真实加载态
@@ -353,7 +357,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 
       {isLarge ? (
         <View style={{ flexDirection: 'row', gap: UI.space.md }}>
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={scrollContentStyle as any} showsVerticalScrollIndicator={false}>
             {loading ? (
               <LoadingSkeleton styles={styles} />
             ) : subs.length === 0 ? (
@@ -390,7 +394,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               </>
             )}
           </ScrollView>
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={scrollContentStyle as any} showsVerticalScrollIndicator={false}>
             {loading ? (
               <LoadingSkeleton styles={styles} />
             ) : subs.length === 0 ? (
@@ -409,7 +413,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           </ScrollView>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={scrollContentStyle as any} showsVerticalScrollIndicator={false}>
           {loading ? (
             <LoadingSkeleton styles={styles} />
           ) : subs.length === 0 ? (
@@ -458,7 +462,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       )}
 
       {/* 悬浮添加按钮 */}
-      <TouchableOpacity style={styles.fab} onPress={openModal}>
+      <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + UI.space.md * scale, right: UI.space.md * scale }]} onPress={openModal}>
         <Plus size={24} color="#fff" />
       </TouchableOpacity>
 
@@ -544,16 +548,20 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       paddingBottom: UI.space.xs * scale,
     },
     logoBox: {
-      backgroundColor: colors.iconBg,
-      borderRadius: UI.radius.sm,
-      paddingHorizontal: UI.space.sm * scale,
-      paddingVertical: UI.space.xs * scale,
+      flexDirection: 'row',
+      alignItems: 'center',
     },
-    logoText: { fontSize: 14 * scale, fontWeight: '700', color: colors.accent },
+    logoText: { fontSize: 22 * scale, fontWeight: '800', color: colors.textPrimary },
     iconBtn: {
-      backgroundColor: gv(c.gray3),
-      padding: UI.space.xs,
-      borderRadius: UI.radius.sm,
+      width: 38 * scale,
+      height: 38 * scale,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: UI.radius.pill,
+      backgroundColor: colors.cardBg,
+      borderWidth: isDark ? 1 : 0,
+      borderColor: colors.border,
+      ...(UI.shadow.sm as any),
     },
     searchBox: {
       marginHorizontal: UI.space.md,
@@ -565,26 +573,28 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       paddingHorizontal: UI.space.sm,
       paddingVertical: UI.space.sm,
       backgroundColor: colors.cardBg,
-      borderWidth: 1,
+      borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
+      ...(UI.shadow.sm as any),
     },
-    searchInput: { flex: 1, fontSize: 15, color: colors.textPrimary },
-    scroll: { paddingHorizontal: UI.space.md, paddingBottom: UI.space.lg },
+    searchInput: { flex: 1, fontSize: 15 * scale, color: colors.textPrimary },
+    scroll: { paddingHorizontal: UI.space.md * scale },
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: UI.space.xs, marginBottom: UI.space.sm },
-    sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary },
-    link: { color: colors.accent, fontSize: 13 },
+    sectionTitle: { fontSize: 18 * scale, fontWeight: '800', color: colors.textPrimary },
+    link: { color: colors.accent, fontSize: 13 * scale, fontWeight: '600' },
     summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: UI.space.sm },
     summaryCard: {
       width: '47%',
       backgroundColor: colors.cardBg,
       borderRadius: UI.radius.xl,
       padding: UI.space.md,
-      borderWidth: 1,
+      borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
+      ...(UI.shadow.sm as any),
     },
-    summaryTitle: { fontSize: 13, color: colors.textSecondary, marginBottom: 6 },
-    summaryValue: { fontSize: 20, fontWeight: '700', color: colors.textPrimary },
-    summarySub: { fontSize: 12, color: gv(isDark ? c.successDark : c.success), marginTop: 4 },
+    summaryTitle: { fontSize: 13 * scale, color: colors.textSecondary, marginBottom: 6 * scale },
+    summaryValue: { fontSize: 22 * scale, fontWeight: '800', color: colors.textPrimary },
+    summarySub: { fontSize: 12 * scale, color: gv(isDark ? c.successDark : c.success), marginTop: 4 * scale },
 
     upcomingCard: {
       flexDirection: 'row',
@@ -593,18 +603,19 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       backgroundColor: colors.cardBg,
       borderRadius: UI.radius.lg,
       padding: UI.space.sm,
-      borderWidth: 1,
+      borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
+      ...(UI.shadow.sm as any),
     },
     upcomingIconBox: { width: 36, height: 36, borderRadius: UI.radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.iconBg },
-    upcomingName: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
-    upcomingCycle: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+    upcomingName: { fontSize: 15 * scale, fontWeight: '800', color: colors.textPrimary },
+    upcomingCycle: { fontSize: 12 * scale, color: colors.textSecondary, marginTop: 2 * scale },
     upcomingMetaRow: { flexDirection: 'row', gap: UI.space.sm, marginTop: UI.space.xs },
     badgeInfo: { flexDirection: 'row', alignItems: 'center', gap: UI.space.xs, backgroundColor: colors.badgeBg, paddingVertical: UI.space.xs, paddingHorizontal: UI.space.xs, borderRadius: UI.radius.xs },
-    badgeText: { fontSize: 12, color: colors.textSecondary },
+    badgeText: { fontSize: 12 * scale, color: colors.textSecondary },
 
-    chartCard: { backgroundColor: colors.cardBg, borderRadius: UI.radius.lg, padding: UI.space.sm, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
-    chartAxis: { fontSize: 12, color: colors.textSecondary, marginTop: UI.space.xs },
+    chartCard: { backgroundColor: colors.cardBg, borderRadius: UI.radius.lg, padding: UI.space.sm, borderWidth: isDark ? 1 : 0, borderColor: colors.border, alignItems: 'center', ...(UI.shadow.sm as any) },
+    chartAxis: { fontSize: 12 * scale, color: colors.textSecondary, marginTop: UI.space.xs },
 
     activeRow: {
       flexDirection: 'row',
@@ -613,52 +624,49 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       paddingHorizontal: UI.space.sm,
       backgroundColor: colors.cardBg,
       borderRadius: UI.radius.md,
-      borderWidth: 1,
+      borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
+      ...(UI.shadow.sm as any),
     },
     activeIconBox: { width: 30, height: 30, borderRadius: UI.radius.xs, backgroundColor: colors.badgeBg, alignItems: 'center', justifyContent: 'center', marginRight: UI.space.sm },
-    activeName: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
-    activeHint: { fontSize: 12, color: colors.textSecondary },
-    activeNext: { fontSize: 12, color: gv(isDark ? c.successDark : c.success) },
+    activeName: { fontSize: 15 * scale, fontWeight: '700', color: colors.textPrimary },
+    activeHint: { fontSize: 12 * scale, color: colors.textSecondary },
+    activeNext: { fontSize: 12 * scale, color: gv(isDark ? c.successDark : c.success) },
 
-    todoBox: { marginTop: UI.space.md, backgroundColor: colors.cardBg, borderRadius: UI.radius.md, padding: UI.space.sm, borderWidth: 1, borderColor: colors.border },
-    todoTitle: { fontSize: 14, fontWeight: '700', color: colors.textPrimary, marginBottom: UI.space.xs },
-    todoItem: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+    todoBox: { marginTop: UI.space.md, backgroundColor: colors.cardBg, borderRadius: UI.radius.md, padding: UI.space.sm, borderWidth: isDark ? 1 : 0, borderColor: colors.border, ...(UI.shadow.sm as any) },
+    todoTitle: { fontSize: 14 * scale, fontWeight: '800', color: colors.textPrimary, marginBottom: UI.space.xs },
+    todoItem: { fontSize: 12 * scale, color: colors.textSecondary, marginTop: 2 },
 
     fab: {
       position: 'absolute',
       bottom: 30,
       right: 20,
-      width: 50,
-      height: 50,
-      borderRadius: 25,
+      width: 56 * scale,
+      height: 56 * scale,
+      borderRadius: 28 * scale,
       backgroundColor: colors.fabBg,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 6,
-      elevation: 6,
+      ...(UI.shadow.lg as any),
     },
 
     modalMask: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: isDark ? 'rgba(0,0,0,0.50)' : 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
-    modalBox: { width: '90%', maxHeight: '85%', backgroundColor: colors.modalBg, borderRadius: UI.radius.md, padding: UI.space.md, borderWidth: 1, borderColor: colors.border },
-    modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: UI.space.sm, color: colors.textPrimary },
+    modalBox: { width: '90%', maxHeight: '85%', backgroundColor: colors.modalBg, borderRadius: UI.radius.md, padding: UI.space.md, borderWidth: 1, borderColor: colors.border, ...(UI.shadow.md as any) },
+    modalTitle: { fontSize: 18 * scale, fontWeight: '800', marginBottom: UI.space.sm, color: colors.textPrimary },
     formRow: { marginBottom: UI.space.sm },
-    formLabel: { fontSize: 13, color: colors.textSecondary, marginBottom: UI.space.xs },
+    formLabel: { fontSize: 13 * scale, color: colors.textSecondary, marginBottom: UI.space.xs },
     formInput: { borderWidth: 1, borderColor: colors.border, borderRadius: UI.radius.xs, paddingHorizontal: UI.space.sm, paddingVertical: UI.space.xs, color: colors.textPrimary, backgroundColor: colors.cardBg },
     selectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: UI.space.xs },
     selectItem: { paddingHorizontal: UI.space.sm, paddingVertical: UI.space.xs, borderRadius: UI.radius.xs, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg },
     selectItemActive: { backgroundColor: isDark ? gv(c.iconBgDark) : gv(c.primarySoft), borderColor: gv(c.primarySolid) },
-    selectText: { fontSize: 12, color: colors.textSecondary },
+    selectText: { fontSize: 12 * scale, color: colors.textSecondary },
     selectTextActive: { color: isDark ? '#93C5FD' : '#1D4ED8', fontWeight: '700' },
 
     checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: UI.space.xs, paddingVertical: UI.space.xs },
     checkboxBox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg, alignItems: 'center', justifyContent: 'center' },
     checkboxBoxChecked: { backgroundColor: colors.fabBg, borderColor: colors.fabBg },
     checkbox: { paddingVertical: UI.space.xs },
-    checkboxText: { fontSize: 13, color: colors.textSecondary },
+    checkboxText: { fontSize: 13 * scale, color: colors.textSecondary },
     modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: UI.space.sm, marginTop: UI.space.xs },
     btnGhost: { paddingHorizontal: UI.space.md, paddingVertical: UI.space.sm, borderRadius: UI.radius.xs, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg },
     btnGhostText: { color: colors.textSecondary },

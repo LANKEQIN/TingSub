@@ -1,13 +1,13 @@
 import React, { useContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'tamagui';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RouteProp } from '@react-navigation/native';
 import type { TabParamList } from '../lib/navigation';
 import { ThemeContext } from '../lib/theme';
 import { I18nContext } from '../lib/i18n';
 import { getVariableValue } from '@tamagui/core';
 import tamaguiConfig from '../tamagui.config';
+import ScreenContainer from './components/ScreenContainer'
 
 /**
  * 通知屏幕的属性类型定义
@@ -31,16 +31,17 @@ type NotificationsScreenProps = {
  */
 
 const NotificationsScreen: React.FC<NotificationsScreenProps> = () => {
-  const insets = useSafeAreaInsets();
   // 从 ThemeContext 获取当前生效的主题方案
   const { effectiveScheme } = useContext(ThemeContext);
   const { t } = useContext(I18nContext);
   const styles = createStyles(effectiveScheme);
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Text style={styles.title}>{t('notifications.title')}</Text>
-      <Text style={styles.text}>{t('notifications.content')}</Text>
-    </View>
+    <ScreenContainer style={styles.container}>
+      <View style={styles.hero}>
+        <Text style={styles.title}>{t('notifications.title')}</Text>
+        <Text style={styles.text}>{t('notifications.content')}</Text>
+      </View>
+    </ScreenContainer>
   );
 };
 
@@ -63,10 +64,8 @@ function createStyles(scheme: 'light' | 'dark'){
   return StyleSheet.create({
     container: {
       flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.pageBg as string,
     },
+    hero: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     title: {
       fontSize: 24,
       fontWeight: 'bold',

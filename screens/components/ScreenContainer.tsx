@@ -13,16 +13,17 @@ type Props = {
   scrollable?: boolean
   contentContainerStyle?: any
   style?: any
+  useTopInset?: boolean
 }
 
 /**
  * 统一页面容器：负责安全区、背景色、内边距以及可选滚动
  */
-const ScreenContainer: React.FC<Props> = ({ children, scrollable, contentContainerStyle, style }) => {
+const ScreenContainer: React.FC<Props> = ({ children, scrollable, contentContainerStyle, style, useTopInset = true }) => {
   const insets = useSafeAreaInsets()
   const { effectiveScheme } = useContext(ThemeContext)
   const scale = useAppSelector(selectDisplayScale)
-  const s = createStyles(effectiveScheme, scale, insets.top, insets.bottom)
+  const s = createStyles(effectiveScheme, scale, useTopInset ? insets.top : 0, insets.bottom)
 
   if (scrollable) {
     return (
@@ -55,15 +56,17 @@ function createStyles(scheme: 'light' | 'dark', scale: number, topInset: number,
     container: {
       flex: 1,
       backgroundColor: colors.pageBg as string,
-      paddingTop: topInset + UI.space.lg * scale,
     },
     scrollContent: {
+      paddingTop: topInset + UI.space.lg * scale,
       paddingHorizontal: UI.space.md * scale,
       // UI.space 没有 xl，统一使用 lg；底部加入安全区以避免被底部栏遮挡
       paddingBottom: bottomInset + UI.space.lg * scale,
     },
     staticContent: {
-      alignItems: 'center',
+      paddingTop: topInset + UI.space.lg * scale,
+      paddingHorizontal: UI.space.md * scale,
+      paddingBottom: bottomInset + UI.space.lg * scale,
     },
   })
 }
