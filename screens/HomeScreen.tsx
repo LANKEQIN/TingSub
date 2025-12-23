@@ -44,6 +44,7 @@ import { selectPaymentMethods } from '../features/paymentMethods/selectors';
 import { advanceNextDueISO } from './utils/subscriptions';
 import { selectDisplayScale } from '../features/ui/selectors'
 import { useHomeData } from './hooks/useHomeData'
+import { getCycleSuffix } from '../features/subscriptions/constants'
 
 const ICON_SIZE_LG = 20
 const ICON_SIZE_MD = 18
@@ -55,8 +56,6 @@ const CHECKBOX_SIZE = 18
 
 // 计算型工具
 // 类型：订阅分组使用领域类型
-// 计费周期标签映射（带类型）
-const cycleLabelMap: Record<Cycle, string> = { monthly: '月付', quarterly: '季付', yearly: '年付', lifetime: '终身', other: '其他' };
 // 可选的订阅分组选项（带类型）
 const categoryGroupOptions: CategoryGroup[] = ['影音娱乐','工作','生活','其他'];
 // 类型守卫与转换器
@@ -65,14 +64,14 @@ const toCategoryGroup = (val?: string): CategoryGroup => (val && isCategoryGroup
 function formatPriceByPref(price: number, cycle: string, fromCode: 'CNY'|'USD'|'JPY', toCode: 'CNY'|'USD'|'JPY'){
   const converted = convertCurrency(price, fromCode, toCode)
   const base = CurrencyService.format(converted, toCode)
-  const suffix = (cycle==='yearly')?'/年': (cycle==='quarterly')?'/季': (cycle==='lifetime')?'/终身': (cycle==='其他'||cycle==='other')?'': '/月'
+  const suffix = getCycleSuffix(cycle as Cycle, 'zh')
   return `${base}${suffix}`
 }
 // 新增：原价 + 换算价的透明显示
 function formatPriceBoth(price: number, cycle: string, fromCode: 'CNY'|'USD'|'JPY', toCode: 'CNY'|'USD'|'JPY'){
   const orig = CurrencyService.format(price, fromCode)
   const conv = CurrencyService.convertAndFormat(price, fromCode, toCode)
-  const suffix = (cycle==='yearly')?'/年': (cycle==='quarterly')?'/季': (cycle==='lifetime')?'/终身': (cycle==='其他'||cycle==='other')?'': '/月'
+  const suffix = getCycleSuffix(cycle as Cycle, 'zh')
   if(fromCode===toCode){
     return `${orig}${suffix}`
   }

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { View, TouchableOpacity, TextInput, Platform, ScrollView, StyleSheet } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import DateTimePicker from '@react-native-community/datetimepicker'
@@ -7,9 +7,11 @@ import { Text } from 'tamagui'
 import { X, ChevronLeft, ChevronRight, Check } from '@tamagui/lucide-icons'
 import tamaguiConfig from '../../tamagui.config'
 import { getVariableValue } from '@tamagui/core'
+import { I18nContext } from '../../lib/i18n'
 import type { CategoryGroup } from '../../features/subscriptions/types'
 import type { Cycle, Subscription } from '../../features/subscriptions/slice'
 import type { CurrencyCode } from '../../features/currency/types'
+import { CYCLE_LABELS, CYCLE_OPTIONS } from '../../features/subscriptions/constants'
 
 const STEPS = [
   { id: 1, title: '基本信息' },
@@ -175,6 +177,7 @@ const SubscriptionFormModal: React.FC<Props> = ({
   onSubmit,
   onClose,
 }) => {
+  const { locale } = useContext(I18nContext)
   const [currentStep, setCurrentStep] = useState(1)
 
   useEffect(() => {
@@ -306,14 +309,14 @@ const SubscriptionFormModal: React.FC<Props> = ({
             <View style={styles.formRow}>
               <Text style={styles.formLabel}>计费周期</Text>
               <View style={styles.selectRow}>
-                {(['monthly', 'quarterly', 'yearly', 'lifetime', 'other'] as Cycle[]).map((opt) => (
+                {CYCLE_OPTIONS.map((opt) => (
                   <TouchableOpacity
                     key={opt}
                     style={[styles.selectItem, form.cycle === opt ? styles.selectItemActive : null, modalStyles.selectItem]}
                     onPress={() => setForm((v) => ({ ...v, cycle: opt }))}
                   >
                     <Text style={[styles.selectText, form.cycle === opt ? styles.selectTextActive : null]}>
-                      {opt === 'monthly' ? '月付' : opt === 'quarterly' ? '季付' : opt === 'yearly' ? '年付' : opt === 'lifetime' ? '终身' : '其他'}
+                      {CYCLE_LABELS[opt][locale]}
                     </Text>
                   </TouchableOpacity>
                 ))}
