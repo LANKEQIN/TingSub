@@ -1,8 +1,12 @@
 import { getVariableValue } from '@tamagui/core'
-import { Platform, useWindowDimensions } from 'react-native'
+import { Platform, useWindowDimensions, type ViewStyle, type RegisteredStyle } from 'react-native'
 import tamaguiConfig from '../tamagui.config'
 
-const makeShadow = (opts: { elevation: number; radius: number; y: number; opacity: number }) =>
+/**
+ * 创建跨平台阴影样式
+ * 返回类型兼容 StyleSheet.create
+ */
+const makeShadow = (opts: { elevation: number; radius: number; y: number; opacity: number }): ViewStyle =>
   Platform.select({
     ios: {
       shadowColor: '#000',
@@ -12,7 +16,7 @@ const makeShadow = (opts: { elevation: number; radius: number; y: number; opacit
     },
     android: { elevation: opts.elevation },
     default: {},
-  }) as any
+  }) as ViewStyle
 
 // 统一的间距与圆角辅助：将常用尺寸映射到 Tamagui Tokens
 // 在 React Native StyleSheet 中直接使用这些数值，减少重复与魔法数字

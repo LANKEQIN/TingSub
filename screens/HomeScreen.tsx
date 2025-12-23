@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useContext, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, type ViewStyle } from 'react-native';
 import { Text, getVariableValue } from 'tamagui';
 import { LinearGradient } from 'expo-linear-gradient';
 import tamaguiConfig from '../tamagui.config'
@@ -37,9 +37,11 @@ import { getCategoriesByGroup } from '../features/subscriptions/categories';
 import { useAppSelector } from '../store';
 import { selectPreferredCurrency } from '../features/currency/slice';
 import { CurrencyService, convertCurrency } from '../features/currency/services';
+import type { CurrencyCode } from '../features/currency/types';
 import { selectPaymentMethods } from '../features/paymentMethods/selectors';
 import { advanceNextDueISO } from './utils/subscriptions';
 import { selectDisplayScale } from '../features/ui/selectors'
+import { useHomeData } from './hooks/useHomeData'
 
 // 计算型工具
 // 类型：订阅分组使用领域类型
@@ -93,8 +95,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const styles = createStyles(effectiveScheme, scale);
   const { isLarge } = useResponsiveLayout();
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
-  const scrollContentStyle = useMemo(
-    () => [styles.scroll, { paddingBottom: UI.space.lg * scale + insets.bottom + 96 }],
+  const scrollContentStyle = useMemo<ViewStyle>(
+    () => StyleSheet.flatten([styles.scroll, { paddingBottom: UI.space.lg * scale + insets.bottom + 96 }]),
     [styles.scroll, insets.bottom, scale]
   )
   // 错误边界重置计数
@@ -123,65 +125,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     }
   }, [subs])
 
-  const summaryData = useMemo(() => {
-    const totalSubs = subs.length;
-    const monthlySpend = subs.reduce((sum, s) => {
-      const from = s.currency ?? 'CNY'
-      const add = (s.cycle === 'monthly') ? s.price
-        : (s.cycle === 'quarterly') ? s.price/3
-        : (s.cycle === 'yearly') ? s.price/12
-        : 0
-      return sum + convertCurrency(add, from as any, preferredCurrency as any)
-    }, 0)
-    const yearlySpend = subs.reduce((sum, s) => {
-      const from = s.currency ?? 'CNY'
-      const add = (s.cycle === 'monthly') ? s.price*12
-        : (s.cycle === 'quarterly') ? s.price*4
-        : (s.cycle === 'yearly') ? s.price
-        : 0
-      return sum + convertCurrency(add, from as any, preferredCurrency as any)
-    }, 0)
-    const upcomingBills = subs.filter(s=>{
-      const d = daysUntil(s.nextDueISO);
-      return d!==null && d>=0 && d<=7;
-    }).length;
-    return { totalSubs, monthlySpend, yearlySpend, upcomingBills, deltas: { monthlySpend: '+0', yearlySpend: '+0' } };
-  }, [subs, preferredCurrency]);
-
-  const upcomingList = useMemo(() => subs
-    .map(s => {
-      const d = daysUntil(s.nextDueISO);
-      return {
-        id: s.id,
-        name: s.name,
-        cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
-        next: s.nextDueISO
-          ? (s.autoRenew && d !== null && d >= 0 && d <= 7
-              ? `在${d}天后自动续费`
-              : `${d}天内`)
-          : '未设置',
-        price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
-        dueDays: d,
-      };
-    })
-    .filter(u => u.dueDays !== null && u.dueDays >= 0 && u.dueDays <= 7)
-    .sort((a, b) => a.dueDays - b.dueDays)
-  , [subs, preferredCurrency]);
-
-  // 新增：活跃订阅列表（用于 ActiveRow）
-  const activeSubs = useMemo(() => subs.map(s => ({
-    id: s.id,
-    name: s.name,
-    price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
-    next: (() => {
-      const d = daysUntil(s.nextDueISO);
-      return s.nextDueISO
-        ? (s.autoRenew && d !== null && d >= 0 && d <= 7
-            ? `在${d}天后自动续费`
-            : `${d}天内`)
-        : '未设置';
-    })(),
-  })), [subs, preferredCurrency]);
+  const { summaryData, upcomingList, activeSubs } = useHomeData(subs, preferredCurrency as CurrencyCode);
 
   // 新增：支出分析数据（近 6 个月的预计月支出）
   //（已移至统计页，移除未使用的支出分析计算）
@@ -214,8 +158,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const days = useMemo(() => Array.from({ length: getDaysInMonth(dateParts.year, dateParts.month) }, (_, i) => i + 1), [dateParts.year, dateParts.month]);
   // 新增：Android 原生日期选择控件开关
   const [showPicker, setShowPicker] = useState(false);
-  // Android DateTimePicker 变更处理
-  const onAndroidDateChange = (event, selectedDate) => {
+  // 新增：Android DateTimePicker 变更处理
+  const onAndroidDateChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS !== 'web') {
       const currentDate = selectedDate || new Date(dateParts.year, dateParts.month - 1, dateParts.day);
       setShowPicker(false);
@@ -234,14 +178,14 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   };
   // 价格输入占位示例与预览文本
   const pricePlaceholder = useMemo(() => {
-    const symbol = CurrencyService.symbol(form.currency as any)
+    const symbol = CurrencyService.symbol(form.currency as CurrencyCode)
     const example = form.currency==='JPY' ? '1500' : '15'
     return `例如：${symbol} ${example}`
   }, [form.currency])
   const pricePreview = useMemo(() => {
     const num = Number(form.price)
     if(!Number.isFinite(num) || num<=0) return ''
-    return formatPriceBoth(num, form.cycle, form.currency, preferredCurrency as any)
+    return formatPriceBoth(num, form.cycle, form.currency, preferredCurrency as CurrencyCode)
   }, [form.price, form.cycle, form.currency, preferredCurrency])
   const paymentMethods = useAppSelector(selectPaymentMethods)
   // 新增：打开某订阅的操作面板
@@ -359,7 +303,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 
       {isLarge ? (
         <View style={{ flexDirection: 'row', gap: UI.space.md }}>
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={scrollContentStyle as any} showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={scrollContentStyle} showsVerticalScrollIndicator={false}>
             {loading ? (
               <LoadingSkeleton styles={styles} />
             ) : subs.length === 0 ? (
@@ -381,13 +325,13 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                     <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} index={0} />
                   </AnimatedCard>
                   <AnimatedCard index={1} style={styles.summaryCard}>
-                    <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} index={1} />
+                    <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as CurrencyCode)} sub={``} styles={styles} index={1} />
                   </AnimatedCard>
                   <AnimatedCard index={2} style={styles.summaryCard}>
                     <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} index={2} />
                   </AnimatedCard>
                   <AnimatedCard index={3} style={styles.summaryCard}>
-                    <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} index={3} />
+                    <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as CurrencyCode)} sub={``} styles={styles} index={3} />
                   </AnimatedCard>
                 </View>
 
@@ -406,7 +350,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               </>
             )}
           </ScrollView>
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={scrollContentStyle as any} showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={scrollContentStyle} showsVerticalScrollIndicator={false}>
             {loading ? (
               <LoadingSkeleton styles={styles} />
             ) : subs.length === 0 ? (
@@ -427,7 +371,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           </ScrollView>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={scrollContentStyle as any} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={scrollContentStyle} showsVerticalScrollIndicator={false}>
           {loading ? (
             <LoadingSkeleton styles={styles} />
           ) : subs.length === 0 ? (
@@ -449,13 +393,13 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                   <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} index={0} />
                 </AnimatedCard>
                 <AnimatedCard index={1} style={styles.summaryCard}>
-                  <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} index={1} />
+                  <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as CurrencyCode)} sub={``} styles={styles} index={1} />
                 </AnimatedCard>
                 <AnimatedCard index={2} style={styles.summaryCard}>
                   <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} index={2} />
                 </AnimatedCard>
                 <AnimatedCard index={3} style={styles.summaryCard}>
-                  <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} index={3} />
+                  <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as CurrencyCode)} sub={``} styles={styles} index={3} />
                 </AnimatedCard>
               </View>
 
@@ -518,11 +462,11 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         editMode={!!editMode}
         styles={styles}
         form={form}
-        setForm={(updater)=>setForm(updater as any)}
+        setForm={setForm}
         pricePlaceholder={pricePlaceholder}
         pricePreview={pricePreview}
-        preferredCurrency={preferredCurrency as any}
-        categoryGroupOptions={categoryGroupOptions as any}
+        preferredCurrency={preferredCurrency as CurrencyCode}
+        categoryGroupOptions={categoryGroupOptions}
         getCategoriesByGroup={getCategoriesByGroup}
         years={years}
         months={months}
@@ -532,7 +476,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         showPicker={showPicker}
         setShowPicker={setShowPicker}
         onAndroidDateChange={onAndroidDateChange}
-        paymentMethods={paymentMethods as any}
+        paymentMethods={paymentMethods.map(p => ({ id: p.id, label: p.label || '' }))}
         onSubmit={submitForm}
         onClose={closeModal}
       />
@@ -598,7 +542,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       backgroundColor: colors.cardBg,
       borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
-      ...(UI.shadow.sm as any),
+      ...UI.shadow.sm,
     },
     searchBox: {
       marginHorizontal: UI.space.md,
@@ -612,7 +556,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       backgroundColor: colors.cardBg,
       borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
-      ...(UI.shadow.sm as any),
+      ...UI.shadow.sm,
     },
     searchInput: { flex: 1, fontSize: 15 * scale, color: colors.textPrimary },
     scroll: { paddingHorizontal: UI.space.md * scale },
@@ -627,7 +571,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       padding: UI.space.md,
       borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
-      ...(UI.shadow.sm as any),
+      ...UI.shadow.sm,
       flexDirection: 'row',
       alignItems: 'center',
       gap: UI.space.sm,
@@ -645,7 +589,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       padding: UI.space.sm,
       borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
-      ...(UI.shadow.sm as any),
+      ...UI.shadow.sm,
     },
     upcomingIconBox: { width: 36, height: 36, borderRadius: UI.radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.iconBg },
     upcomingName: { fontSize: 15 * scale, fontWeight: '800', color: colors.textPrimary },
@@ -654,7 +598,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
     badgeInfo: { flexDirection: 'row', alignItems: 'center', gap: UI.space.xs, backgroundColor: colors.badgeBg, paddingVertical: UI.space.xs, paddingHorizontal: UI.space.xs, borderRadius: UI.radius.xs },
     badgeText: { fontSize: 12 * scale, color: colors.textSecondary },
 
-    chartCard: { backgroundColor: colors.cardBg, borderRadius: UI.radius.lg, padding: UI.space.sm, borderWidth: isDark ? 1 : 0, borderColor: colors.border, alignItems: 'center', ...(UI.shadow.sm as any) },
+    chartCard: { backgroundColor: colors.cardBg, borderRadius: UI.radius.lg, padding: UI.space.sm, borderWidth: isDark ? 1 : 0, borderColor: colors.border, alignItems: 'center', ...UI.shadow.sm },
     chartAxis: { fontSize: 12 * scale, color: colors.textSecondary, marginTop: UI.space.xs },
 
     activeRow: {
@@ -666,14 +610,14 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       borderRadius: UI.radius.md,
       borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
-      ...(UI.shadow.sm as any),
+      ...UI.shadow.sm,
     },
     activeIconBox: { width: 30, height: 30, borderRadius: UI.radius.xs, backgroundColor: colors.badgeBg, alignItems: 'center', justifyContent: 'center', marginRight: UI.space.sm },
     activeName: { fontSize: 15 * scale, fontWeight: '700', color: colors.textPrimary },
     activeHint: { fontSize: 12 * scale, color: colors.textSecondary },
     activeNext: { fontSize: 12 * scale, color: gv(isDark ? c.accentDark : c.accentLight) },
 
-    todoBox: { marginTop: UI.space.md, backgroundColor: colors.cardBg, borderRadius: UI.radius.md, padding: UI.space.sm, borderWidth: isDark ? 1 : 0, borderColor: colors.border, ...(UI.shadow.sm as any) },
+    todoBox: { marginTop: UI.space.md, backgroundColor: colors.cardBg, borderRadius: UI.radius.md, padding: UI.space.sm, borderWidth: isDark ? 1 : 0, borderColor: colors.border, ...UI.shadow.sm },
     todoTitle: { fontSize: 14 * scale, fontWeight: '800', color: colors.textPrimary, marginBottom: UI.space.xs },
     todoItem: { fontSize: 12 * scale, color: colors.textSecondary, marginTop: 2 },
 
@@ -690,7 +634,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
     },
 
     modalMask: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: isDark ? 'rgba(0,0,0,0.50)' : 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
-    modalBox: { width: '90%', maxHeight: '85%', backgroundColor: colors.modalBg, borderRadius: UI.radius.md, padding: UI.space.md, borderWidth: 1, borderColor: colors.border, ...(UI.shadow.md as any) },
+    modalBox: { width: '90%', maxHeight: '85%', backgroundColor: colors.modalBg, borderRadius: UI.radius.md, padding: UI.space.md, borderWidth: 1, borderColor: colors.border, ...UI.shadow.md },
     modalTitle: { fontSize: 18 * scale, fontWeight: '800', marginBottom: UI.space.sm, color: colors.textPrimary },
     formRow: { marginBottom: UI.space.sm },
     formLabel: { fontSize: 13 * scale, color: colors.textSecondary, marginBottom: UI.space.xs },

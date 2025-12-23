@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useContext } from 'react'
-import { View, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, TouchableOpacity, type ViewStyle } from 'react-native'
 import { Text } from 'tamagui'
 import BarChart from './components/BarChart'
 import SectionHeader from './components/SectionHeader'
@@ -13,6 +13,7 @@ import type { RouteProp } from '@react-navigation/native'
 import type { TabParamList } from '../lib/navigation'
 import type { RootState } from '../store'
 import type { CategoryGroup } from '../features/subscriptions/types'
+import type { CurrencyCode } from '../features/currency/types'
 import { getVariableValue } from '@tamagui/core'
 import tamaguiConfig from '../tamagui.config'
 import { selectDisplayScale } from '../features/ui/selectors'
@@ -21,6 +22,14 @@ import ScreenContainer from './components/ScreenContainer'
 
 type StatisticsScreenProps = {
   route: RouteProp<TabParamList, 'Statistics'>
+}
+
+/**
+ * 过滤选项接口
+ */
+interface FilterOption {
+  key: string
+  label: string
 }
 
 const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
@@ -60,12 +69,12 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   // 月等效支出（过滤后）
   const monthlyEquivalent = useMemo(() => {
     const monthly = filteredSubs.reduce((sum, s) => {
-      const from = s.currency ?? 'CNY'
+      const from: CurrencyCode = s.currency ?? 'CNY'
       const base = (s.cycle === 'monthly') ? s.price
         : (s.cycle === 'quarterly') ? s.price / 3
         : (s.cycle === 'yearly') ? s.price / 12
         : 0
-      return sum + convertCurrency(base, from as any, preferredCurrency as any)
+      return sum + convertCurrency(base, from, preferredCurrency)
     }, 0)
     return Math.round(monthly)
   }, [filteredSubs, preferredCurrency])
@@ -123,8 +132,8 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
           { key: '12m', label: t('statistics.ranges.m12') },
           { key: 'this_year', label: t('statistics.ranges.this_year') },
           { key: 'prev_quarter', label: t('statistics.ranges.prev_quarter') },
-        ].map((opt: any) => (
-          <TouchableOpacity key={opt.key} style={[styles.chip, timeRange === opt.key ? styles.chipActive : null]} onPress={() => setTimeRange(opt.key)}>
+        ].map((opt: FilterOption) => (
+          <TouchableOpacity key={opt.key} style={[styles.chip, timeRange === opt.key ? styles.chipActive : null]} onPress={() => setTimeRange(opt.key as TimeRange)}>
             <Text style={[styles.chipText, timeRange === opt.key ? styles.chipTextActive : null]}>{opt.label}</Text>
           </TouchableOpacity>
         ))}
@@ -159,8 +168,8 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
         const w = e.nativeEvent.layout.width
         setChartW(Math.max(280, Math.floor(w - 24)))
       }}>
-        <BarChart data={chartData} labels={monthLabels} width={chartW} height={200} barColor={isDark ? '#4DB6FF' : '#4f46e5'} gridColor={isDark ? '#2A2E33' : '#E5E7EB'} axisLabelColor={isDark ? '#A7B0B8' : '#6b7280'} currencySymbol={getSymbol(preferredCurrency as any)} />
-        <Text style={styles.chartAxis}>{t('statistics.axisUnit', { symbol: getSymbol(preferredCurrency as any) })}</Text>
+        <BarChart data={chartData} labels={monthLabels} width={chartW} height={200} barColor={isDark ? '#4DB6FF' : '#4f46e5'} gridColor={isDark ? '#2A2E33' : '#E5E7EB'} axisLabelColor={isDark ? '#A7B0B8' : '#6b7280'} currencySymbol={getSymbol(preferredCurrency as CurrencyCode)} />
+        <Text style={styles.chartAxis}>{t('statistics.axisUnit', { symbol: getSymbol(preferredCurrency as CurrencyCode) })}</Text>
       </View>
     </ScreenContainer>
   )
@@ -193,7 +202,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
     chipText: { fontSize: 13 * scale, color: colors.textSecondary },
     chipTextSm: { fontSize: 12 * scale, color: colors.textSecondary },
     chipTextActive: { color: colors.accent as string, fontWeight: '600' },
-    chartCard: { backgroundColor: colors.cardBg as string, borderRadius: 14, padding: 12 * scale, borderWidth: isDark ? 1 : 0, borderColor: colors.border as string, alignItems: 'center', ...(UI.shadow.sm as any) },
+    chartCard: { backgroundColor: colors.cardBg as string, borderRadius: 14, padding: 12 * scale, borderWidth: isDark ? 1 : 0, borderColor: colors.border as string, alignItems: 'center', ...UI.shadow.sm },
     chartAxis: { fontSize: 12 * scale, color: colors.muted as string, marginTop: 8 * scale },
   })
 }
