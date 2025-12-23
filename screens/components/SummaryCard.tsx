@@ -30,7 +30,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, sub, styles, in
   const gradientColors = accentColors[index % accentColors.length] as unknown as readonly [string, string];
 
   return (
-    <View style={styles.summaryCard}>
+    <View style={cardStyles.container}>
       <LinearGradient
         colors={gradientColors}
         start={{ x: 0, y: 0 }}
@@ -49,6 +49,11 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, sub, styles, in
 };
 
 const cardStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   iconGradient: {
     width: 40,
     height: 40,

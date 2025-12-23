@@ -377,16 +377,16 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               <>
                 <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
                 <View style={styles.summaryGrid}>
-                  <AnimatedCard index={0}>
+                  <AnimatedCard index={0} style={styles.summaryCard}>
                     <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} index={0} />
                   </AnimatedCard>
-                  <AnimatedCard index={1}>
+                  <AnimatedCard index={1} style={styles.summaryCard}>
                     <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} index={1} />
                   </AnimatedCard>
-                  <AnimatedCard index={2}>
+                  <AnimatedCard index={2} style={styles.summaryCard}>
                     <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} index={2} />
                   </AnimatedCard>
-                  <AnimatedCard index={3}>
+                  <AnimatedCard index={3} style={styles.summaryCard}>
                     <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} index={3} />
                   </AnimatedCard>
                 </View>
@@ -445,16 +445,16 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
             <>
               <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
               <View style={styles.summaryGrid}>
-                <AnimatedCard index={0}>
+                <AnimatedCard index={0} style={styles.summaryCard}>
                   <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} index={0} />
                 </AnimatedCard>
-                <AnimatedCard index={1}>
+                <AnimatedCard index={1} style={styles.summaryCard}>
                   <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} index={1} />
                 </AnimatedCard>
-                <AnimatedCard index={2}>
+                <AnimatedCard index={2} style={styles.summaryCard}>
                   <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} index={2} />
                 </AnimatedCard>
-                <AnimatedCard index={3}>
+                <AnimatedCard index={3} style={styles.summaryCard}>
                   <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} index={3} />
                 </AnimatedCard>
               </View>
