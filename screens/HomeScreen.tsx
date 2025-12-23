@@ -43,6 +43,14 @@ import { advanceNextDueISO } from './utils/subscriptions';
 import { selectDisplayScale } from '../features/ui/selectors'
 import { useHomeData } from './hooks/useHomeData'
 
+const ICON_SIZE_LG = 20
+const ICON_SIZE_MD = 18
+const ICON_SIZE_XL = 24
+const BOTTOM_SPACING = 80
+const UPCOMING_ICON_SIZE = 36
+const ACTIVE_ICON_SIZE = 30
+const CHECKBOX_SIZE = 18
+
 // 计算型工具
 // 类型：订阅分组使用领域类型
 // 计费周期标签映射（带类型）
@@ -289,15 +297,15 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         <View style={styles.logoBox}>
           <Text style={styles.logoText}>{t('home.title')}</Text>
         </View>
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          <TouchableOpacity style={styles.iconBtn}><Bell size={20} color={styles.colors.textPrimary} /></TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn}><User size={20} color={styles.colors.textPrimary} /></TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: UI.space.md }}>
+          <TouchableOpacity style={styles.iconBtn}><Bell size={ICON_SIZE_LG} color={styles.colors.textPrimary} /></TouchableOpacity>
+          <TouchableOpacity style={styles.iconBtn}><User size={ICON_SIZE_LG} color={styles.colors.textPrimary} /></TouchableOpacity>
         </View>
       </View>
 
       {/* 搜索框 */}
       <View style={styles.searchBox}>
-        <Search size={18} color={styles.colors.muted} />
+        <Search size={ICON_SIZE_MD} color={styles.colors.muted} />
         <TextInput style={styles.searchInput} placeholder={t('home.searchPlaceholder')} placeholderTextColor={styles.colors.muted} />
       </View>
 
@@ -338,7 +346,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                 {upcomingList.length > 0 && (
                   <>
                     <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
-                    <View style={{ gap: 12 }}>
+                    <View style={{ gap: UI.space.md }}>
                       {upcomingList.map((u, idx) => (
                         <AnimatedCard key={u.id} index={idx + 4}>
                           <UpcomingCard item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
@@ -358,7 +366,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
             ) : (
               <>
                 <SectionHeader title={t('home.active')} styles={styles} />
-                <View style={{ gap: 8 }}>
+                <View style={{ gap: UI.space.sm }}>
                   {activeSubs.map((s, idx) => (
                     <AnimatedCard key={s.id} index={idx}>
                       <ActiveRow item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
@@ -367,7 +375,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                 </View>
               </>
             )}
-            <View style={{ height: 80 }} />
+            <View style={{ height: BOTTOM_SPACING }} />
           </ScrollView>
         </View>
       ) : (
@@ -406,7 +414,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               {upcomingList.length > 0 && (
                 <>
                   <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
-                  <View style={{ gap: 12 }}>
+                  <View style={{ gap: UI.space.md }}>
                     {upcomingList.map((u, idx) => (
                       <AnimatedCard key={u.id} index={idx + 4}>
                         <UpcomingCard item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
@@ -417,7 +425,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               )}
 
               <SectionHeader title={t('home.active')} styles={styles} />
-              <View style={{ gap: 8 }}>
+              <View style={{ gap: UI.space.sm }}>
                 {activeSubs.map((s, idx) => (
                   <AnimatedCard key={s.id} index={idx}>
                     <ActiveRow item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
@@ -425,7 +433,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                 ))}
               </View>
 
-              <View style={{ height: 80 }} />
+              <View style={{ height: BOTTOM_SPACING }} />
             </>
           )}
         </ScrollView>
@@ -443,7 +451,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           end={{ x: 1, y: 1 }}
           style={fabStyles.gradient}
         >
-          <Plus size={24} color="#fff" />
+          <Plus size={ICON_SIZE_XL} color="#fff" />
         </LinearGradient>
       </TouchableOpacity>
 
@@ -646,7 +654,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
     selectTextActive: { color: isDark ? '#93C5FD' : '#1D4ED8', fontWeight: '700' },
 
     checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: UI.space.xs, paddingVertical: UI.space.xs },
-    checkboxBox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg, alignItems: 'center', justifyContent: 'center' },
+    checkboxBox: { width: CHECKBOX_SIZE, height: CHECKBOX_SIZE, borderRadius: 4, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg, alignItems: 'center', justifyContent: 'center' },
     checkboxBoxChecked: { backgroundColor: colors.fabBg, borderColor: colors.fabBg },
     checkbox: { paddingVertical: UI.space.xs },
     checkboxText: { fontSize: 13 * scale, color: colors.textSecondary },
