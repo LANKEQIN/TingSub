@@ -1,8 +1,11 @@
 import React from 'react'
-import { View, TouchableOpacity, TextInput, Platform, ScrollView } from 'react-native'
+import { View, TouchableOpacity, TextInput, Platform, ScrollView, StyleSheet } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { Text } from 'tamagui'
 import { Check } from '@tamagui/lucide-icons'
+import tamaguiConfig from '../../tamagui.config'
+import { getVariableValue } from '@tamagui/core'
 import type { CategoryGroup } from '../../features/subscriptions/types'
 import type { Cycle, Subscription } from '../../features/subscriptions/slice'
 import type { CurrencyCode } from '../../features/currency/types'
@@ -67,19 +70,21 @@ const SubscriptionFormModal: React.FC<Props> = ({
   onClose,
 }) => {
   if (!visible) return null
+  const c = tamaguiConfig.tokens.color
+  const isDark = styles?.colors?.textPrimary === '#E5E7EB'
   const pad2 = (n: number) => String(n).padStart(2, '0')
   const iso = `${dateParts.year}-${pad2(dateParts.month)}-${pad2(dateParts.day)}`
+
   return (
     <View style={styles.modalMask}>
-      <View style={styles.modalBox}>
+      <View style={[styles.modalBox, modalStyles.box]}>
         <Text style={styles.modalTitle}>{editMode ? '编辑订阅' : '添加新订阅'}</Text>
 
-        {/* 将表单主体包裹在可滚动容器中，避免内容过长无法滑动 */}
         <ScrollView style={{ maxHeight: '100%' }} contentContainerStyle={{ paddingBottom: 8 }}>
         <View style={styles.formRow}>
           <Text style={styles.formLabel}>订阅名称</Text>
           <TextInput
-            style={styles.formInput}
+            style={[styles.formInput, modalStyles.input]}
             value={form.name}
             onChangeText={(t) => setForm((v) => ({ ...v, name: t }))}
             placeholder="例如：网易云音乐VIP"
@@ -93,7 +98,7 @@ const SubscriptionFormModal: React.FC<Props> = ({
             {categoryGroupOptions.map((opt) => (
               <TouchableOpacity
                 key={opt}
-                style={[styles.selectItem, form.categoryGroup === opt ? styles.selectItemActive : null]}
+                style={[styles.selectItem, form.categoryGroup === opt ? styles.selectItemActive : null, modalStyles.selectItem]}
                 onPress={() => setForm((v) => ({ ...v, categoryGroup: opt, categoryId: undefined, categoryLabel: '' }))}
               >
                 <Text style={[styles.selectText, form.categoryGroup === opt ? styles.selectTextActive : null]}>{opt}</Text>
@@ -107,7 +112,7 @@ const SubscriptionFormModal: React.FC<Props> = ({
                 {getCategoriesByGroup(form.categoryGroup).map((c) => (
                   <TouchableOpacity
                     key={c.id}
-                    style={[styles.selectItem, form.categoryId === c.id ? styles.selectItemActive : null]}
+                    style={[styles.selectItem, form.categoryId === c.id ? styles.selectItemActive : null, modalStyles.selectItem]}
                     onPress={() => setForm((v) => ({ ...v, categoryId: c.id, categoryLabel: '' }))}
                   >
                     <Text style={[styles.selectText, form.categoryId === c.id ? styles.selectTextActive : null]}>{c.label}</Text>
@@ -119,13 +124,13 @@ const SubscriptionFormModal: React.FC<Props> = ({
           {form.categoryGroup === '其他' ? (
             <View style={{ marginTop: 8 }}>
               <TextInput
-                style={styles.formInput}
+                style={[styles.formInput, modalStyles.input]}
                 value={form.categoryLabel}
                 onChangeText={(t) => setForm((v) => ({ ...v, categoryLabel: t }))}
                 placeholder="自定义类型名称（例如：视频会员/健身会员等）"
                 placeholderTextColor={styles.colors.muted}
               />
-              <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>提示：保存时底层分类依然归为“其他”</Text>
+              <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>提示：保存时底层分类依然归为"其他"</Text>
             </View>
           ) : null}
         </View>
@@ -133,7 +138,7 @@ const SubscriptionFormModal: React.FC<Props> = ({
         <View style={styles.formRow}>
           <Text style={styles.formLabel}>价格</Text>
           <TextInput
-            style={styles.formInput}
+            style={[styles.formInput, modalStyles.input]}
             keyboardType="numeric"
             value={form.price}
             onChangeText={(t) => setForm((v) => ({ ...v, price: t }))}
@@ -152,7 +157,7 @@ const SubscriptionFormModal: React.FC<Props> = ({
             {(['monthly', 'quarterly', 'yearly', 'lifetime', 'other'] as Cycle[]).map((opt) => (
               <TouchableOpacity
                 key={opt}
-                style={[styles.selectItem, form.cycle === opt ? styles.selectItemActive : null]}
+                style={[styles.selectItem, form.cycle === opt ? styles.selectItemActive : null, modalStyles.selectItem]}
                 onPress={() => setForm((v) => ({ ...v, cycle: opt }))}
               >
                 <Text style={[styles.selectText, form.cycle === opt ? styles.selectTextActive : null]}>
@@ -169,7 +174,7 @@ const SubscriptionFormModal: React.FC<Props> = ({
             {(['CNY', 'USD', 'JPY'] as CurrencyCode[]).map((opt) => (
               <TouchableOpacity
                 key={opt}
-                style={[styles.selectItem, form.currency === opt ? styles.selectItemActive : null]}
+                style={[styles.selectItem, form.currency === opt ? styles.selectItemActive : null, modalStyles.selectItem]}
                 onPress={() => setForm((v) => ({ ...v, currency: opt }))}
               >
                 <Text style={[styles.selectText, form.currency === opt ? styles.selectTextActive : null]}>{opt}</Text>
@@ -196,7 +201,7 @@ const SubscriptionFormModal: React.FC<Props> = ({
           {Platform.OS !== 'web' && (
             <View style={{ marginTop: 8 }}>
               <TextInput
-                style={styles.formInput}
+                style={[styles.formInput, modalStyles.input]}
                 value={form.startISO}
                 onChangeText={(t) => setForm((v) => ({ ...v, startISO: t }))}
                 placeholder="例如：2025-02-15"
@@ -211,9 +216,6 @@ const SubscriptionFormModal: React.FC<Props> = ({
           <Text style={styles.formLabel}>下次扣费日期</Text>
           {Platform.OS === 'web' && (
             <View style={{ marginTop: 8 }}>
-              {
-                // 直接使用原生 HTML 日期输入，便于网页端选择
-              }
               <input
                 type="date"
                 value={iso}
@@ -229,8 +231,15 @@ const SubscriptionFormModal: React.FC<Props> = ({
           )}
           {Platform.OS !== 'web' && (
             <View style={{ marginTop: 8 }}>
-              <TouchableOpacity style={styles.btnPrimary} onPress={() => setShowPicker(true)}>
-                <Text style={styles.btnPrimaryText}>选择日期</Text>
+              <TouchableOpacity onPress={() => setShowPicker(true)} activeOpacity={0.8}>
+                <LinearGradient
+                  colors={[getVariableValue(c.gradientStart), getVariableValue(c.gradientEnd)]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={modalStyles.dateButton}
+                >
+                  <Text style={modalStyles.dateButtonText}>选择日期</Text>
+                </LinearGradient>
               </TouchableOpacity>
               {showPicker && <DateTimePicker value={new Date(iso)} mode="date" display="default" onChange={onAndroidDateChange} />}
             </View>
@@ -246,7 +255,7 @@ const SubscriptionFormModal: React.FC<Props> = ({
                 { val: false, label: '否' },
               ] as const
             ).map((opt) => (
-              <TouchableOpacity key={String(opt.val)} style={[styles.selectItem, form.autoRenew === opt.val ? styles.selectItemActive : null]} onPress={() => setForm((v) => ({ ...v, autoRenew: opt.val }))}>
+              <TouchableOpacity key={String(opt.val)} style={[styles.selectItem, form.autoRenew === opt.val ? styles.selectItemActive : null, modalStyles.selectItem]} onPress={() => setForm((v) => ({ ...v, autoRenew: opt.val }))}>
                 <Text style={[styles.selectText, form.autoRenew === opt.val ? styles.selectTextActive : null]}>{opt.label}</Text>
               </TouchableOpacity>
             ))}
@@ -257,7 +266,7 @@ const SubscriptionFormModal: React.FC<Props> = ({
           <Text style={styles.formLabel}>支付方式</Text>
           <View style={styles.selectRow}>
             {paymentMethods.map((pm) => (
-              <TouchableOpacity key={pm.id} style={[styles.selectItem, form.paymentMethodId === pm.id ? styles.selectItemActive : null]} onPress={() => setForm((v) => ({ ...v, paymentMethodId: pm.id }))}>
+              <TouchableOpacity key={pm.id} style={[styles.selectItem, form.paymentMethodId === pm.id ? styles.selectItemActive : null, modalStyles.selectItem]} onPress={() => setForm((v) => ({ ...v, paymentMethodId: pm.id }))}>
                 <Text style={[styles.selectText, form.paymentMethodId === pm.id ? styles.selectTextActive : null]}>{pm.label}</Text>
               </TouchableOpacity>
             ))}
@@ -266,16 +275,81 @@ const SubscriptionFormModal: React.FC<Props> = ({
         </ScrollView>
 
         <View style={styles.modalActions}>
-          <TouchableOpacity style={styles.btnGhost} onPress={onClose}>
+          <TouchableOpacity style={[styles.btnGhost, modalStyles.btnGhost]} onPress={onClose} activeOpacity={0.7}>
             <Text style={styles.btnGhostText}>取消</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.btnPrimary} onPress={onSubmit}>
-            <Text style={styles.btnPrimaryText}>保存</Text>
+          <TouchableOpacity onPress={onSubmit} activeOpacity={0.8}>
+            <LinearGradient
+              colors={[getVariableValue(c.gradientStart), getVariableValue(c.gradientEnd)]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={modalStyles.btnPrimary}
+            >
+              <Text style={modalStyles.btnPrimaryText}>保存</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </View>
     </View>
   )
 }
+
+const modalStyles = StyleSheet.create({
+  box: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  input: {
+    borderWidth: 1.5,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    fontSize: 15,
+  },
+  selectItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderWidth: 1.5,
+  },
+  dateButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dateButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  btnGhost: {
+    borderWidth: 1.5,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  btnPrimary: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  btnPrimaryText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+})
 
 export default SubscriptionFormModal

@@ -23,6 +23,22 @@ const tokens = {
     warning: '#f59e0b',
     danger: '#ef4444',
 
+    // 渐变色系
+    gradientStart: '#2563EB',
+    gradientEnd: '#7C3AED',
+    gradientStartDark: '#3B82F6',
+    gradientEndDark: '#8B5CF6',
+    gradientCardStart: '#0ea5e9',
+    gradientCardEnd: '#6366f1',
+    gradientCardStartDark: '#38bdf8',
+    gradientCardEndDark: '#818cf8',
+
+    // 玻璃拟态效果
+    glassLight: 'rgba(255, 255, 255, 0.7)',
+    glassDark: 'rgba(28, 31, 36, 0.8)',
+    glassBorderLight: 'rgba(255, 255, 255, 0.3)',
+    glassBorderDark: 'rgba(255, 255, 255, 0.1)',
+
     // 中性色（浅色系）
     gray0: '#F8FAFC',
     gray1: '#F3F4F6',
@@ -61,6 +77,13 @@ const tokens = {
     fabBg: '#2563EB',
     modalBgLight: '#FFFFFF',
     modalBgDark: '#1C1F24',
+
+    // 新增：卡片装饰色
+    cardAccent1: '#3B82F6',
+    cardAccent2: '#8B5CF6',
+    cardAccent3: '#EC4899',
+    cardAccent4: '#10B981',
+    cardAccent5: '#F59E0B',
   },
   space: {
     0: 0,

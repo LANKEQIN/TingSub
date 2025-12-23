@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { StatusBar } from 'expo-status-bar'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { TamaguiProvider } from 'tamagui'
 import { getVariableValue } from '@tamagui/core'
 import tamaguiConfig from './tamagui.config'
@@ -9,6 +9,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useColorScheme } from 'react-native'
 import { Home, BarChart3, Bell, User } from '@tamagui/lucide-icons'
+import { LinearGradient } from 'expo-linear-gradient'
 import HomeScreen from './screens/HomeScreen'
 import StatisticsScreen from './screens/StatisticsScreen'
 import NotificationsScreen from './screens/NotificationsScreen'
@@ -50,6 +51,10 @@ function MainTabs({ effectiveScheme }: { effectiveScheme: 'light' | 'dark' }) {
   const insets = useSafeAreaInsets()
   const c = tamaguiConfig.tokens.color
   const isDark = effectiveScheme === 'dark'
+  const gradientColors: readonly [string, string] = isDark 
+    ? [getVariableValue(c.gradientStartDark), getVariableValue(c.gradientEndDark)]
+    : [getVariableValue(c.gradientStart), getVariableValue(c.gradientEnd)]
+  
   return (
     <Tab.Navigator
       id="main-tabs"
@@ -67,24 +72,31 @@ function MainTabs({ effectiveScheme }: { effectiveScheme: 'light' | 'dark' }) {
           }
           return <IconComponent size={size} color={color} />
         },
-        tabBarActiveTintColor: getVariableValue(isDark ? c.accentDark : c.accentLight) as string,
-        tabBarInactiveTintColor: getVariableValue(isDark ? c.secondaryDark : c.textSecondaryLight) as string,
+        tabBarActiveTintColor: '#FFFFFF',
+        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.6)',
+        tabBarBackground: () => (
+          <LinearGradient
+            colors={gradientColors}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              paddingBottom: Math.max(8, insets.bottom),
+              paddingTop: 8,
+              height: 70 + insets.bottom,
+            }}
+          />
+        ),
         tabBarStyle: {
-          backgroundColor: getVariableValue(isDark ? c.darkCard : c.cardBgLight) as string,
+          backgroundColor: 'transparent',
           borderTopWidth: 0,
-          elevation: 20,
-          shadowColor: getVariableValue(c.black) as string,
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 10,
-          paddingBottom: Math.max(8, insets.bottom),
-          paddingTop: 8,
+          elevation: 0,
+          shadowOpacity: 0,
           height: 70 + insets.bottom,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
-          // 轻微边框以更现代的层次分隔
-          borderColor: getVariableValue(isDark ? c.borderDark : c.borderLight) as string,
-          borderWidth: 1,
+          position: 'absolute',
         },
         tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: 4 },
         tabBarHideOnKeyboard: true,

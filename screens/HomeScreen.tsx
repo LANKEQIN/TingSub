@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useContext, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { Text, getVariableValue } from 'tamagui';
+import { LinearGradient } from 'expo-linear-gradient';
 import tamaguiConfig from '../tamagui.config'
 import { UI, useResponsiveLayout } from '../lib/ui'
 import {
@@ -19,6 +20,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ErrorState from './components/ErrorState';
 import EmptyState from './components/EmptyState';
 import LoadingSkeleton from './components/LoadingSkeleton';
+import AnimatedCard from './components/AnimatedCard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { addSubscription, updateSubscription, removeSubscription } from '../features/subscriptions/slice';
@@ -375,18 +377,28 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               <>
                 <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
                 <View style={styles.summaryGrid}>
-                  <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
-                  <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
-                  <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
-                  <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+                  <AnimatedCard index={0}>
+                    <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} index={0} />
+                  </AnimatedCard>
+                  <AnimatedCard index={1}>
+                    <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} index={1} />
+                  </AnimatedCard>
+                  <AnimatedCard index={2}>
+                    <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} index={2} />
+                  </AnimatedCard>
+                  <AnimatedCard index={3}>
+                    <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} index={3} />
+                  </AnimatedCard>
                 </View>
 
                 {upcomingList.length > 0 && (
                   <>
                     <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
                     <View style={{ gap: 12 }}>
-                      {upcomingList.map((u) => (
-                        <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                      {upcomingList.map((u, idx) => (
+                        <AnimatedCard key={u.id} index={idx + 4}>
+                          <UpcomingCard item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                        </AnimatedCard>
                       ))}
                     </View>
                   </>
@@ -404,7 +416,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                 <SectionHeader title={t('home.active')} styles={styles} />
                 <View style={{ gap: 8 }}>
                   {activeSubs.map((s, idx) => (
-                    <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
+                    <AnimatedCard key={s.id} index={idx}>
+                      <ActiveRow item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
+                    </AnimatedCard>
                   ))}
                 </View>
               </>
@@ -431,18 +445,28 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
             <>
               <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
               <View style={styles.summaryGrid}>
-                <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
-                <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
-                <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
-                <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+                <AnimatedCard index={0}>
+                  <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} index={0} />
+                </AnimatedCard>
+                <AnimatedCard index={1}>
+                  <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} index={1} />
+                </AnimatedCard>
+                <AnimatedCard index={2}>
+                  <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} index={2} />
+                </AnimatedCard>
+                <AnimatedCard index={3}>
+                  <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} index={3} />
+                </AnimatedCard>
               </View>
 
               {upcomingList.length > 0 && (
                 <>
                   <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
                   <View style={{ gap: 12 }}>
-                    {upcomingList.map((u) => (
-                      <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                    {upcomingList.map((u, idx) => (
+                      <AnimatedCard key={u.id} index={idx + 4}>
+                        <UpcomingCard item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                      </AnimatedCard>
                     ))}
                   </View>
                 </>
@@ -451,7 +475,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               <SectionHeader title={t('home.active')} styles={styles} />
               <View style={{ gap: 8 }}>
                 {activeSubs.map((s, idx) => (
-                  <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
+                  <AnimatedCard key={s.id} index={idx}>
+                    <ActiveRow item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
+                  </AnimatedCard>
                 ))}
               </View>
 
@@ -462,8 +488,19 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       )}
 
       {/* 悬浮添加按钮 */}
-      <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + UI.space.md * scale, right: UI.space.md * scale }]} onPress={openModal}>
-        <Plus size={24} color="#fff" />
+      <TouchableOpacity 
+        style={[styles.fab, { bottom: insets.bottom + UI.space.md * scale, right: UI.space.md * scale }]} 
+        onPress={openModal}
+        activeOpacity={0.8}
+      >
+        <LinearGradient
+          colors={[getVariableValue(tamaguiConfig.tokens.color.gradientStart), getVariableValue(tamaguiConfig.tokens.color.gradientEnd)]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={fabStyles.gradient}
+        >
+          <Plus size={24} color="#fff" />
+        </LinearGradient>
       </TouchableOpacity>
 
       {/* 操作弹窗：编辑或删除 */}
@@ -591,10 +628,13 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
       ...(UI.shadow.sm as any),
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: UI.space.sm,
     },
-    summaryTitle: { fontSize: 13 * scale, color: colors.textSecondary, marginBottom: 6 * scale },
-    summaryValue: { fontSize: 22 * scale, fontWeight: '800', color: colors.textPrimary },
-    summarySub: { fontSize: 12 * scale, color: gv(isDark ? c.successDark : c.success), marginTop: 4 * scale },
+    summaryTitle: { fontSize: 12 * scale, color: colors.textSecondary },
+    summaryValue: { fontSize: 18 * scale, fontWeight: '800', color: colors.textPrimary },
+    summarySub: { fontSize: 11 * scale, color: gv(isDark ? c.successDark : c.success) },
 
     upcomingCard: {
       flexDirection: 'row',
@@ -631,7 +671,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
     activeIconBox: { width: 30, height: 30, borderRadius: UI.radius.xs, backgroundColor: colors.badgeBg, alignItems: 'center', justifyContent: 'center', marginRight: UI.space.sm },
     activeName: { fontSize: 15 * scale, fontWeight: '700', color: colors.textPrimary },
     activeHint: { fontSize: 12 * scale, color: colors.textSecondary },
-    activeNext: { fontSize: 12 * scale, color: gv(isDark ? c.successDark : c.success) },
+    activeNext: { fontSize: 12 * scale, color: gv(isDark ? c.accentDark : c.accentLight) },
 
     todoBox: { marginTop: UI.space.md, backgroundColor: colors.cardBg, borderRadius: UI.radius.md, padding: UI.space.sm, borderWidth: isDark ? 1 : 0, borderColor: colors.border, ...(UI.shadow.sm as any) },
     todoTitle: { fontSize: 14 * scale, fontWeight: '800', color: colors.textPrimary, marginBottom: UI.space.xs },
@@ -644,10 +684,9 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       width: 56 * scale,
       height: 56 * scale,
       borderRadius: 28 * scale,
-      backgroundColor: colors.fabBg,
+      backgroundColor: 'transparent',
       alignItems: 'center',
       justifyContent: 'center',
-      ...(UI.shadow.lg as any),
     },
 
     modalMask: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: isDark ? 'rgba(0,0,0,0.50)' : 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
@@ -675,5 +714,20 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
   });
   return { ...sheet, colors } as ReturnType<typeof StyleSheet.create> & { colors: ColorPalette };
 }
+
+const fabStyles = StyleSheet.create({
+  gradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+});
 
 export default HomeScreen;
