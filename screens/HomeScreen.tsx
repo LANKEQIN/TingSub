@@ -1,4 +1,5 @@
-import React, { useMemo, useState, useContext, useEffect } from 'react';
+import * as React from 'react';
+import { useMemo, useState, useContext, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, type ViewStyle } from 'react-native';
 import { Text, getVariableValue } from 'tamagui';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,6 +11,7 @@ import {
   Search,
   Plus
 } from '@tamagui/lucide-icons';
+import { nanoid } from 'nanoid';
 import SectionHeader from './components/SectionHeader';
 import SummaryCard from './components/SummaryCard';
 import UpcomingCard from './components/UpcomingCard';
@@ -97,7 +99,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch<AppDispatch>();
   const subs = useSelector((state: RootState) => state.subscriptions.list);
-  const { effectiveScheme } = useContext(ThemeContext);
+  const themeContext = useContext(ThemeContext);
+  const effectiveScheme = (themeContext as any)?.effectiveScheme ?? 'light';
   const { t } = useContext(I18nContext);
   const scale = useAppSelector(selectDisplayScale)
   const styles = createStyles(effectiveScheme, scale);
@@ -266,7 +269,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       dispatch(updateSubscription(payloadUpdate));
     } else {
       const payload: Subscription = {
-        id: `${Date.now()}`,
+        id: nanoid(),
         name: form.name,
         category: form.categoryGroup === '其他'
           ? (form.categoryLabel?.trim() || '其他')
@@ -289,7 +292,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   return (
     <ErrorBoundary
       resetKeys={[retryCount, subs.length]}
-      fallback={<ErrorState styles={styles} onRetry={() => setRetryCount((c) => c + 1)} />}
+      fallback={({ resetError }) => (
+        <ErrorState styles={styles} onRetry={() => { setRetryCount((c) => c + 1); resetError(); }} />
+      )}
     >
     <View style={[styles.container, { paddingTop: insets.top }]}> 
       {/* 顶部导航 */}

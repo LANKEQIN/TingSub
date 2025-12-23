@@ -1,7 +1,11 @@
 import React from 'react'
 
+type FallbackProps = {
+  resetError: () => void
+}
+
 type ErrorBoundaryProps = {
-  fallback: React.ReactNode
+  fallback: React.ReactNode | ((props: FallbackProps) => React.ReactNode)
   resetKeys?: any[]
   children: React.ReactNode
 }
@@ -40,9 +44,20 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
     }
   }
 
+  /**
+   * 重置错误状态
+   */
+  resetError = () => {
+    this.setState({ hasError: false })
+  }
+
   render() {
     if (this.state.hasError) {
-      return this.props.fallback
+      const { fallback } = this.props
+      if (typeof fallback === 'function') {
+        return fallback({ resetError: this.resetError })
+      }
+      return fallback
     }
     return this.props.children as React.ReactElement
   }

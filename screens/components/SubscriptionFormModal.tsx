@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import * as React from 'react'
+import { useState, useEffect } from 'react'
 import { View, TouchableOpacity, TextInput, Platform, ScrollView, StyleSheet } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import DateTimePicker from '@react-native-community/datetimepicker'
