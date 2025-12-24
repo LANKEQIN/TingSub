@@ -55,6 +55,20 @@ i18n.translations = {
       provider: 'Wallet Provider',
       types: { credit_card: 'Credit Card', debit_card: 'Debit Card', bank_account: 'Bank Account', e_wallet: 'E-Wallet', alipay: 'Alipay', wechat: 'WeChat Pay' },
     },
+    cycles: {
+      monthly: 'Monthly',
+      quarterly: 'Quarterly',
+      yearly: 'Yearly',
+      lifetime: 'Lifetime',
+      other: 'Other',
+      suffixes: {
+        monthly: '/mo',
+        quarterly: '/quarter',
+        yearly: '/year',
+        lifetime: '/lifetime',
+        other: '',
+      },
+    },
   },
   zh: {
     common: { appName: '订阅' },
@@ -105,6 +119,20 @@ i18n.translations = {
       expiryYear: '到期年份',
       provider: '钱包提供方',
       types: { credit_card: '信用卡', debit_card: '借记卡', bank_account: '银行账户', e_wallet: '电子钱包', alipay: '支付宝', wechat: '微信支付' },
+    },
+    cycles: {
+      monthly: '月付',
+      quarterly: '季付',
+      yearly: '年付',
+      lifetime: '终身',
+      other: '其他',
+      suffixes: {
+        monthly: '/月',
+        quarterly: '/季',
+        yearly: '/年',
+        lifetime: '/终身',
+        other: '',
+      },
     },
   },
 }

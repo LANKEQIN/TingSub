@@ -148,17 +148,18 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
     textSecondary: gv(isDark ? c.textSecondaryDark : c.textSecondaryLight),
     muted: gv(isDark ? c.mutedDark : c.mutedLight),
     accent: gv(isDark ? c.accentDark : c.accentLight),
+    iconBg: gv(isDark ? c.iconBgDark : c.iconBgLight),
   }
   return StyleSheet.create({
     container: { flex: 1, alignItems: 'center', backgroundColor: colors.pageBg as string },
     title: { fontSize: 24 * scale, fontWeight: '700', marginBottom: 20 * scale, color: colors.textPrimary as string },
     sectionTitle: { fontSize: 18 * scale, fontWeight: '700', alignSelf: 'flex-start', marginBottom: 12 * scale, color: colors.textPrimary as string },
     row: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: UI.space.sm * scale },
-    option: { paddingVertical: UI.space.md * scale, paddingHorizontal: 22 * scale, borderRadius: UI.radius.xl, backgroundColor: gv(c.gray3) as string, borderWidth: 1, borderColor: colors.border as string, minWidth: 120 * scale, alignItems: 'center' },
-    optionActive: { backgroundColor: isDark ? gv(c.iconBgDark) as string : gv(c.iconBgLight) as string, borderWidth: 1, borderColor: colors.accent as string },
+    option: { paddingVertical: UI.space.md * scale, paddingHorizontal: 22 * scale, borderRadius: UI.radius.xl, backgroundColor: colors.cardBg as string, borderWidth: isDark ? 1 : 0, borderColor: colors.border as string, minWidth: 120 * scale, alignItems: 'center', ...(UI.shadow.sm as any) },
+    optionActive: { backgroundColor: colors.iconBg as string, borderWidth: 1, borderColor: colors.accent as string },
     optionText: { fontSize: 16 * scale, color: colors.textSecondary as string, textAlign: 'center' },
     optionTextActive: { color: colors.accent as string, fontWeight: '700' },
-    navItem: { marginTop: 24 * scale, width: '100%', backgroundColor: colors.cardBg as string, borderWidth: 1, borderColor: colors.border as string, borderRadius: UI.radius.lg, paddingHorizontal: UI.space.md * scale, paddingVertical: UI.space.md * scale },
+    navItem: { marginTop: 24 * scale, width: '100%', backgroundColor: colors.cardBg as string, borderWidth: isDark ? 1 : 0, borderColor: colors.border as string, borderRadius: UI.radius.lg, paddingHorizontal: UI.space.md * scale, paddingVertical: UI.space.md * scale, ...(UI.shadow.sm as any) },
     navItemTitle: { fontSize: 16 * scale, fontWeight: '600', color: colors.textPrimary as string },
     navItemSub: { fontSize: 12 * scale, color: colors.textSecondary as string, marginTop: 4 * scale },
   })

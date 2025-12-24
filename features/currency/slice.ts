@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { CurrencyCode } from './types'
+import type { RootState } from '../../store'
 
 /**
  * 货币偏好状态
@@ -26,6 +27,6 @@ const currencySlice = createSlice({
 })
 
 export const { setPreferredCurrency } = currencySlice.actions
-export const selectPreferredCurrency = (state: any): CurrencyCode => state.currency?.preferred ?? 'CNY'
+export const selectPreferredCurrency = (state: RootState): CurrencyCode => state.currency?.preferred ?? 'CNY'
 
 export default currencySlice.reducer

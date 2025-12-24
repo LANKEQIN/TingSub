@@ -14,14 +14,30 @@ const tokens = {
     white: '#FFFFFF',
     black: '#000000',
 
-    // 品牌与功能色
-    primary: '#0ea5e9',
-    primarySolid: '#2563EB',
-    primarySoft: '#E6F2FF',
+    // 品牌与功能色 - 青色水蓝系
+    primary: '#06b6d4',
+    primarySolid: '#0891b2',
+    primarySoft: '#cffafe',
     success: '#10b981',
     successDark: '#34D399',
     warning: '#f59e0b',
     danger: '#ef4444',
+
+    // 渐变色系 - 青色到青绿
+    gradientStart: '#06b6d4',
+    gradientEnd: '#0d9488',
+    gradientStartDark: '#22d3ee',
+    gradientEndDark: '#14b8a6',
+    gradientCardStart: '#06b6d4',
+    gradientCardEnd: '#6366f1',
+    gradientCardStartDark: '#22d3ee',
+    gradientCardEndDark: '#818cf8',
+
+    // 玻璃拟态效果
+    glassLight: 'rgba(255, 255, 255, 0.7)',
+    glassDark: 'rgba(28, 31, 36, 0.8)',
+    glassBorderLight: 'rgba(255, 255, 255, 0.3)',
+    glassBorderDark: 'rgba(255, 255, 255, 0.1)',
 
     // 中性色（浅色系）
     gray0: '#F8FAFC',
@@ -52,15 +68,22 @@ const tokens = {
     textSecondaryLight: '#6b7280',
     textSecondaryDark: '#A7B0B8',
     mutedLight: '#9CA3AF',
-    accentLight: '#0ea5e9',
-    accentDark: '#4DB6FF',
+    accentLight: '#06b6d4',
+    accentDark: '#22d3ee',
     badgeBgLight: '#F3F4F6',
     badgeBgDark: '#28313A',
-    iconBgLight: '#E6F2FF',
-    iconBgDark: '#22303C',
-    fabBg: '#2563EB',
+    iconBgLight: '#cffafe',
+    iconBgDark: '#164e63',
+    fabBg: '#0891b2',
     modalBgLight: '#FFFFFF',
     modalBgDark: '#1C1F24',
+
+    // 卡片装饰色 - 青色系
+    cardAccent1: '#06b6d4',
+    cardAccent2: '#14b8a6',
+    cardAccent3: '#0d9488',
+    cardAccent4: '#0891b2',
+    cardAccent5: '#22d3ee',
   },
   space: {
     0: 0,

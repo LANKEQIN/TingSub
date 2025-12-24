@@ -10,6 +10,7 @@ import { getVariableValue } from '@tamagui/core';
 import tamaguiConfig from '../tamagui.config';
 import { useAppSelector } from '../store'
 import { selectDisplayScale } from '../features/ui/selectors'
+import { UI } from '../lib/ui'
 import ScreenContainer from './components/ScreenContainer'
 
 /**
@@ -91,15 +92,16 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
     textPrimary: v(isDark ? c.textPrimaryDark : c.textPrimaryLight),
     textSecondary: v(isDark ? c.textSecondaryDark : c.textSecondaryLight),
     accent: v(isDark ? c.accentDark : c.accentLight),
-    optionBg: v(isDark ? c.gray3 : c.gray2),
+    cardBg: v(isDark ? c.cardBgDark : c.cardBgLight),
+    iconBg: v(isDark ? c.iconBgDark : c.iconBgLight),
   };
   return StyleSheet.create({
     container: { flex: 1, alignItems: 'center' },
     title: { fontSize: 22 * scale, fontWeight: '700', marginBottom: 24 * scale, color: colors.textPrimary as string },
     // gap 在 RN 类型中不一定存在，这里做类型断言避免 TS 报错
     row: { flexDirection: 'row', gap: 12 * scale } as any,
-    option: { paddingVertical: 16 * scale, paddingHorizontal: 22 * scale, borderRadius: 16, backgroundColor: colors.optionBg as string, borderWidth: 1, borderColor: colors.border as string },
-    optionActive: { backgroundColor: isDark ? v(c.iconBgDark) as string : v(c.iconBgLight) as string, borderWidth: 1, borderColor: colors.accent as string },
+    option: { paddingVertical: 16 * scale, paddingHorizontal: 22 * scale, borderRadius: UI.radius.xl, backgroundColor: colors.cardBg as string, borderWidth: isDark ? 1 : 0, borderColor: colors.border as string, ...(UI.shadow.sm as any) },
+    optionActive: { backgroundColor: colors.iconBg as string, borderWidth: 1, borderColor: colors.accent as string },
     optionText: { fontSize: 16 * scale, color: colors.textSecondary as string },
     optionTextActive: { color: colors.accent as string, fontWeight: '700' },
   });

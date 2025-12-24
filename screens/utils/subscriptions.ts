@@ -2,8 +2,8 @@ import { CurrencyService, convertCurrency } from '../../features/currency/servic
 import type { CurrencyCode } from '../../features/currency/types'
 import type { Cycle, Subscription } from '../../features/subscriptions/slice'
 import type { CategoryGroup } from '../../features/subscriptions/types'
+import { getCycleSuffix, CYCLE_LABELS } from '../../features/subscriptions/constants'
 
-// 计费周期标签映射（带类型）
 export const cycleLabelMap: Record<Cycle, string> = {
   monthly: '月付',
   quarterly: '季付',
@@ -27,7 +27,7 @@ export function formatPriceByPref(
 ) {
   const converted = convertCurrency(price, fromCode, toCode)
   const base = CurrencyService.format(converted, toCode)
-  const suffix = cycle === 'yearly' ? '/年' : cycle === 'quarterly' ? '/季' : cycle === 'lifetime' ? '/终身' : cycle === '其他' || cycle === 'other' ? '' : '/月'
+  const suffix = getCycleSuffix(cycle as Cycle, 'zh')
   return `${base}${suffix}`
 }
 
@@ -40,7 +40,7 @@ export function formatPriceBoth(
 ) {
   const orig = CurrencyService.format(price, fromCode)
   const conv = CurrencyService.convertAndFormat(price, fromCode, toCode)
-  const suffix = cycle === 'yearly' ? '/年' : cycle === 'quarterly' ? '/季' : cycle === 'lifetime' ? '/终身' : cycle === '其他' || cycle === 'other' ? '' : '/月'
+  const suffix = getCycleSuffix(cycle as Cycle, 'zh')
   if (fromCode === toCode) {
     return `${orig}${suffix}`
   }

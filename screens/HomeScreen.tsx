@@ -1,6 +1,8 @@
-import React, { useMemo, useState, useContext, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
+import * as React from 'react';
+import { useMemo, useState, useContext, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, type ViewStyle } from 'react-native';
 import { Text, getVariableValue } from 'tamagui';
+import { LinearGradient } from 'expo-linear-gradient';
 import tamaguiConfig from '../tamagui.config'
 import { UI, useResponsiveLayout } from '../lib/ui'
 import {
@@ -9,6 +11,7 @@ import {
   Search,
   Plus
 } from '@tamagui/lucide-icons';
+import { nanoid } from 'nanoid';
 import SectionHeader from './components/SectionHeader';
 import SummaryCard from './components/SummaryCard';
 import UpcomingCard from './components/UpcomingCard';
@@ -19,6 +22,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ErrorState from './components/ErrorState';
 import EmptyState from './components/EmptyState';
 import LoadingSkeleton from './components/LoadingSkeleton';
+import AnimatedCard from './components/AnimatedCard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { addSubscription, updateSubscription, removeSubscription } from '../features/subscriptions/slice';
@@ -35,14 +39,23 @@ import { getCategoriesByGroup } from '../features/subscriptions/categories';
 import { useAppSelector } from '../store';
 import { selectPreferredCurrency } from '../features/currency/slice';
 import { CurrencyService, convertCurrency } from '../features/currency/services';
+import type { CurrencyCode } from '../features/currency/types';
 import { selectPaymentMethods } from '../features/paymentMethods/selectors';
 import { advanceNextDueISO } from './utils/subscriptions';
 import { selectDisplayScale } from '../features/ui/selectors'
+import { useHomeData } from './hooks/useHomeData'
+import { getCycleSuffix } from '../features/subscriptions/constants'
+
+const ICON_SIZE_LG = 20
+const ICON_SIZE_MD = 18
+const ICON_SIZE_XL = 24
+const BOTTOM_SPACING = 80
+const UPCOMING_ICON_SIZE = 36
+const ACTIVE_ICON_SIZE = 30
+const CHECKBOX_SIZE = 18
 
 // 计算型工具
 // 类型：订阅分组使用领域类型
-// 计费周期标签映射（带类型）
-const cycleLabelMap: Record<Cycle, string> = { monthly: '月付', quarterly: '季付', yearly: '年付', lifetime: '终身', other: '其他' };
 // 可选的订阅分组选项（带类型）
 const categoryGroupOptions: CategoryGroup[] = ['影音娱乐','工作','生活','其他'];
 // 类型守卫与转换器
@@ -51,14 +64,14 @@ const toCategoryGroup = (val?: string): CategoryGroup => (val && isCategoryGroup
 function formatPriceByPref(price: number, cycle: string, fromCode: 'CNY'|'USD'|'JPY', toCode: 'CNY'|'USD'|'JPY'){
   const converted = convertCurrency(price, fromCode, toCode)
   const base = CurrencyService.format(converted, toCode)
-  const suffix = (cycle==='yearly')?'/年': (cycle==='quarterly')?'/季': (cycle==='lifetime')?'/终身': (cycle==='其他'||cycle==='other')?'': '/月'
+  const suffix = getCycleSuffix(cycle as Cycle, 'zh')
   return `${base}${suffix}`
 }
 // 新增：原价 + 换算价的透明显示
 function formatPriceBoth(price: number, cycle: string, fromCode: 'CNY'|'USD'|'JPY', toCode: 'CNY'|'USD'|'JPY'){
   const orig = CurrencyService.format(price, fromCode)
   const conv = CurrencyService.convertAndFormat(price, fromCode, toCode)
-  const suffix = (cycle==='yearly')?'/年': (cycle==='quarterly')?'/季': (cycle==='lifetime')?'/终身': (cycle==='其他'||cycle==='other')?'': '/月'
+  const suffix = getCycleSuffix(cycle as Cycle, 'zh')
   if(fromCode===toCode){
     return `${orig}${suffix}`
   }
@@ -85,12 +98,17 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch<AppDispatch>();
   const subs = useSelector((state: RootState) => state.subscriptions.list);
-  const { effectiveScheme } = useContext(ThemeContext);
+  const themeContext = useContext(ThemeContext);
+  const effectiveScheme = (themeContext as any)?.effectiveScheme ?? 'light';
   const { t } = useContext(I18nContext);
   const scale = useAppSelector(selectDisplayScale)
   const styles = createStyles(effectiveScheme, scale);
   const { isLarge } = useResponsiveLayout();
   const preferredCurrency = useAppSelector(selectPreferredCurrency);
+  const scrollContentStyle = useMemo<ViewStyle>(
+    () => StyleSheet.flatten([styles.scroll, { paddingBottom: UI.space.lg * scale + insets.bottom + 96 }]),
+    [styles.scroll, insets.bottom, scale]
+  )
   // 错误边界重置计数
   const [retryCount, setRetryCount] = useState(0);
   // 首屏轻量骨架演示：短暂显示骨架屏，后续可接入真实加载态
@@ -117,65 +135,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     }
   }, [subs])
 
-  const summaryData = useMemo(() => {
-    const totalSubs = subs.length;
-    const monthlySpend = subs.reduce((sum, s) => {
-      const from = s.currency ?? 'CNY'
-      const add = (s.cycle === 'monthly') ? s.price
-        : (s.cycle === 'quarterly') ? s.price/3
-        : (s.cycle === 'yearly') ? s.price/12
-        : 0
-      return sum + convertCurrency(add, from as any, preferredCurrency as any)
-    }, 0)
-    const yearlySpend = subs.reduce((sum, s) => {
-      const from = s.currency ?? 'CNY'
-      const add = (s.cycle === 'monthly') ? s.price*12
-        : (s.cycle === 'quarterly') ? s.price*4
-        : (s.cycle === 'yearly') ? s.price
-        : 0
-      return sum + convertCurrency(add, from as any, preferredCurrency as any)
-    }, 0)
-    const upcomingBills = subs.filter(s=>{
-      const d = daysUntil(s.nextDueISO);
-      return d!==null && d>=0 && d<=7;
-    }).length;
-    return { totalSubs, monthlySpend, yearlySpend, upcomingBills, deltas: { monthlySpend: '+0', yearlySpend: '+0' } };
-  }, [subs, preferredCurrency]);
-
-  const upcomingList = useMemo(() => subs
-    .map(s => {
-      const d = daysUntil(s.nextDueISO);
-      return {
-        id: s.id,
-        name: s.name,
-        cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
-        next: s.nextDueISO
-          ? (s.autoRenew && d !== null && d >= 0 && d <= 7
-              ? `在${d}天后自动续费`
-              : `${d}天内`)
-          : '未设置',
-        price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
-        dueDays: d,
-      };
-    })
-    .filter(u => u.dueDays !== null && u.dueDays >= 0 && u.dueDays <= 7)
-    .sort((a, b) => a.dueDays - b.dueDays)
-  , [subs, preferredCurrency]);
-
-  // 新增：活跃订阅列表（用于 ActiveRow）
-  const activeSubs = useMemo(() => subs.map(s => ({
-    id: s.id,
-    name: s.name,
-    price: formatPriceBoth(s.price, s.cycle, (s.currency ?? 'CNY') as any, preferredCurrency as any),
-    next: (() => {
-      const d = daysUntil(s.nextDueISO);
-      return s.nextDueISO
-        ? (s.autoRenew && d !== null && d >= 0 && d <= 7
-            ? `在${d}天后自动续费`
-            : `${d}天内`)
-        : '未设置';
-    })(),
-  })), [subs, preferredCurrency]);
+  const { summaryData, upcomingList, activeSubs } = useHomeData(subs, preferredCurrency as CurrencyCode);
 
   // 新增：支出分析数据（近 6 个月的预计月支出）
   //（已移至统计页，移除未使用的支出分析计算）
@@ -208,8 +168,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const days = useMemo(() => Array.from({ length: getDaysInMonth(dateParts.year, dateParts.month) }, (_, i) => i + 1), [dateParts.year, dateParts.month]);
   // 新增：Android 原生日期选择控件开关
   const [showPicker, setShowPicker] = useState(false);
-  // Android DateTimePicker 变更处理
-  const onAndroidDateChange = (event, selectedDate) => {
+  // 新增：Android DateTimePicker 变更处理
+  const onAndroidDateChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS !== 'web') {
       const currentDate = selectedDate || new Date(dateParts.year, dateParts.month - 1, dateParts.day);
       setShowPicker(false);
@@ -228,14 +188,14 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   };
   // 价格输入占位示例与预览文本
   const pricePlaceholder = useMemo(() => {
-    const symbol = CurrencyService.symbol(form.currency as any)
+    const symbol = CurrencyService.symbol(form.currency as CurrencyCode)
     const example = form.currency==='JPY' ? '1500' : '15'
     return `例如：${symbol} ${example}`
   }, [form.currency])
   const pricePreview = useMemo(() => {
     const num = Number(form.price)
     if(!Number.isFinite(num) || num<=0) return ''
-    return formatPriceBoth(num, form.cycle, form.currency, preferredCurrency as any)
+    return formatPriceBoth(num, form.cycle, form.currency, preferredCurrency as CurrencyCode)
   }, [form.price, form.cycle, form.currency, preferredCurrency])
   const paymentMethods = useAppSelector(selectPaymentMethods)
   // 新增：打开某订阅的操作面板
@@ -308,7 +268,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       dispatch(updateSubscription(payloadUpdate));
     } else {
       const payload: Subscription = {
-        id: `${Date.now()}`,
+        id: nanoid(),
         name: form.name,
         category: form.categoryGroup === '其他'
           ? (form.categoryLabel?.trim() || '其他')
@@ -331,7 +291,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   return (
     <ErrorBoundary
       resetKeys={[retryCount, subs.length]}
-      fallback={<ErrorState styles={styles} onRetry={() => setRetryCount((c) => c + 1)} />}
+      fallback={({ resetError }) => (
+        <ErrorState styles={styles} onRetry={() => { setRetryCount((c) => c + 1); resetError(); }} />
+      )}
     >
     <View style={[styles.container, { paddingTop: insets.top }]}> 
       {/* 顶部导航 */}
@@ -339,21 +301,21 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         <View style={styles.logoBox}>
           <Text style={styles.logoText}>{t('home.title')}</Text>
         </View>
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          <TouchableOpacity style={styles.iconBtn}><Bell size={20} color={styles.colors.textPrimary} /></TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn}><User size={20} color={styles.colors.textPrimary} /></TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: UI.space.md }}>
+          <TouchableOpacity style={styles.iconBtn}><Bell size={ICON_SIZE_LG} color={styles.colors.textPrimary} /></TouchableOpacity>
+          <TouchableOpacity style={styles.iconBtn}><User size={ICON_SIZE_LG} color={styles.colors.textPrimary} /></TouchableOpacity>
         </View>
       </View>
 
       {/* 搜索框 */}
       <View style={styles.searchBox}>
-        <Search size={18} color={styles.colors.muted} />
+        <Search size={ICON_SIZE_MD} color={styles.colors.muted} />
         <TextInput style={styles.searchInput} placeholder={t('home.searchPlaceholder')} placeholderTextColor={styles.colors.muted} />
       </View>
 
       {isLarge ? (
         <View style={{ flexDirection: 'row', gap: UI.space.md }}>
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={scrollContentStyle} showsVerticalScrollIndicator={false}>
             {loading ? (
               <LoadingSkeleton styles={styles} />
             ) : subs.length === 0 ? (
@@ -371,18 +333,28 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               <>
                 <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
                 <View style={styles.summaryGrid}>
-                  <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
-                  <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
-                  <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
-                  <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+                  <AnimatedCard index={0} style={styles.summaryCard}>
+                    <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} index={0} />
+                  </AnimatedCard>
+                  <AnimatedCard index={1} style={styles.summaryCard}>
+                    <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as CurrencyCode)} sub={``} styles={styles} index={1} />
+                  </AnimatedCard>
+                  <AnimatedCard index={2} style={styles.summaryCard}>
+                    <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} index={2} />
+                  </AnimatedCard>
+                  <AnimatedCard index={3} style={styles.summaryCard}>
+                    <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as CurrencyCode)} sub={``} styles={styles} index={3} />
+                  </AnimatedCard>
                 </View>
 
                 {upcomingList.length > 0 && (
                   <>
                     <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
-                    <View style={{ gap: 12 }}>
-                      {upcomingList.map((u) => (
-                        <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                    <View style={{ gap: UI.space.md }}>
+                      {upcomingList.map((u, idx) => (
+                        <AnimatedCard key={u.id} index={idx + 4}>
+                          <UpcomingCard item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                        </AnimatedCard>
                       ))}
                     </View>
                   </>
@@ -390,7 +362,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               </>
             )}
           </ScrollView>
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={scrollContentStyle} showsVerticalScrollIndicator={false}>
             {loading ? (
               <LoadingSkeleton styles={styles} />
             ) : subs.length === 0 ? (
@@ -398,18 +370,20 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
             ) : (
               <>
                 <SectionHeader title={t('home.active')} styles={styles} />
-                <View style={{ gap: 8 }}>
+                <View style={{ gap: UI.space.sm }}>
                   {activeSubs.map((s, idx) => (
-                    <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
+                    <AnimatedCard key={s.id} index={idx}>
+                      <ActiveRow item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
+                    </AnimatedCard>
                   ))}
                 </View>
               </>
             )}
-            <View style={{ height: 80 }} />
+            <View style={{ height: BOTTOM_SPACING }} />
           </ScrollView>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={scrollContentStyle} showsVerticalScrollIndicator={false}>
           {loading ? (
             <LoadingSkeleton styles={styles} />
           ) : subs.length === 0 ? (
@@ -427,39 +401,62 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
             <>
               <SectionHeader title={t('home.overview')} actionText={t('home.viewAll')} styles={styles} />
               <View style={styles.summaryGrid}>
-                <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} />
-                <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as any)} sub={``} styles={styles} />
-                <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} />
-                <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as any)} sub={``} styles={styles} />
+                <AnimatedCard index={0} style={styles.summaryCard}>
+                  <SummaryCard title={t('home.totalSubs')} value={summaryData.totalSubs} sub="" styles={styles} index={0} />
+                </AnimatedCard>
+                <AnimatedCard index={1} style={styles.summaryCard}>
+                  <SummaryCard title={t('home.monthlySpend')} value={CurrencyService.format(summaryData.monthlySpend, preferredCurrency as CurrencyCode)} sub={``} styles={styles} index={1} />
+                </AnimatedCard>
+                <AnimatedCard index={2} style={styles.summaryCard}>
+                  <SummaryCard title={t('home.upcoming')} value={summaryData.upcomingBills} sub={t('home.upcomingIn7Days')} styles={styles} index={2} />
+                </AnimatedCard>
+                <AnimatedCard index={3} style={styles.summaryCard}>
+                  <SummaryCard title={t('home.yearlySpend')} value={CurrencyService.format(summaryData.yearlySpend, preferredCurrency as CurrencyCode)} sub={``} styles={styles} index={3} />
+                </AnimatedCard>
               </View>
 
               {upcomingList.length > 0 && (
                 <>
                   <SectionHeader title={t('home.upcoming')} actionText={t('home.more')} styles={styles} />
-                  <View style={{ gap: 12 }}>
-                    {upcomingList.map((u) => (
-                      <UpcomingCard key={u.id} item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                  <View style={{ gap: UI.space.md }}>
+                    {upcomingList.map((u, idx) => (
+                      <AnimatedCard key={u.id} index={idx + 4}>
+                        <UpcomingCard item={u} onLongPress={() => openActionFor(u.id)} styles={styles} />
+                      </AnimatedCard>
                     ))}
                   </View>
                 </>
               )}
 
               <SectionHeader title={t('home.active')} styles={styles} />
-              <View style={{ gap: 8 }}>
+              <View style={{ gap: UI.space.sm }}>
                 {activeSubs.map((s, idx) => (
-                  <ActiveRow key={s.id} item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
+                  <AnimatedCard key={s.id} index={idx}>
+                    <ActiveRow item={s} index={idx} onLongPress={() => openActionFor(s.id)} styles={styles} />
+                  </AnimatedCard>
                 ))}
               </View>
 
-              <View style={{ height: 80 }} />
+              <View style={{ height: BOTTOM_SPACING }} />
             </>
           )}
         </ScrollView>
       )}
 
       {/* 悬浮添加按钮 */}
-      <TouchableOpacity style={styles.fab} onPress={openModal}>
-        <Plus size={24} color="#fff" />
+      <TouchableOpacity 
+        style={[styles.fab, { bottom: insets.bottom + UI.space.md * scale, right: UI.space.md * scale }]} 
+        onPress={openModal}
+        activeOpacity={0.8}
+      >
+        <LinearGradient
+          colors={[getVariableValue(tamaguiConfig.tokens.color.gradientStart), getVariableValue(tamaguiConfig.tokens.color.gradientEnd)]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={fabStyles.gradient}
+        >
+          <Plus size={ICON_SIZE_XL} color="#fff" />
+        </LinearGradient>
       </TouchableOpacity>
 
       {/* 操作弹窗：编辑或删除 */}
@@ -477,11 +474,11 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         editMode={!!editMode}
         styles={styles}
         form={form}
-        setForm={(updater)=>setForm(updater as any)}
+        setForm={setForm}
         pricePlaceholder={pricePlaceholder}
         pricePreview={pricePreview}
-        preferredCurrency={preferredCurrency as any}
-        categoryGroupOptions={categoryGroupOptions as any}
+        preferredCurrency={preferredCurrency as CurrencyCode}
+        categoryGroupOptions={categoryGroupOptions}
         getCategoriesByGroup={getCategoriesByGroup}
         years={years}
         months={months}
@@ -491,7 +488,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         showPicker={showPicker}
         setShowPicker={setShowPicker}
         onAndroidDateChange={onAndroidDateChange}
-        paymentMethods={paymentMethods as any}
+        paymentMethods={paymentMethods.map(p => ({ id: p.id, label: p.label || '' }))}
         onSubmit={submitForm}
         onClose={closeModal}
       />
@@ -544,16 +541,20 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       paddingBottom: UI.space.xs * scale,
     },
     logoBox: {
-      backgroundColor: colors.iconBg,
-      borderRadius: UI.radius.sm,
-      paddingHorizontal: UI.space.sm * scale,
-      paddingVertical: UI.space.xs * scale,
+      flexDirection: 'row',
+      alignItems: 'center',
     },
-    logoText: { fontSize: 14 * scale, fontWeight: '700', color: colors.accent },
+    logoText: { fontSize: 22 * scale, fontWeight: '800', color: colors.textPrimary },
     iconBtn: {
-      backgroundColor: gv(c.gray3),
-      padding: UI.space.xs,
-      borderRadius: UI.radius.sm,
+      width: 38 * scale,
+      height: 38 * scale,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: UI.radius.pill,
+      backgroundColor: colors.cardBg,
+      borderWidth: isDark ? 1 : 0,
+      borderColor: colors.border,
+      ...UI.shadow.sm,
     },
     searchBox: {
       marginHorizontal: UI.space.md,
@@ -565,26 +566,31 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       paddingHorizontal: UI.space.sm,
       paddingVertical: UI.space.sm,
       backgroundColor: colors.cardBg,
-      borderWidth: 1,
+      borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
+      ...UI.shadow.sm,
     },
-    searchInput: { flex: 1, fontSize: 15, color: colors.textPrimary },
-    scroll: { paddingHorizontal: UI.space.md, paddingBottom: UI.space.lg },
+    searchInput: { flex: 1, fontSize: 15 * scale, color: colors.textPrimary },
+    scroll: { paddingHorizontal: UI.space.md * scale },
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: UI.space.xs, marginBottom: UI.space.sm },
-    sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary },
-    link: { color: colors.accent, fontSize: 13 },
+    sectionTitle: { fontSize: 18 * scale, fontWeight: '800', color: colors.textPrimary },
+    link: { color: colors.accent, fontSize: 13 * scale, fontWeight: '600' },
     summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: UI.space.sm },
     summaryCard: {
       width: '47%',
       backgroundColor: colors.cardBg,
       borderRadius: UI.radius.xl,
       padding: UI.space.md,
-      borderWidth: 1,
+      borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
+      ...UI.shadow.sm,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: UI.space.sm,
     },
-    summaryTitle: { fontSize: 13, color: colors.textSecondary, marginBottom: 6 },
-    summaryValue: { fontSize: 20, fontWeight: '700', color: colors.textPrimary },
-    summarySub: { fontSize: 12, color: gv(isDark ? c.successDark : c.success), marginTop: 4 },
+    summaryTitle: { fontSize: 12 * scale, color: colors.textSecondary },
+    summaryValue: { fontSize: 18 * scale, fontWeight: '800', color: colors.textPrimary },
+    summarySub: { fontSize: 11 * scale, color: gv(isDark ? c.successDark : c.success) },
 
     upcomingCard: {
       flexDirection: 'row',
@@ -593,18 +599,19 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       backgroundColor: colors.cardBg,
       borderRadius: UI.radius.lg,
       padding: UI.space.sm,
-      borderWidth: 1,
+      borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
+      ...UI.shadow.sm,
     },
     upcomingIconBox: { width: 36, height: 36, borderRadius: UI.radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.iconBg },
-    upcomingName: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
-    upcomingCycle: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+    upcomingName: { fontSize: 15 * scale, fontWeight: '800', color: colors.textPrimary },
+    upcomingCycle: { fontSize: 12 * scale, color: colors.textSecondary, marginTop: 2 * scale },
     upcomingMetaRow: { flexDirection: 'row', gap: UI.space.sm, marginTop: UI.space.xs },
     badgeInfo: { flexDirection: 'row', alignItems: 'center', gap: UI.space.xs, backgroundColor: colors.badgeBg, paddingVertical: UI.space.xs, paddingHorizontal: UI.space.xs, borderRadius: UI.radius.xs },
-    badgeText: { fontSize: 12, color: colors.textSecondary },
+    badgeText: { fontSize: 12 * scale, color: colors.textSecondary },
 
-    chartCard: { backgroundColor: colors.cardBg, borderRadius: UI.radius.lg, padding: UI.space.sm, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
-    chartAxis: { fontSize: 12, color: colors.textSecondary, marginTop: UI.space.xs },
+    chartCard: { backgroundColor: colors.cardBg, borderRadius: UI.radius.lg, padding: UI.space.sm, borderWidth: isDark ? 1 : 0, borderColor: colors.border, alignItems: 'center', ...UI.shadow.sm },
+    chartAxis: { fontSize: 12 * scale, color: colors.textSecondary, marginTop: UI.space.xs },
 
     activeRow: {
       flexDirection: 'row',
@@ -613,52 +620,48 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       paddingHorizontal: UI.space.sm,
       backgroundColor: colors.cardBg,
       borderRadius: UI.radius.md,
-      borderWidth: 1,
+      borderWidth: isDark ? 1 : 0,
       borderColor: colors.border,
+      ...UI.shadow.sm,
     },
     activeIconBox: { width: 30, height: 30, borderRadius: UI.radius.xs, backgroundColor: colors.badgeBg, alignItems: 'center', justifyContent: 'center', marginRight: UI.space.sm },
-    activeName: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
-    activeHint: { fontSize: 12, color: colors.textSecondary },
-    activeNext: { fontSize: 12, color: gv(isDark ? c.successDark : c.success) },
+    activeName: { fontSize: 15 * scale, fontWeight: '700', color: colors.textPrimary },
+    activeHint: { fontSize: 12 * scale, color: colors.textSecondary },
+    activeNext: { fontSize: 12 * scale, color: gv(isDark ? c.accentDark : c.accentLight) },
 
-    todoBox: { marginTop: UI.space.md, backgroundColor: colors.cardBg, borderRadius: UI.radius.md, padding: UI.space.sm, borderWidth: 1, borderColor: colors.border },
-    todoTitle: { fontSize: 14, fontWeight: '700', color: colors.textPrimary, marginBottom: UI.space.xs },
-    todoItem: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+    todoBox: { marginTop: UI.space.md, backgroundColor: colors.cardBg, borderRadius: UI.radius.md, padding: UI.space.sm, borderWidth: isDark ? 1 : 0, borderColor: colors.border, ...UI.shadow.sm },
+    todoTitle: { fontSize: 14 * scale, fontWeight: '800', color: colors.textPrimary, marginBottom: UI.space.xs },
+    todoItem: { fontSize: 12 * scale, color: colors.textSecondary, marginTop: 2 },
 
     fab: {
       position: 'absolute',
       bottom: 30,
       right: 20,
-      width: 50,
-      height: 50,
-      borderRadius: 25,
-      backgroundColor: colors.fabBg,
+      width: 56 * scale,
+      height: 56 * scale,
+      borderRadius: 28 * scale,
+      backgroundColor: 'transparent',
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 6,
-      elevation: 6,
     },
 
     modalMask: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: isDark ? 'rgba(0,0,0,0.50)' : 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
-    modalBox: { width: '90%', maxHeight: '85%', backgroundColor: colors.modalBg, borderRadius: UI.radius.md, padding: UI.space.md, borderWidth: 1, borderColor: colors.border },
-    modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: UI.space.sm, color: colors.textPrimary },
+    modalBox: { width: '90%', maxHeight: '85%', backgroundColor: colors.modalBg, borderRadius: UI.radius.md, padding: UI.space.md, borderWidth: 1, borderColor: colors.border, ...UI.shadow.md },
+    modalTitle: { fontSize: 18 * scale, fontWeight: '800', marginBottom: UI.space.sm, color: colors.textPrimary },
     formRow: { marginBottom: UI.space.sm },
-    formLabel: { fontSize: 13, color: colors.textSecondary, marginBottom: UI.space.xs },
+    formLabel: { fontSize: 13 * scale, color: colors.textSecondary, marginBottom: UI.space.xs },
     formInput: { borderWidth: 1, borderColor: colors.border, borderRadius: UI.radius.xs, paddingHorizontal: UI.space.sm, paddingVertical: UI.space.xs, color: colors.textPrimary, backgroundColor: colors.cardBg },
     selectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: UI.space.xs },
     selectItem: { paddingHorizontal: UI.space.sm, paddingVertical: UI.space.xs, borderRadius: UI.radius.xs, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg },
     selectItemActive: { backgroundColor: isDark ? gv(c.iconBgDark) : gv(c.primarySoft), borderColor: gv(c.primarySolid) },
-    selectText: { fontSize: 12, color: colors.textSecondary },
+    selectText: { fontSize: 12 * scale, color: colors.textSecondary },
     selectTextActive: { color: isDark ? '#93C5FD' : '#1D4ED8', fontWeight: '700' },
 
     checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: UI.space.xs, paddingVertical: UI.space.xs },
-    checkboxBox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg, alignItems: 'center', justifyContent: 'center' },
+    checkboxBox: { width: CHECKBOX_SIZE, height: CHECKBOX_SIZE, borderRadius: 4, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg, alignItems: 'center', justifyContent: 'center' },
     checkboxBoxChecked: { backgroundColor: colors.fabBg, borderColor: colors.fabBg },
     checkbox: { paddingVertical: UI.space.xs },
-    checkboxText: { fontSize: 13, color: colors.textSecondary },
+    checkboxText: { fontSize: 13 * scale, color: colors.textSecondary },
     modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: UI.space.sm, marginTop: UI.space.xs },
     btnGhost: { paddingHorizontal: UI.space.md, paddingVertical: UI.space.sm, borderRadius: UI.radius.xs, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.cardBg },
     btnGhostText: { color: colors.textSecondary },
@@ -667,5 +670,20 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
   });
   return { ...sheet, colors } as ReturnType<typeof StyleSheet.create> & { colors: ColorPalette };
 }
+
+const fabStyles = StyleSheet.create({
+  gradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+});
 
 export default HomeScreen;

@@ -4,6 +4,13 @@ import type { CurrencyCode } from '../../features/currency/types'
 import type { Subscription } from '../../features/subscriptions/slice'
 import { cycleLabelMap, daysUntil, formatPriceBoth } from '../utils/subscriptions'
 
+const DEFAULT_MONTHS_COUNT = 6
+const QUARTERLY_MONTHS = 3
+const YEARLY_MONTHS = 12
+const UPCOMING_DAYS_THRESHOLD = 7
+const MONTHS_IN_YEAR = 12
+const LAST_MONTH_INDEX = 11
+
 export const useHomeData = (subs: Subscription[], preferredCurrency: CurrencyCode) => {
   const summaryData = useMemo(() => {
     const totalSubs = subs.length
@@ -44,24 +51,22 @@ export const useHomeData = (subs: Subscription[], preferredCurrency: CurrencyCod
     const yearlySpend = subs.reduce((sum, s) => {
       const from = s.currency ?? 'CNY'
       const eq = monthlyEquivalent(s)
-      let months = 12
+      let months = MONTHS_IN_YEAR
       if (s.startISO) {
         const start = new Date(s.startISO)
         const currentYear = now.getFullYear()
         if (start.getFullYear() > currentYear) {
           months = 0
         } else if (start.getFullYear() === currentYear) {
-          const startMonthIdx = start.getMonth() // 0-based
-          // months remaining after the start month
-          const after = 11 - startMonthIdx
-          // fraction for the start month within current year
+          const startMonthIdx = start.getMonth()
+          const after = LAST_MONTH_INDEX - startMonthIdx
           const monthStartY = new Date(currentYear, startMonthIdx, 1)
           const monthEndY = new Date(currentYear, startMonthIdx + 1, 0)
           const dim = monthEndY.getDate()
           const frac = start >= monthStartY && start <= monthEndY ? (dim - (start.getDate() - 1)) / dim : 1
           months = after + frac
         } else {
-          months = 12
+          months = MONTHS_IN_YEAR
         }
       }
       const add = eq * months
@@ -84,7 +89,7 @@ export const useHomeData = (subs: Subscription[], preferredCurrency: CurrencyCod
             name: s.name,
             cycle: `${s.category ?? '订阅'} · ${cycleLabelMap[s.cycle]}`,
             next: s.nextDueISO
-              ? s.autoRenew && d !== null && d >= 0 && d <= 7
+              ? s.autoRenew && d !== null && d >= 0 && d <= UPCOMING_DAYS_THRESHOLD
                 ? `在${d}天后自动续费`
                 : `${d}天内`
               : '未设置',
@@ -92,7 +97,7 @@ export const useHomeData = (subs: Subscription[], preferredCurrency: CurrencyCod
             dueDays: d,
           }
         })
-        .filter((u) => u.dueDays !== null && u.dueDays >= 0 && u.dueDays <= 7)
+        .filter((u) => u.dueDays !== null && u.dueDays >= 0 && u.dueDays <= UPCOMING_DAYS_THRESHOLD)
         .sort((a, b) => (a.dueDays as number) - (b.dueDays as number)),
     [subs, preferredCurrency]
   )

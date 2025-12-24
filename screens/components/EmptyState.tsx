@@ -1,5 +1,6 @@
 import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, TouchableOpacity, StyleSheet } from 'react-native'
+import { Text } from 'tamagui'
 import { UI } from '../../lib/ui'
 import { Inbox } from '@tamagui/lucide-icons'
 
@@ -18,7 +19,7 @@ type EmptyStateProps = {
 const EmptyState: React.FC<EmptyStateProps> = ({ title, description, actionLabel, onAction, styles, icon }) => {
   const colors = styles?.colors
   const s = StyleSheet.create({
-    container: { paddingHorizontal: UI.space.md },
+    container: { width: '100%' },
     box: {
       alignItems: 'center',
       justifyContent: 'center',

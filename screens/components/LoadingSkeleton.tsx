@@ -10,13 +10,22 @@ type LoadingSkeletonProps = {
  * HomeScreen 骨架屏：概览卡与列表占位
  */
 const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ styles }) => {
-  const s = styles ?? StyleSheet.create({
+  const skeletonBg = styles?.colors?.badgeBg ?? styles?.colors?.border ?? '#f2f2f2'
+  const base = StyleSheet.create({
     container: { paddingHorizontal: UI.space.md },
     row: { flexDirection: 'row', flexWrap: 'wrap', gap: UI.space.sm },
-    card: { width: '47%', height: 80, borderRadius: UI.radius.xl, backgroundColor: '#f2f2f2' },
+    card: { width: '47%', height: 86, borderRadius: UI.radius.xl, backgroundColor: skeletonBg as string },
     list: { marginTop: UI.space.md, gap: UI.space.xs },
-    item: { height: 56, borderRadius: UI.radius.md, backgroundColor: '#f2f2f2' },
+    item: { height: 56, borderRadius: UI.radius.md, backgroundColor: skeletonBg as string },
   })
+  const hasAll =
+    !!styles &&
+    !!styles.container &&
+    !!styles.row &&
+    !!styles.card &&
+    !!styles.list &&
+    !!styles.item
+  const s = hasAll ? styles : base
 
   return (
     <View style={s.container}>

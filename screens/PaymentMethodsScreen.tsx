@@ -15,6 +15,7 @@ import type { PaymentMethod } from '../features/paymentMethods/types'
 import { getVariableValue } from '@tamagui/core'
 import tamaguiConfig from '../tamagui.config'
 import { selectDisplayScale } from '../features/ui/selectors'
+import { UI } from '../lib/ui'
 
 type PaymentMethodsScreenProps = {
   route: RouteProp<RootStackParamList, 'PaymentMethods'>
@@ -147,7 +148,7 @@ const createStyles = (scheme: 'light' | 'dark', scale: number) => {
     scroll: { paddingHorizontal: (v(s[4]) as number) * scale, paddingVertical: (v(s[4]) as number) * scale },
     title: { fontSize: 20 * scale, fontWeight: '600', color: colors.textPrimary as string, marginBottom: (v(s[3]) as number) * scale },
     sectionTitle: { fontSize: 16 * scale, fontWeight: '600', color: colors.textPrimary as string, marginBottom: (v(s[2]) as number) * scale },
-    card: { backgroundColor: colors.card as string, borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[3]) as number, padding: (v(s[3]) as number) * scale },
+    card: { backgroundColor: colors.card as string, borderColor: colors.border as string, borderWidth: isDark ? 1 : 0, borderRadius: v(r[3]) as number, padding: (v(s[3]) as number) * scale, ...(UI.shadow.sm as any) },
     row: { flexDirection: 'row', flexWrap: 'wrap', gap: (v(s[2]) as number) * scale } as any,
     inputRow: { marginTop: (v(s[2]) as number) * scale },
     label: { fontSize: 14 * scale, color: colors.textPrimary as string, marginBottom: (v(s[2]) as number) * scale },
@@ -158,7 +159,7 @@ const createStyles = (scheme: 'light' | 'dark', scale: number) => {
     selectTextActive: { color: colors.white as string },
     btn: { marginTop: (v(s[3]) as number) * scale, backgroundColor: colors.accent as string, borderRadius: v(r[2]) as number, paddingVertical: (v(s[3]) as number) * scale, alignItems: 'center' },
     btnText: { color: colors.white as string, fontWeight: '600' },
-    methodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card as string, borderColor: colors.border as string, borderWidth: 1, borderRadius: v(r[3]) as number, paddingHorizontal: (v(s[3]) as number) * scale, paddingVertical: (v(s[3]) as number) * scale },
+    methodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card as string, borderColor: colors.border as string, borderWidth: isDark ? 1 : 0, borderRadius: v(r[3]) as number, paddingHorizontal: (v(s[3]) as number) * scale, paddingVertical: (v(s[3]) as number) * scale, ...(UI.shadow.sm as any) },
     methodTitle: { fontSize: 14 * scale, color: colors.textPrimary as string },
     methodSub: { fontSize: 12 * scale, color: colors.muted as string },
   })

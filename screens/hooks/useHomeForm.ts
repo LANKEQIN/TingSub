@@ -7,6 +7,7 @@ import type { CategoryGroup } from '../../features/subscriptions/types'
 import type { CurrencyCode } from '../../features/currency/types'
 import { getCategoriesByGroup } from '../../features/subscriptions/categories'
 import { isCategoryGroup, toCategoryGroup } from '../utils/subscriptions'
+import { getCycleSuffix } from '../../features/subscriptions/constants'
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
 
@@ -39,7 +40,7 @@ export const useHomeForm = (preferredCurrency: CurrencyCode) => {
     if (!Number.isFinite(num) || num <= 0) return ''
     const converted = CurrencyService.convert(num, form.currency, preferredCurrency)
     const base = CurrencyService.format(converted, preferredCurrency)
-    const suffix = form.cycle === 'yearly' ? '/年' : form.cycle === 'quarterly' ? '/季' : form.cycle === 'lifetime' ? '/终身' : form.cycle === 'other' ? '' : '/月'
+    const suffix = getCycleSuffix(form.cycle, 'zh')
     return `${base}${suffix}`
   }, [form.price, form.cycle, form.currency, preferredCurrency])
 

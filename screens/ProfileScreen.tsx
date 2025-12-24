@@ -122,6 +122,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       borderRadius: UI.radius.lg,
       borderWidth: 1,
       borderColor: colors.border as string,
+      ...(UI.shadow.sm as any),
     },
     itemText: {
       fontSize: 18 * scale,
@@ -140,6 +141,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
       backgroundColor: colors.iconBg as string,
       borderWidth: 1,
       borderColor: colors.border as string,
+      ...(UI.shadow.sm as any),
     },
     optionActive: {
       backgroundColor: colors.cardBg as string,

@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useContext } from 'react'
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, TouchableOpacity, type ViewStyle } from 'react-native'
 import { Text } from 'tamagui'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import BarChart from './components/BarChart'
 import SectionHeader from './components/SectionHeader'
 import { useSelector } from 'react-redux'
@@ -14,16 +13,26 @@ import type { RouteProp } from '@react-navigation/native'
 import type { TabParamList } from '../lib/navigation'
 import type { RootState } from '../store'
 import type { CategoryGroup } from '../features/subscriptions/types'
+import type { CurrencyCode } from '../features/currency/types'
 import { getVariableValue } from '@tamagui/core'
 import tamaguiConfig from '../tamagui.config'
 import { selectDisplayScale } from '../features/ui/selectors'
+import { UI } from '../lib/ui'
+import ScreenContainer from './components/ScreenContainer'
 
 type StatisticsScreenProps = {
   route: RouteProp<TabParamList, 'Statistics'>
 }
 
+/**
+ * 过滤选项接口
+ */
+interface FilterOption {
+  key: string
+  label: string
+}
+
 const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
-  const insets = useSafeAreaInsets()
   const subs = useSelector((state: RootState) => state.subscriptions.list)
   const [chartW, setChartW] = useState(330)
   const { effectiveScheme } = useContext(ThemeContext)
@@ -60,12 +69,12 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   // 月等效支出（过滤后）
   const monthlyEquivalent = useMemo(() => {
     const monthly = filteredSubs.reduce((sum, s) => {
-      const from = s.currency ?? 'CNY'
+      const from: CurrencyCode = s.currency ?? 'CNY'
       const base = (s.cycle === 'monthly') ? s.price
         : (s.cycle === 'quarterly') ? s.price / 3
         : (s.cycle === 'yearly') ? s.price / 12
         : 0
-      return sum + convertCurrency(base, from as any, preferredCurrency as any)
+      return sum + convertCurrency(base, from, preferredCurrency)
     }, 0)
     return Math.round(monthly)
   }, [filteredSubs, preferredCurrency])
@@ -111,62 +120,58 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
   const chartData = useMemo(() => new Array(monthLabels.length).fill(monthlyEquivalent), [monthLabels, monthlyEquivalent])
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>{t('statistics.title')}</Text>
+    <ScreenContainer scrollable contentContainerStyle={styles.scroll}>
+      <Text style={styles.title}>{t('statistics.title')}</Text>
 
-        {/* 支出分析 */}
-        <SectionHeader title={t('statistics.spendAnalysis')} styles={styles} />
-        {/* 过滤器：时间范围 */}
-        <View style={styles.filterRow}>
-          {[
-            { key: '3m', label: t('statistics.ranges.m3') },
-            { key: '6m', label: t('statistics.ranges.m6') },
-            { key: '12m', label: t('statistics.ranges.m12') },
-            { key: 'this_year', label: t('statistics.ranges.this_year') },
-            { key: 'prev_quarter', label: t('statistics.ranges.prev_quarter') },
-          ].map((opt: any) => (
-            <TouchableOpacity key={opt.key} style={[styles.chip, timeRange === opt.key ? styles.chipActive : null]} onPress={() => setTimeRange(opt.key)}>
-              <Text style={[styles.chipText, timeRange === opt.key ? styles.chipTextActive : null]}>{opt.label}</Text>
+      <SectionHeader title={t('statistics.spendAnalysis')} styles={styles} />
+
+      <View style={styles.filterRow}>
+        {[
+          { key: '3m', label: t('statistics.ranges.m3') },
+          { key: '6m', label: t('statistics.ranges.m6') },
+          { key: '12m', label: t('statistics.ranges.m12') },
+          { key: 'this_year', label: t('statistics.ranges.this_year') },
+          { key: 'prev_quarter', label: t('statistics.ranges.prev_quarter') },
+        ].map((opt: FilterOption) => (
+          <TouchableOpacity key={opt.key} style={[styles.chip, timeRange === opt.key ? styles.chipActive : null]} onPress={() => setTimeRange(opt.key as TimeRange)}>
+            <Text style={[styles.chipText, timeRange === opt.key ? styles.chipTextActive : null]}>{opt.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <View style={styles.filterRow}>
+        {categoryGroups.map((g) => {
+          const label = g === '全部'
+            ? t('statistics.groups.all')
+            : g === '影音娱乐'
+              ? t('statistics.groups.entertainment')
+              : g === '工作'
+                ? t('statistics.groups.work')
+                : g === '生活'
+                  ? t('statistics.groups.life')
+                  : t('statistics.groups.other')
+          return (
+            <TouchableOpacity key={g} style={[styles.chip, group === g ? styles.chipActive : null]} onPress={() => { setGroup(g); setCategory('全部') }}>
+              <Text style={[styles.chipText, group === g ? styles.chipTextActive : null]}>{label}</Text>
             </TouchableOpacity>
-          ))}
-        </View>
-        {/* 过滤器：分类分组与分类 */}
-        <View style={styles.filterRow}>
-          {categoryGroups.map((g) => {
-            const label = g === '全部'
-              ? t('statistics.groups.all')
-              : g === '影音娱乐'
-                ? t('statistics.groups.entertainment')
-                : g === '工作'
-                  ? t('statistics.groups.work')
-                  : g === '生活'
-                    ? t('statistics.groups.life')
-                    : t('statistics.groups.other')
-            return (
-              <TouchableOpacity key={g} style={[styles.chip, group === g ? styles.chipActive : null]} onPress={() => { setGroup(g); setCategory('全部') }}>
-                <Text style={[styles.chipText, group === g ? styles.chipTextActive : null]}>{label}</Text>
-              </TouchableOpacity>
-            )
-          })}
-        </View>
-        <View style={styles.filterRow}>
-          {categoryOptions.map((c) => (
-            <TouchableOpacity key={c} style={[styles.chipSm, category === c ? styles.chipActive : null]} onPress={() => setCategory(c)}>
-              <Text style={[styles.chipTextSm, category === c ? styles.chipTextActive : null]}>{c === '全部' ? t('statistics.category_all') : c}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        <View style={styles.chartCard} onLayout={(e) => {
-          const w = e.nativeEvent.layout.width
-          // chartCard 有左右各 12 的内边距，此处减去 24 作为图表宽度，设定最小宽度以保证可读性
-          setChartW(Math.max(280, Math.floor(w - 24)))
-        }}>
-          <BarChart data={chartData} labels={monthLabels} width={chartW} height={200} barColor={isDark ? '#4DB6FF' : '#4f46e5'} gridColor={isDark ? '#2A2E33' : '#E5E7EB'} axisLabelColor={isDark ? '#A7B0B8' : '#6b7280'} currencySymbol={getSymbol(preferredCurrency as any)} />
-          <Text style={styles.chartAxis}>{t('statistics.axisUnit', { symbol: getSymbol(preferredCurrency as any) })}</Text>
-        </View>
-      </ScrollView>
-    </View>
+          )
+        })}
+      </View>
+      <View style={styles.filterRow}>
+        {categoryOptions.map((c) => (
+          <TouchableOpacity key={c} style={[styles.chipSm, category === c ? styles.chipActive : null]} onPress={() => setCategory(c)}>
+            <Text style={[styles.chipTextSm, category === c ? styles.chipTextActive : null]}>{c === '全部' ? t('statistics.category_all') : c}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <View style={styles.chartCard} onLayout={(e) => {
+        const w = e.nativeEvent.layout.width
+        setChartW(Math.max(280, Math.floor(w - 24)))
+      }}>
+        <BarChart data={chartData} labels={monthLabels} width={chartW} height={200} barColor={isDark ? '#4DB6FF' : '#4f46e5'} gridColor={isDark ? '#2A2E33' : '#E5E7EB'} axisLabelColor={isDark ? '#A7B0B8' : '#6b7280'} currencySymbol={getSymbol(preferredCurrency as CurrencyCode)} />
+        <Text style={styles.chartAxis}>{t('statistics.axisUnit', { symbol: getSymbol(preferredCurrency as CurrencyCode) })}</Text>
+      </View>
+    </ScreenContainer>
   )
 }
 
@@ -185,7 +190,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
   }
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.pageBg },
-    scroll: { paddingHorizontal: 16 * scale, paddingBottom: 24 * scale },
+    scroll: { paddingBottom: 12 * scale },
     title: { fontSize: 24 * scale, fontWeight: 'bold', marginBottom: 20 * scale, textAlign: 'left', color: colors.textPrimary },
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 * scale, marginBottom: 12 * scale },
     sectionTitle: { fontSize: 18 * scale, fontWeight: '700', color: colors.textPrimary },
@@ -197,7 +202,7 @@ function createStyles(scheme: 'light' | 'dark', scale: number){
     chipText: { fontSize: 13 * scale, color: colors.textSecondary },
     chipTextSm: { fontSize: 12 * scale, color: colors.textSecondary },
     chipTextActive: { color: colors.accent as string, fontWeight: '600' },
-    chartCard: { backgroundColor: colors.cardBg as string, borderRadius: 14, padding: 12 * scale, borderWidth: 1, borderColor: colors.border as string, alignItems: 'center' },
+    chartCard: { backgroundColor: colors.cardBg as string, borderRadius: 14, padding: 12 * scale, borderWidth: isDark ? 1 : 0, borderColor: colors.border as string, alignItems: 'center', ...UI.shadow.sm },
     chartAxis: { fontSize: 12 * scale, color: colors.muted as string, marginTop: 8 * scale },
   })
 }
