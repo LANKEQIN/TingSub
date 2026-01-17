@@ -158,6 +158,25 @@ export const tagSchema = yup.object().shape({
 });
 
 /**
+ * 提醒历史验证Schema
+ */
+export const reminderHistorySchema = yup.object().shape({
+  id: yup.string().required('提醒历史ID不能为空').uuid('提醒历史ID格式不正确'),
+  userId: yup.string().required('用户ID不能为空').uuid('用户ID格式不正确'),
+  subscriptionId: yup.string().required('订阅ID不能为空').uuid('订阅ID格式不正确'),
+  reminderType: yup
+    .string()
+    .required('提醒类型不能为空')
+    .oneOf(['expiration', 'renewal'], '提醒类型值不正确'),
+  reminderDate: yup.date().required('提醒日期不能为空'),
+  status: yup
+    .string()
+    .required('提醒状态不能为空')
+    .oneOf(['sent', 'viewed', 'dismissed'], '提醒状态值不正确'),
+  createdAt: yup.date().required('创建时间不能为空'),
+});
+
+/**
  * 验证工具类
  */
 export class ValidationUtils {
@@ -230,6 +249,20 @@ export class ValidationUtils {
     } catch (error) {
       if (error instanceof yup.ValidationError) {
         throw new ValidationError('提醒设置验证失败', error.errors);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * 验证提醒历史
+   */
+  static validateReminderHistory(data: any): any {
+    try {
+      return reminderHistorySchema.validateSync(data, { abortEarly: false });
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        throw new ValidationError('提醒历史验证失败', error.errors);
       }
       throw error;
     }

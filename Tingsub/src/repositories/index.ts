@@ -8,3 +8,4 @@ export { UserRepository } from './UserRepository';
 export { SubscriptionRepository } from './SubscriptionRepository';
 export { CategoryRepository } from './CategoryRepository';
 export { TagRepository } from './TagRepository';
+export { ReminderHistoryRepository } from './ReminderHistoryRepository';
