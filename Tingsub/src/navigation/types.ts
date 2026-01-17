@@ -8,6 +8,7 @@ export type RootStackParamList = {
   SubscriptionDetail: { id: string };
   AddSubscription: undefined;
   EditSubscription: { id: string };
+  Categories: undefined;
   CategoryDetail: { id: string };
   AddCategory: undefined;
   EditCategory: { id: string };

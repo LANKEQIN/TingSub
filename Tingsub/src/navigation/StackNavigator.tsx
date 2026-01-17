@@ -6,6 +6,7 @@ import TabNavigator from './TabNavigator';
 import SubscriptionDetailScreen from '../screens/SubscriptionDetailScreen';
 import AddSubscriptionScreen from '../screens/AddSubscriptionScreen';
 import EditSubscriptionScreen from '../screens/EditSubscriptionScreen';
+import CategoryListScreen from '../screens/CategoryListScreen';
 import CategoryDetailScreen from '../screens/CategoryDetailScreen';
 import AddCategoryScreen from '../screens/AddCategoryScreen';
 import EditCategoryScreen from '../screens/EditCategoryScreen';
@@ -49,6 +50,11 @@ const StackNavigator = () => {
         name={ROUTE_NAMES.EDIT_SUBSCRIPTION}
         component={EditSubscriptionScreen}
         options={{ title: getRouteTitle(ROUTE_NAMES.EDIT_SUBSCRIPTION) }}
+      />
+      <Stack.Screen
+        name={ROUTE_NAMES.CATEGORIES}
+        component={CategoryListScreen}
+        options={{ title: getRouteTitle(ROUTE_NAMES.CATEGORIES) }}
       />
       <Stack.Screen
         name={ROUTE_NAMES.CATEGORY_DETAIL}
