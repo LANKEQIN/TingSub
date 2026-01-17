@@ -53,3 +53,4 @@
 - 禁止在组件中直接操作DOM
 核心在Tingsub/
 有必要的地方多看看docs/的文档，禁止盲目强干
+每次写完代码后执行npm run typecheck
