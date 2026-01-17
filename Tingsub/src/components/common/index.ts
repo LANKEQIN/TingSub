@@ -20,3 +20,4 @@ export { default as Error } from './Error';
 export type { ErrorProps, ErrorType } from './Error';
 
 export * from '../subscription';
+export * from '../statistics';
