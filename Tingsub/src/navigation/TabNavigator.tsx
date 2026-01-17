@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from 'react-native-paper';
 import { ROUTE_NAMES, getRouteTitle } from '../constants/routes';
 import type { TabParamList } from './types';
 import HomeScreen from '../screens/HomeScreen';
@@ -11,6 +12,8 @@ import ProfileScreen from '../screens/ProfileScreen';
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const TabNavigator = () => {
+  const theme = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -36,12 +39,12 @@ const TabNavigator = () => {
 
           return <MaterialIcons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#9ACFFF',
-        tabBarInactiveTintColor: '#999999',
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.onSurfaceVariant || '#999999',
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.colors.background,
           borderTopWidth: 1,
-          borderTopColor: '#E0E0E0',
+          borderTopColor: theme.colors.outline || '#E0E0E0',
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,

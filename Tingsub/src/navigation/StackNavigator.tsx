@@ -1,5 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useTheme } from 'react-native-paper';
 import { ROUTE_NAMES, getRouteTitle } from '../constants/routes';
 import type { RootStackParamList } from './types';
 import TabNavigator from './TabNavigator';
@@ -16,19 +17,21 @@ import SearchScreen from '../screens/SearchScreen';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const StackNavigator = () => {
+  const theme = useTheme();
+
   return (
     <Stack.Navigator
       initialRouteName={ROUTE_NAMES.MAIN_TABS}
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.colors.background,
         },
         headerTitleStyle: {
           fontSize: 18,
           fontWeight: '600',
-          color: '#1A1A1A',
+          color: theme.colors.onSurface,
         },
-        headerTintColor: '#1A1A1A',
+        headerTintColor: theme.colors.onSurface,
       }}
     >
       <Stack.Screen
