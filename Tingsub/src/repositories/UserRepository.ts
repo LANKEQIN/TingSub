@@ -78,6 +78,9 @@ export class UserRepository extends BaseRepository<User> {
       const mergedData: User = {
         ...existing,
         ...params,
+        reminderSettings: params.reminderSettings
+          ? { ...existing.reminderSettings, ...params.reminderSettings }
+          : existing.reminderSettings,
         updatedAt: new Date(),
       };
 

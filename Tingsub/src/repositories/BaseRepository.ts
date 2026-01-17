@@ -6,6 +6,7 @@
 import Realm from 'realm';
 import { Logger } from '../utils/loggerUtils';
 import { ValidationError } from '../utils/validationUtils';
+import { EncryptionUtils } from '../utils/encryptionUtils';
 
 /**
  * 仓储操作结果接口
@@ -60,7 +61,7 @@ export abstract class BaseRepository<T extends { id: string }> {
    * @returns UUID字符串
    */
   protected generateUUID(): string {
-    return crypto.randomUUID();
+    return EncryptionUtils.generateUUID();
   }
 
   /**
@@ -128,7 +129,7 @@ export abstract class BaseRepository<T extends { id: string }> {
         updatedAt: now,
       };
       return this.realm.write(() => {
-        return this.realm.create(this.schemaName, newData);
+        return this.realm.create(this.schemaName, newData) as unknown as T;
       });
     }, '创建记录失败');
   }
@@ -294,7 +295,7 @@ export abstract class BaseRepository<T extends { id: string }> {
         updatedAt: now,
       }));
       return this.realm.write(() => {
-        return newDataArray.map((data) => this.realm.create(this.schemaName, data));
+        return newDataArray.map((data) => this.realm.create(this.schemaName, data) as unknown as T);
       });
     }, '批量创建记录失败');
   }

@@ -23,6 +23,9 @@ export const USER_STORAGE_KEYS = {
 
   // 最后登录时间
   LAST_LOGIN_TIME: 'last_login_time',
+
+  // 当前登录用户ID
+  CURRENT_USER: 'current_user',
 } as const;
 
 // 订阅相关存储键名

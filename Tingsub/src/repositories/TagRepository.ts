@@ -366,7 +366,7 @@ export class TagRepository extends BaseRepository<Tag> {
       const tagUsage = new Map<string, number>();
 
       for (const tag of tags) {
-        tagUsage.set(tag.id, 0);
+        tagUsage.set(tag.id as string, 0);
       }
 
       for (const subscription of subscriptions) {
@@ -379,8 +379,8 @@ export class TagRepository extends BaseRepository<Tag> {
 
       const sortedTags = Array.from(tags)
         .sort((a, b) => {
-          const countA = tagUsage.get(a.id) || 0;
-          const countB = tagUsage.get(b.id) || 0;
+          const countA = tagUsage.get(a.id as string) || 0;
+          const countB = tagUsage.get(b.id as string) || 0;
           return countB - countA;
         })
         .slice(0, limit);
@@ -408,7 +408,7 @@ export class TagRepository extends BaseRepository<Tag> {
         }
       }
 
-      const unusedTags = tags.filter((tag) => !usedTagIds.has(tag.id));
+      const unusedTags = tags.filter((tag) => !usedTagIds.has(tag.id as string));
 
       return unusedTags.map((obj: any) => obj.toTagType());
     }, '获取未使用的标签失败');
@@ -431,7 +431,7 @@ export class TagRepository extends BaseRepository<Tag> {
             id: this.generateUUID(),
             userId,
             name: tagData.name,
-            color: tagData.color,
+            color: tagData.color as `#${string}`,
             createdAt: now,
             updatedAt: now,
           };
