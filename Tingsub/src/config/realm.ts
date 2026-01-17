@@ -3,6 +3,11 @@
 
 import Realm from 'realm';
 import { ENV, isDevelopment, isProduction } from './env';
+import { UserModel, ReminderSettingsModel, NotificationChannelModel } from '../models/User';
+import { SubscriptionModel } from '../models/Subscription';
+import { CategoryModel } from '../models/Category';
+import { TagModel } from '../models/Tag';
+import { ReminderHistoryModel } from '../models/ReminderHistory';
 
 // 全局声明TextEncoder
 declare var TextEncoder: any;
@@ -27,8 +32,16 @@ export const realmConfig: Realm.Configuration = {
   // 数据库版本
   schemaVersion: ENV.REALM_SCHEMA_VERSION,
 
-  // 模型集合（后续会导入所有模型）
-  schema: [],
+  // 模型集合
+  schema: [
+    UserModel.schema,
+    ReminderSettingsModel.schema,
+    NotificationChannelModel.schema,
+    SubscriptionModel.schema,
+    CategoryModel.schema,
+    TagModel.schema,
+    ReminderHistoryModel.schema,
+  ],
 
   // 迁移策略
   onMigration: (oldRealm) => {
