@@ -14,14 +14,17 @@
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "bundler",
     "jsx": "react-native",
-    "lib": ["ES2020"],
-    "types": ["react-native", "jest"]
+    "lib": [
+      "ES2020"
+    ],
+    "types": [
+      "react-native",
+      "jest"
+    ]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts",
     "types/**/*.d.ts"
   ],
   "exclude": [
