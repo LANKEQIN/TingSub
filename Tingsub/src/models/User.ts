@@ -119,8 +119,40 @@ export class UserModel extends Realm.Object<UserModel> {
         enabled: user.reminderSettings.enabled,
         advanceDays: user.reminderSettings.advanceDays,
         repeatInterval: user.reminderSettings.repeatInterval,
-        notificationChannels: user.reminderSettings.notificationChannels,
+        notificationChannels: user.reminderSettings.notificationChannels.map((channel) => ({
+          type: channel.type,
+          enabled: channel.enabled,
+          sound: channel.sound,
+          vibration: channel.vibration,
+        })),
       },
+    };
+  }
+
+  /**
+   * 从用户类型创建Realm对象（用于Realm.write）
+   */
+  static fromUserTypeForRealm(user: User): any {
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      theme: user.theme,
+      currency: user.currency,
+      reminderSettings: {
+        enabled: user.reminderSettings.enabled,
+        advanceDays: user.reminderSettings.advanceDays,
+        repeatInterval: user.reminderSettings.repeatInterval,
+        notificationChannels: user.reminderSettings.notificationChannels.map((channel) => ({
+          type: channel.type,
+          enabled: channel.enabled,
+          sound: channel.sound,
+          vibration: channel.vibration,
+        })),
+      },
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 }

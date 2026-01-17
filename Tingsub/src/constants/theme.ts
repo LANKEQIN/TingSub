@@ -158,6 +158,12 @@ export const TYPOGRAPHY = {
     semibold: '600', // 半粗
     bold: '700', // 粗体
   },
+
+  // 字体缩放设置
+  fontScaling: {
+    allowFontScaling: true, // 允许系统字体缩放
+    maxFontSizeMultiplier: 1.3, // 最大字体缩放倍数
+  },
 } as const;
 
 // 间距规范（单位：pt）

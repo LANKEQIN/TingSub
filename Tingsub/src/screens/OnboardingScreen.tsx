@@ -8,6 +8,7 @@ import {
   ImageBackground,
   StatusBar,
   TextInput,
+  Alert,
 } from 'react-native';
 import { Button, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -22,6 +23,8 @@ import { useUserStore } from '../store/userStore';
 import { StorageUtils } from '../utils/storageUtils';
 import { APP_STORAGE_KEYS } from '../constants/storageKeys';
 import { NEUTRAL_COLORS, PRIMARY_COLORS } from '../constants/theme';
+import { initializeRealm } from '../config/realm';
+import { UserRepository } from '../repositories/UserRepository';
 
 const { width, height } = Dimensions.get('window');
 
@@ -98,11 +101,16 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
   const handleStart = async () => {
     if (!username.trim()) {
+      Alert.alert('用户名不能为空', '请输入至少2个字符的用户名');
       return;
     }
 
     try {
-      await createUser(null as any, {
+      // 初始化Realm数据库并创建UserRepository实例
+      const realm = await initializeRealm();
+      const userRepository = new UserRepository(realm);
+
+      await createUser(userRepository, {
         username: username.trim(),
         theme: 'system',
         currency: 'CNY',
@@ -129,6 +137,9 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
       });
     } catch (error) {
       console.error('创建用户失败:', error);
+      // 更友好的错误提示
+      const errorMessage = error instanceof Error ? error.message : '创建用户失败';
+      Alert.alert('创建用户失败', errorMessage);
     }
   };
 
@@ -181,13 +192,13 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
         </Animated.View>
 
         <Animated.View style={[styles.textContainer, animatedStyle]}>
-          <Text style={[styles.title, { color: NEUTRAL_COLORS.text.primary }]}>
+          <Text style={[styles.title, { color: NEUTRAL_COLORS.text.primary }]} allowFontScaling={true}>
             {data.title}
           </Text>
-          <Text style={[styles.subtitle, { color: data.color }]}>
+          <Text style={[styles.subtitle, { color: data.color }]} allowFontScaling={true}>
             {data.subtitle}
           </Text>
-          <Text style={[styles.description, { color: NEUTRAL_COLORS.text.secondary }]}>
+          <Text style={[styles.description, { color: NEUTRAL_COLORS.text.secondary }]} allowFontScaling={true}>
             {data.description}
           </Text>
         </Animated.View>
@@ -202,7 +213,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
                 onPress={handleSkip}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.skipButtonText, { color: NEUTRAL_COLORS.text.secondary }]}>
+                <Text style={[styles.skipButtonText, { color: NEUTRAL_COLORS.text.secondary }]} allowFontScaling={true}>
                   跳过
                 </Text>
               </TouchableOpacity>
@@ -212,7 +223,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
                 style={styles.nextButton}
                 contentStyle={styles.buttonContent}
               >
-                下一步
+                <Text allowFontScaling={true}>下一步</Text>
               </Button>
             </>
           ) : (
@@ -222,7 +233,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
               style={styles.startButton}
               contentStyle={styles.buttonContent}
             >
-              开始使用
+              <Text allowFontScaling={true}>开始使用</Text>
             </Button>
           )}
         </View>
@@ -242,16 +253,16 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
         </Animated.View>
 
         <Animated.View style={[styles.textContainer, animatedStyle]}>
-          <Text style={[styles.title, { color: NEUTRAL_COLORS.text.primary }]}>
+          <Text style={[styles.title, { color: NEUTRAL_COLORS.text.primary }]} allowFontScaling={true}>
             创建您的账户
           </Text>
-          <Text style={[styles.description, { color: NEUTRAL_COLORS.text.secondary }]}>
+          <Text style={[styles.description, { color: NEUTRAL_COLORS.text.secondary }]} allowFontScaling={true}>
             请输入您的用户名,开始使用汀阅
           </Text>
         </Animated.View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.inputLabel, { color: NEUTRAL_COLORS.text.secondary }]}>
+          <Text style={[styles.inputLabel, { color: NEUTRAL_COLORS.text.secondary }]} allowFontScaling={true}>
             用户名
           </Text>
           <View style={[styles.inputWrapper, { borderColor: theme.colors.border }]}>
@@ -267,6 +278,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
               placeholderTextColor={theme.colors.placeholder}
               value={username}
               onChangeText={setUsername}
+              allowFontScaling={true}
             />
           </View>
         </View>
@@ -278,7 +290,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
           style={styles.startButton}
           contentStyle={styles.buttonContent}
         >
-          开始使用
+          <Text allowFontScaling={true}>开始使用</Text>
         </Button>
 
         <TouchableOpacity
@@ -286,7 +298,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
           onPress={() => setShowInput(false)}
           activeOpacity={0.7}
         >
-          <Text style={[styles.backButtonText, { color: NEUTRAL_COLORS.text.secondary }]}>
+          <Text style={[styles.backButtonText, { color: NEUTRAL_COLORS.text.secondary }]} allowFontScaling={true}>
             返回
           </Text>
         </TouchableOpacity>

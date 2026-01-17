@@ -6,7 +6,7 @@
 import Realm from 'realm';
 import { BaseRepository } from './BaseRepository';
 import { UserModel } from '../models/User';
-import { ValidationUtils } from '../utils/validationUtils';
+import { ValidationUtils, ValidationError } from '../utils/validationUtils';
 import { Logger } from '../utils/loggerUtils';
 import type { User, CreateUserParams, UpdateUserParams, UserQueryParams } from '../../types/user';
 
@@ -16,6 +16,36 @@ import type { User, CreateUserParams, UpdateUserParams, UserQueryParams } from '
 export class UserRepository extends BaseRepository<User> {
   constructor(realm: Realm) {
     super(realm, 'User');
+  }
+
+  /**
+   * 将Realm对象转换为User类型
+   * @param realmObj Realm对象
+   * @returns User类型对象
+   */
+  private convertToUserType(realmObj: any): User {
+    const reminderSettings = realmObj.reminderSettings as any;
+    return {
+      id: String(realmObj.id),
+      username: String(realmObj.username),
+      email: realmObj.email ? String(realmObj.email) : undefined,
+      avatar: realmObj.avatar ? String(realmObj.avatar) : undefined,
+      theme: realmObj.theme as 'light' | 'dark' | 'system',
+      currency: realmObj.currency as 'CNY' | 'USD' | 'EUR' | 'JPY' | 'GBP',
+      reminderSettings: {
+        enabled: Boolean(reminderSettings?.enabled),
+        advanceDays: Number(reminderSettings?.advanceDays || 0),
+        repeatInterval: (reminderSettings?.repeatInterval || 'none') as 'none' | 'daily' | 'weekly',
+        notificationChannels: (reminderSettings?.notificationChannels || []).map((channel: any) => ({
+          type: channel.type as 'local',
+          enabled: Boolean(channel.enabled),
+          sound: Boolean(channel.sound),
+          vibration: Boolean(channel.vibration),
+        })),
+      },
+      createdAt: new Date(realmObj.createdAt),
+      updatedAt: new Date(realmObj.updatedAt),
+    };
   }
 
   /**
@@ -30,8 +60,8 @@ export class UserRepository extends BaseRepository<User> {
       const userData: User = {
         id: this.generateUUID(),
         username: params.username,
-        email: params.email,
-        avatar: params.avatar,
+        email: params.email || '',
+        avatar: params.avatar || '',
         theme: params.theme || 'system',
         currency: params.currency || 'CNY',
         reminderSettings: params.reminderSettings || {
@@ -51,13 +81,22 @@ export class UserRepository extends BaseRepository<User> {
         updatedAt: now,
       };
 
-      ValidationUtils.validateUser(userData);
+      try {
+        ValidationUtils.validateUser(userData);
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          Logger.error('用户数据验证失败:', error.details);
+          throw new Error(`创建用户失败: ${error.message}`);
+        }
+        throw error;
+      }
 
-      const realmData = UserModel.fromUserType(userData);
+      const realmData = UserModel.fromUserTypeForRealm(userData);
 
       return this.realm.write(() => {
-        const created = this.realm.create('User', realmData);
-        return (created as any).toUserType();
+        const created = this.realm.create('User', realmData) as any;
+        // 手动转换为User类型，因为Realm对象可能没有toUserType方法
+        return this.convertToUserType(created);
       });
     }, '创建用户失败');
   }
@@ -89,8 +128,9 @@ export class UserRepository extends BaseRepository<User> {
       const realmData = UserModel.fromUserType(mergedData);
 
       return this.realm.write(() => {
-        const updated = this.realm.create('User', { ...realmData, id }, true);
-        return (updated as any).toUserType();
+        const updated = this.realm.create('User', { ...realmData, id }, true) as any;
+        // 手动转换为User类型
+        return this.convertToUserType(updated);
       });
     }, '更新用户失败');
   }
@@ -106,7 +146,7 @@ export class UserRepository extends BaseRepository<User> {
       if (objects.length === 0) {
         return null;
       }
-      return (objects[0] as any).toUserType();
+      return this.convertToUserType(objects[0]);
     }, '根据用户名查找用户失败');
   }
 
@@ -121,7 +161,7 @@ export class UserRepository extends BaseRepository<User> {
       if (objects.length === 0) {
         return null;
       }
-      return (objects[0] as any).toUserType();
+      return this.convertToUserType(objects[0]);
     }, '根据邮箱查找用户失败');
   }
 
@@ -144,7 +184,7 @@ export class UserRepository extends BaseRepository<User> {
         objects = objects.filtered('email == $0', params.email);
       }
 
-      return objects.map((obj: any) => obj.toUserType());
+      return objects.map((obj: any) => this.convertToUserType(obj));
     }, '查询用户失败');
   }
 
@@ -166,7 +206,7 @@ export class UserRepository extends BaseRepository<User> {
         if (object) {
           (object as any).theme = theme;
           (object as any).updatedAt = new Date();
-          return (object as any).toUserType();
+          return this.convertToUserType(object);
         }
         throw new Error('用户不存在');
       });
@@ -191,7 +231,7 @@ export class UserRepository extends BaseRepository<User> {
         if (object) {
           (object as any).currency = currency;
           (object as any).updatedAt = new Date();
-          return (object as any).toUserType();
+          return this.convertToUserType(object);
         }
         throw new Error('用户不存在');
       });
@@ -216,7 +256,7 @@ export class UserRepository extends BaseRepository<User> {
         if (object) {
           (object as any).avatar = avatar;
           (object as any).updatedAt = new Date();
-          return (object as any).toUserType();
+          return this.convertToUserType(object);
         }
         throw new Error('用户不存在');
       });
@@ -266,7 +306,7 @@ export class UserRepository extends BaseRepository<User> {
             userObj.reminderSettings.notificationChannels = reminderSettings.notificationChannels;
           }
           userObj.updatedAt = new Date();
-          return userObj.toUserType();
+          return this.convertToUserType(object);
         }
         throw new Error('用户不存在');
       });
@@ -335,7 +375,7 @@ export class UserRepository extends BaseRepository<User> {
       if (objects.length === 0) {
         return null;
       }
-      return (objects[0] as any).toUserType();
+      return this.convertToUserType(objects[0]);
     }, '获取第一个用户失败');
   }
 
@@ -349,7 +389,7 @@ export class UserRepository extends BaseRepository<User> {
       const objects = this.realm
         .objects('User')
         .filtered('username CONTAINS[c] $0 OR email CONTAINS[c] $0', keyword);
-      return objects.map((obj: any) => obj.toUserType());
+      return objects.map((obj: any) => this.convertToUserType(obj));
     }, '搜索用户失败');
   }
 
@@ -361,7 +401,7 @@ export class UserRepository extends BaseRepository<User> {
   async filterByTheme(theme: 'light' | 'dark' | 'system'): Promise<User[]> {
     return this.executeOperation(() => {
       const objects = this.realm.objects('User').filtered('theme == $0', theme);
-      return objects.map((obj: any) => obj.toUserType());
+      return objects.map((obj: any) => this.convertToUserType(obj));
     }, '按主题筛选用户失败');
   }
 
@@ -373,7 +413,7 @@ export class UserRepository extends BaseRepository<User> {
   async filterByCurrency(currency: 'CNY' | 'USD' | 'EUR' | 'JPY' | 'GBP'): Promise<User[]> {
     return this.executeOperation(() => {
       const objects = this.realm.objects('User').filtered('currency == $0', currency);
-      return objects.map((obj: any) => obj.toUserType());
+      return objects.map((obj: any) => this.convertToUserType(obj));
     }, '按货币筛选用户失败');
   }
 
@@ -385,7 +425,7 @@ export class UserRepository extends BaseRepository<User> {
   async sortByCreatedAt(order: 'asc' | 'desc' = 'desc'): Promise<User[]> {
     return this.executeOperation(() => {
       const objects = this.realm.objects('User').sorted('createdAt', order === 'desc');
-      return objects.map((obj: any) => obj.toUserType());
+      return objects.map((obj: any) => this.convertToUserType(obj));
     }, '按创建时间排序用户失败');
   }
 
@@ -397,7 +437,7 @@ export class UserRepository extends BaseRepository<User> {
   async sortByUpdatedAt(order: 'asc' | 'desc' = 'desc'): Promise<User[]> {
     return this.executeOperation(() => {
       const objects = this.realm.objects('User').sorted('updatedAt', order === 'desc');
-      return objects.map((obj: any) => obj.toUserType());
+      return objects.map((obj: any) => this.convertToUserType(obj));
     }, '按更新时间排序用户失败');
   }
 
@@ -409,7 +449,7 @@ export class UserRepository extends BaseRepository<User> {
   async getRecentlyUpdated(limit: number = 10): Promise<User[]> {
     return this.executeOperation(() => {
       const objects = this.realm.objects('User').sorted('updatedAt', true).slice(0, limit);
-      return objects.map((obj: any) => obj.toUserType());
+      return objects.map((obj: any) => this.convertToUserType(obj));
     }, '获取最近更新的用户失败');
   }
 

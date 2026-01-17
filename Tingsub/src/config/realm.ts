@@ -33,6 +33,7 @@ export const realmConfig: Realm.Configuration = {
   schemaVersion: ENV.REALM_SCHEMA_VERSION,
 
   // 模型集合
+  // 包含所有模型，包括嵌套对象（embedded objects）
   schema: [
     UserModel.schema,
     ReminderSettingsModel.schema,
@@ -43,19 +44,9 @@ export const realmConfig: Realm.Configuration = {
     ReminderHistoryModel.schema,
   ],
 
-  // 迁移策略
-  onMigration: (oldRealm) => {
-    if (oldRealm.schemaVersion < ENV.REALM_SCHEMA_VERSION) {
-      // 执行数据库迁移逻辑
-      // 注意：迁移逻辑需要根据版本变化编写
-      console.log(
-        `Realm数据库从版本${oldRealm.schemaVersion}迁移到版本${ENV.REALM_SCHEMA_VERSION}`
-      );
-    }
-  },
-
-  // 开发环境配置
-  deleteRealmIfMigrationNeeded: isDevelopment,
+  // 开发环境配置：当需要迁移时删除数据库
+  // 注意：deleteRealmIfMigrationNeeded和onMigration不能同时使用
+  ...(isDevelopment ? { deleteRealmIfMigrationNeeded: true } : {}),
 };
 
 // 初始化Realm实例
