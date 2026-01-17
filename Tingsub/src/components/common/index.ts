@@ -21,3 +21,4 @@ export type { ErrorProps, ErrorType } from './Error';
 
 export * from '../subscription';
 export * from '../statistics';
+export * from '../settings';
