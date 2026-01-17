@@ -6,3 +6,4 @@
 export { useUserStore } from './userStore';
 export { useSubscriptionStore } from './subscriptionStore';
 export { useCategoryStore } from './categoryStore';
+export { useTagStore } from './tagStore';
