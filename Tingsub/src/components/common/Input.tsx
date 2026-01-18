@@ -125,14 +125,8 @@ const Input: React.FC<InputProps> = ({
     <View style={[styles.container, containerStyle]}>
       {label && (
         <View style={styles.labelContainer}>
-          <Text style={[styles.label, labelStyle, { color: theme.colors.text }]}>
-            {label}
-          </Text>
-          {required && (
-            <Text style={[styles.required, { color: theme.colors.error }]}>
-              *
-            </Text>
-          )}
+          <Text style={[styles.label, labelStyle, { color: theme.colors.text }]}>{label}</Text>
+          {required && <Text style={[styles.required, { color: theme.colors.error }]}>*</Text>}
         </View>
       )}
 
@@ -158,9 +152,7 @@ const Input: React.FC<InputProps> = ({
       </View>
 
       {error && (
-        <Text style={[styles.errorText, errorStyle, { color: theme.colors.error }]}>
-          {error}
-        </Text>
+        <Text style={[styles.errorText, errorStyle, { color: theme.colors.error }]}>{error}</Text>
       )}
     </View>
   );
@@ -171,41 +163,41 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 16,
   },
-  labelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  required: {
-    marginLeft: 4,
-    fontSize: 14,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 48,
+  errorText: {
+    fontSize: 12,
+    marginTop: 4,
   },
   input: {
     flex: 1,
     fontSize: 16,
     paddingVertical: 0,
   },
+  inputContainer: {
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    height: 48,
+    paddingHorizontal: 12,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  labelContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
   leftIcon: {
     marginRight: 8,
   },
+  required: {
+    fontSize: 14,
+    marginLeft: 4,
+  },
   rightIcon: {
     marginLeft: 8,
-  },
-  errorText: {
-    fontSize: 12,
-    marginTop: 4,
   },
 });
 

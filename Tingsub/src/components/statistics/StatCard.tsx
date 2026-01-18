@@ -158,40 +158,40 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     marginBottom: 8,
   },
   iconContainer: {
     marginRight: 8,
   },
   title: {
-    fontWeight: '500',
     flex: 1,
-  },
-  valueContainer: {
-    marginBottom: 4,
-  },
-  value: {
-    fontWeight: '700',
-    lineHeight: 36,
-  },
-  unit: {
-    fontWeight: '400',
-    marginLeft: 4,
-    fontSize: 16,
+    fontWeight: '500',
   },
   trendContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
+  },
+  trendLabel: {
+    fontSize: 12,
   },
   trendText: {
     fontSize: 12,
     fontWeight: '600',
     marginRight: 4,
   },
-  trendLabel: {
-    fontSize: 12,
+  unit: {
+    fontSize: 16,
+    fontWeight: '400',
+    marginLeft: 4,
+  },
+  value: {
+    fontWeight: '700',
+    lineHeight: 36,
+  },
+  valueContainer: {
+    marginBottom: 4,
   },
 });
 

@@ -8,10 +8,7 @@ import { BaseRepository } from './BaseRepository';
 import { ReminderHistoryModel } from '../models/ReminderHistory';
 import { ValidationUtils } from '../utils/validationUtils';
 import { Logger } from '../utils/loggerUtils';
-import type {
-  ReminderHistory,
-  CreateReminderHistoryParams,
-} from '../../types/subscription';
+import type { ReminderHistory, CreateReminderHistoryParams } from '../../types/subscription';
 
 /**
  * 提醒历史仓储类
@@ -307,11 +304,7 @@ export class ReminderHistoryRepository extends BaseRepository<ReminderHistory> {
    * @param endDate 结束日期
    * @returns 提醒历史数组
    */
-  async getByDateRange(
-    userId: string,
-    startDate: Date,
-    endDate: Date
-  ): Promise<ReminderHistory[]> {
+  async getByDateRange(userId: string, startDate: Date, endDate: Date): Promise<ReminderHistory[]> {
     return this.executeOperation(() => {
       const objects = this.realm
         .objects('ReminderHistory')
@@ -349,18 +342,11 @@ export class ReminderHistoryRepository extends BaseRepository<ReminderHistory> {
    * @param keyword 搜索关键词
    * @returns 提醒历史数组
    */
-  async searchReminderHistories(
-    userId: string,
-    keyword: string
-  ): Promise<ReminderHistory[]> {
+  async searchReminderHistories(userId: string, keyword: string): Promise<ReminderHistory[]> {
     return this.executeOperation(() => {
       const objects = this.realm
         .objects('ReminderHistory')
-        .filtered(
-          'userId == $0 AND subscriptionId CONTAINS[c] $0',
-          userId,
-          keyword
-        )
+        .filtered('userId == $0 AND subscriptionId CONTAINS[c] $0', userId, keyword)
         .sorted('reminderDate', true);
       return objects.map((obj: any) => obj.toReminderHistoryType());
     }, '搜索提醒历史失败');

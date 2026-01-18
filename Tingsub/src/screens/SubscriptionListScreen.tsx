@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-} from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTheme, Appbar, Menu, Divider } from 'react-native-paper';
 import { initializeRealm } from '../config/realm';
 import { SubscriptionRepository, CategoryRepository } from '../repositories';
@@ -81,7 +78,9 @@ const SubscriptionListScreen: React.FC<SubscriptionListScreenProps> = ({ navigat
     });
 
     if (filter.categoryId) {
-      filtered = filtered.filter((sub) => sub.categoryName === categories.find((cat) => cat.id === filter.categoryId)?.name);
+      filtered = filtered.filter(
+        (sub) => sub.categoryName === categories.find((cat) => cat.id === filter.categoryId)?.name
+      );
     }
 
     if (filter.status) {
@@ -94,9 +93,10 @@ const SubscriptionListScreen: React.FC<SubscriptionListScreenProps> = ({ navigat
 
     if (filter.keyword) {
       const keyword = filter.keyword.toLowerCase();
-      filtered = filtered.filter((sub) => 
-        sub.name.toLowerCase().includes(keyword) || 
-        (sub.description && sub.description.toLowerCase().includes(keyword))
+      filtered = filtered.filter(
+        (sub) =>
+          sub.name.toLowerCase().includes(keyword) ||
+          (sub.description && sub.description.toLowerCase().includes(keyword))
       );
     }
 
@@ -173,12 +173,7 @@ const SubscriptionListScreen: React.FC<SubscriptionListScreenProps> = ({ navigat
         <Menu
           visible={showSortMenu}
           onDismiss={() => setShowSortMenu(false)}
-          anchor={
-            <Appbar.Action
-              icon="sort"
-              onPress={() => setShowSortMenu(true)}
-            />
-          }
+          anchor={<Appbar.Action icon="sort" onPress={() => setShowSortMenu(true)} />}
         >
           <Menu.Item
             leadingIcon="calendar"
@@ -212,10 +207,7 @@ const SubscriptionListScreen: React.FC<SubscriptionListScreenProps> = ({ navigat
           onPress={() => setShowFilter(!showFilter)}
           color={hasActiveFilters ? theme.colors.primary : undefined}
         />
-        <Appbar.Action
-          icon="plus"
-          onPress={handleAddSubscription}
-        />
+        <Appbar.Action icon="plus" onPress={handleAddSubscription} />
       </Appbar.Header>
 
       {showFilter && (
@@ -249,8 +241,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filterContainer: {
-    borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
+    borderBottomWidth: 1,
   },
   listContainer: {
     flex: 1,

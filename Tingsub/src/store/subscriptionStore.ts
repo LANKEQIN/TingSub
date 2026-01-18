@@ -73,7 +73,11 @@ interface SubscriptionState {
     id: string,
     status: 'active' | 'cancelled' | 'expired'
   ) => Promise<void>;
-  updateAutoRenew: (repository: SubscriptionRepository, id: string, autoRenew: boolean) => Promise<void>;
+  updateAutoRenew: (
+    repository: SubscriptionRepository,
+    id: string,
+    autoRenew: boolean
+  ) => Promise<void>;
   addTag: (repository: SubscriptionRepository, id: string, tag: string) => Promise<void>;
   removeTag: (repository: SubscriptionRepository, id: string, tag: string) => Promise<void>;
   clearError: () => void;

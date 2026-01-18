@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
+import { StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { useTheme, TextInput, Chip, SegmentedButtons } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { SubscriptionFilter } from '../../types/subscription';
@@ -29,7 +23,9 @@ const SubscriptionFilterComponent: React.FC<SubscriptionFilterProps> = ({
 
   const [keyword, setKeyword] = useState(filter.keyword || '');
   const [selectedCategoryId, setSelectedCategoryId] = useState(filter.categoryId || '');
-  const [selectedStatus, setSelectedStatus] = useState<SubscriptionStatus | undefined>(filter.status);
+  const [selectedStatus, setSelectedStatus] = useState<SubscriptionStatus | undefined>(
+    filter.status
+  );
   const [selectedType, setSelectedType] = useState<SubscriptionType | undefined>(filter.type);
   const [sortBy, setSortBy] = useState(filter.sortBy || 'renewalDate');
   const [sortOrder, setSortOrder] = useState(filter.sortOrder || 'asc');
@@ -113,10 +109,7 @@ const SubscriptionFilterComponent: React.FC<SubscriptionFilterProps> = ({
             left={<TextInput.Icon icon="magnify" />}
             right={
               keyword ? (
-                <TextInput.Icon
-                  icon="close"
-                  onPress={() => handleKeywordChange('')}
-                />
+                <TextInput.Icon icon="close" onPress={() => handleKeywordChange('')} />
               ) : undefined
             }
             style={styles.searchInput}
@@ -125,7 +118,11 @@ const SubscriptionFilterComponent: React.FC<SubscriptionFilterProps> = ({
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>分类</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScrollView}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.chipScrollView}
+          >
             <Chip
               selected={!selectedCategoryId}
               onPress={() => handleCategorySelect('')}
@@ -154,7 +151,11 @@ const SubscriptionFilterComponent: React.FC<SubscriptionFilterProps> = ({
                   <MaterialCommunityIcons
                     name={category.icon as any}
                     size={16}
-                    color={selectedCategoryId === category.id ? category.color : theme.colors.text.secondary}
+                    color={
+                      selectedCategoryId === category.id
+                        ? category.color
+                        : theme.colors.text.secondary
+                    }
                   />
                 )}
               >
@@ -225,10 +226,7 @@ const SubscriptionFilterComponent: React.FC<SubscriptionFilterProps> = ({
             }))}
             style={styles.segmentedButtons}
           />
-          <TouchableOpacity
-            style={styles.sortOrderButton}
-            onPress={handleSortOrderToggle}
-          >
+          <TouchableOpacity style={styles.sortOrderButton} onPress={handleSortOrderToggle}>
             <MaterialCommunityIcons
               name={sortOrder === 'asc' ? 'sort-ascending' : 'sort-descending'}
               size={20}
@@ -242,14 +240,8 @@ const SubscriptionFilterComponent: React.FC<SubscriptionFilterProps> = ({
 
         {hasActiveFilters && (
           <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-            <MaterialCommunityIcons
-              name="filter-remove"
-              size={16}
-              color={theme.colors.error}
-            />
-            <Text style={[styles.resetButtonText, { color: theme.colors.error }]}>
-              清除筛选
-            </Text>
+            <MaterialCommunityIcons name="filter-remove" size={16} color={theme.colors.error} />
+            <Text style={[styles.resetButtonText, { color: theme.colors.error }]}>清除筛选</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -258,15 +250,46 @@ const SubscriptionFilterComponent: React.FC<SubscriptionFilterProps> = ({
 };
 
 const styles = StyleSheet.create({
+  chip: {
+    marginBottom: 8,
+    marginRight: 8,
+  },
+  chipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  chipScrollView: {
+    flexDirection: 'row',
+  },
+  chipText: {
+    fontSize: 14,
+  },
   container: {
-    flex: 1,
     backgroundColor: 'transparent',
+    flex: 1,
+  },
+  resetButton: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(245, 34, 45, 0.1)',
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 8,
+    paddingVertical: 12,
+  },
+  resetButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 8,
+  },
+  scrollContent: {
+    padding: 16,
   },
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
-    padding: 16,
+  searchInput: {
+    backgroundColor: 'transparent',
   },
   section: {
     marginBottom: 20,
@@ -276,53 +299,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 12,
   },
-  searchInput: {
-    backgroundColor: 'transparent',
-  },
-  chipScrollView: {
-    flexDirection: 'row',
-  },
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  chip: {
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  chipText: {
-    fontSize: 14,
-  },
   segmentedButtons: {
     marginBottom: 12,
   },
   sortOrderButton: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
     backgroundColor: 'rgba(154, 207, 255, 0.1)',
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   sortOrderText: {
     fontSize: 14,
-    marginLeft: 8,
     fontWeight: '500',
-  },
-  resetButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    marginTop: 8,
-    borderRadius: 8,
-    backgroundColor: 'rgba(245, 34, 45, 0.1)',
-  },
-  resetButtonText: {
-    fontSize: 14,
     marginLeft: 8,
-    fontWeight: '500',
   },
 });
 

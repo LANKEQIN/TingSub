@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  GestureResponderEvent,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, GestureResponderEvent } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Card from '../common/Card';
@@ -62,9 +56,7 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
       <View style={styles.tagsContainer}>
         {subscription.tags.slice(0, 3).map((tag, index) => (
           <View key={index} style={[styles.tag, { borderColor: subscription.categoryColor }]}>
-            <Text style={[styles.tagText, { color: subscription.categoryColor }]}>
-              {tag}
-            </Text>
+            <Text style={[styles.tagText, { color: subscription.categoryColor }]}>{tag}</Text>
           </View>
         ))}
         {subscription.tags.length > 3 && (
@@ -77,7 +69,9 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
   const cardContent = (
     <View style={[styles.container, style]}>
       <View style={styles.header}>
-        <View style={[styles.iconContainer, { backgroundColor: subscription.categoryColor + '20' }]}>
+        <View
+          style={[styles.iconContainer, { backgroundColor: subscription.categoryColor + '20' }]}
+        >
           <MaterialCommunityIcons
             name={subscription.categoryIcon as any}
             size={28}
@@ -93,14 +87,15 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
           </Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '20' }]}>
-          <Text style={[styles.statusText, { color: getStatusColor() }]}>
-            {getStatusText()}
-          </Text>
+          <Text style={[styles.statusText, { color: getStatusColor() }]}>{getStatusText()}</Text>
         </View>
       </View>
 
       {subscription.description && (
-        <Text style={[styles.description, { color: theme.colors.text.secondary }]} numberOfLines={2}>
+        <Text
+          style={[styles.description, { color: theme.colors.text.secondary }]}
+          numberOfLines={2}
+        >
           {subscription.description}
         </Text>
       )}
@@ -130,13 +125,20 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
           <MaterialCommunityIcons
             name="calendar"
             size={16}
-            color={subscription.isExpiringSoon || subscription.isExpired ? '#FF9800' : theme.colors.text.tertiary}
+            color={
+              subscription.isExpiringSoon || subscription.isExpired
+                ? '#FF9800'
+                : theme.colors.text.tertiary
+            }
           />
           <Text
             style={[
               styles.infoText,
               {
-                color: subscription.isExpiringSoon || subscription.isExpired ? '#FF9800' : theme.colors.text.secondary,
+                color:
+                  subscription.isExpiringSoon || subscription.isExpired
+                    ? '#FF9800'
+                    : theme.colors.text.secondary,
               },
             ]}
           >
@@ -158,11 +160,7 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
 
   if (onPress || onLongPress) {
     return (
-      <TouchableOpacity
-        onPress={onPress}
-        onLongPress={onLongPress}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity onPress={onPress} onLongPress={onLongPress} activeOpacity={0.7}>
         <Card pressable={false}>{cardContent}</Card>
       </TouchableOpacity>
     );
@@ -172,96 +170,96 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-  },
-  header: {
-    flexDirection: 'row',
+  autoRenewBadge: {
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(154, 207, 255, 0.1)',
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  headerInfo: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 2,
+  autoRenewText: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginLeft: 4,
   },
   category: {
     fontSize: 12,
   },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '500',
+  container: {
+    padding: 16,
   },
   description: {
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 12,
   },
+  header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  headerInfo: {
+    flex: 1,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
+    marginRight: 12,
+    width: 48,
+  },
+  infoItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 12,
   },
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   infoText: {
     fontSize: 12,
     marginLeft: 4,
   },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    marginBottom: 8,
+  moreTagsText: {
+    color: '#999',
+    fontSize: 11,
+    marginLeft: 4,
   },
-  tag: {
+  name: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  statusBadge: {
+    borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  tag: {
     borderRadius: 12,
     borderWidth: 1,
-    marginRight: 6,
     marginBottom: 4,
+    marginRight: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   tagText: {
     fontSize: 11,
     fontWeight: '500',
   },
-  moreTagsText: {
-    fontSize: 11,
-    color: '#999',
-    marginLeft: 4,
-  },
-  autoRenewBadge: {
-    flexDirection: 'row',
+  tagsContainer: {
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: 'rgba(154, 207, 255, 0.1)',
-  },
-  autoRenewText: {
-    fontSize: 11,
-    fontWeight: '500',
-    marginLeft: 4,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 8,
   },
 });
 

@@ -8,7 +8,13 @@ import { useSubscriptionStore } from '../store/subscriptionStore';
  * 封装了订阅的增删改查操作
  */
 export const useSubscriptions = (repository: SubscriptionRepository, userId: string) => {
-  const { subscriptions, createSubscription, updateSubscription, deleteSubscription, loadSubscriptions } = useSubscriptionStore();
+  const {
+    subscriptions,
+    createSubscription,
+    updateSubscription,
+    deleteSubscription,
+    loadSubscriptions,
+  } = useSubscriptionStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,7 +102,9 @@ export const useSubscriptions = (repository: SubscriptionRepository, userId: str
   const getExpiringSubscriptions = useCallback(() => {
     const now = new Date();
     const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    return subscriptions.filter((sub: Subscription) => sub.endDate && new Date(sub.endDate) <= sevenDaysLater);
+    return subscriptions.filter(
+      (sub: Subscription) => sub.endDate && new Date(sub.endDate) <= sevenDaysLater
+    );
   }, [subscriptions]);
 
   return {

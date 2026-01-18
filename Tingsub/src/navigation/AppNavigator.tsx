@@ -18,14 +18,8 @@ const AppNavigator = () => {
           animation: 'fade',
         }}
       >
-        <AppStack.Screen
-          name={ROUTE_NAMES.ONBOARDING}
-          component={OnboardingScreen}
-        />
-        <AppStack.Screen
-          name={ROUTE_NAMES.MAIN_TABS}
-          component={StackNavigator}
-        />
+        <AppStack.Screen name={ROUTE_NAMES.ONBOARDING} component={OnboardingScreen} />
+        <AppStack.Screen name={ROUTE_NAMES.MAIN_TABS} component={StackNavigator} />
       </AppStack.Navigator>
     </NavigationContainer>
   );

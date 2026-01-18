@@ -43,20 +43,12 @@ export interface User {
 /**
  * 创建用户参数
  */
-export type CreateUserParams = Omit<
-  User,
-  'id' | 'createdAt' | 'updatedAt'
->;
+export type CreateUserParams = Omit<User, 'id' | 'createdAt' | 'updatedAt'>;
 
 /**
  * 更新用户参数
  */
-export type UpdateUserParams = Partial<
-  Omit<
-    User,
-    'id' | 'createdAt' | 'updatedAt'
-  >
->;
+export type UpdateUserParams = Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>;
 
 /**
  * 用户表单数据

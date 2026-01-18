@@ -86,9 +86,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
             height: size,
             borderRadius: size / 2,
             backgroundColor: color,
-            transform: [
-              { rotate: `${startAngle}deg` },
-            ],
+            transform: [{ rotate: `${startAngle}deg` }],
             overflow: 'hidden' as const,
           };
 
@@ -115,9 +113,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
           <Text style={[styles.totalExpense, { color: NEUTRAL_COLORS.text.primary }]}>
             ¥{totalExpense.toLocaleString()}
           </Text>
-          <Text style={[styles.totalLabel, { color: NEUTRAL_COLORS.text.secondary }]}>
-            总支出
-          </Text>
+          <Text style={[styles.totalLabel, { color: NEUTRAL_COLORS.text.secondary }]}>总支出</Text>
         </View>
       </View>
     );
@@ -125,7 +121,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
 
   // 渲染柱状图
   const renderBarChart = () => {
-    const maxExpense = Math.max(...data.map(item => item.expense), 1);
+    const maxExpense = Math.max(...data.map((item) => item.expense), 1);
     const barWidth = 40;
     const gap = 16;
 
@@ -141,10 +137,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
             return (
               <View
                 key={item.categoryId}
-                style={[
-                  styles.barItem,
-                  { marginRight: index < data.length - 1 ? gap : 0 },
-                ]}
+                style={[styles.barItem, { marginRight: index < data.length - 1 ? gap : 0 }]}
               >
                 <Text
                   style={[styles.barValue, { color: NEUTRAL_COLORS.text.secondary }]}
@@ -178,7 +171,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
 
   // 渲染水平柱状图
   const renderHorizontalBarChart = () => {
-    const maxExpense = Math.max(...data.map(item => item.expense), 1);
+    const maxExpense = Math.max(...data.map((item) => item.expense), 1);
     const barHeight = 32;
     const gap = 12;
 
@@ -199,12 +192,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
               ]}
             >
               <View style={styles.horizontalBarLabel}>
-                <View
-                  style={[
-                    styles.colorDot,
-                    { backgroundColor: color },
-                  ]}
-                />
+                <View style={[styles.colorDot, { backgroundColor: color }]} />
                 <Text
                   style={[styles.categoryName, { color: NEUTRAL_COLORS.text.primary }]}
                   numberOfLines={1}
@@ -213,15 +201,11 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
                 </Text>
               </View>
               <View style={styles.horizontalBarValue}>
-                <Text
-                  style={[styles.expenseValue, { color: NEUTRAL_COLORS.text.primary }]}
-                >
+                <Text style={[styles.expenseValue, { color: NEUTRAL_COLORS.text.primary }]}>
                   ¥{item.expense.toLocaleString()}
                 </Text>
                 {showPercentage && (
-                  <Text
-                    style={[styles.percentage, { color: NEUTRAL_COLORS.text.secondary }]}
-                  >
+                  <Text style={[styles.percentage, { color: NEUTRAL_COLORS.text.secondary }]}>
                     {calculatePercentage(item.expense)}
                   </Text>
                 )}
@@ -256,12 +240,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
 
           return (
             <View key={item.categoryId} style={styles.legendItem}>
-              <View
-                style={[
-                  styles.legendColor,
-                  { backgroundColor: color },
-                ]}
-              />
+              <View style={[styles.legendColor, { backgroundColor: color }]} />
               <Text
                 style={[styles.legendText, { color: NEUTRAL_COLORS.text.primary }]}
                 numberOfLines={1}
@@ -269,9 +248,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
                 {item.categoryName}
               </Text>
               {showPercentage && (
-                <Text
-                  style={[styles.legendPercentage, { color: NEUTRAL_COLORS.text.secondary }]}
-                >
+                <Text style={[styles.legendPercentage, { color: NEUTRAL_COLORS.text.secondary }]}>
                   {calculatePercentage(item.expense)}
                 </Text>
               )}
@@ -286,11 +263,7 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
   const renderChart = () => {
     switch (chartType) {
       case 'pie':
-        return (
-          <View style={styles.chartWrapper}>
-            {renderPieChart()}
-          </View>
-        );
+        return <View style={styles.chartWrapper}>{renderPieChart()}</View>;
       case 'bar':
         return renderBarChart();
       case 'horizontal':
@@ -310,61 +283,56 @@ const ExpenseChart: React.FC<ExpenseChartProps> = ({
 
 // 样式定义
 const styles = StyleSheet.create({
-  container: {
-    padding: SPACING.md,
+  bar: {
+    borderRadius: 4,
+  },
+  barChart: {
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
+  },
+  barChartContainer: {
+    overflow: 'hidden',
+  },
+  barItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  barLabel: {
+    fontSize: TYPOGRAPHY.fontSize.body3,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  barValue: {
+    fontSize: TYPOGRAPHY.fontSize.body3,
+    marginBottom: 4,
+  },
+  categoryName: {
+    flex: 1,
+    fontSize: TYPOGRAPHY.fontSize.body2,
+    fontWeight: '500',
   },
   chartWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: SPACING.lg,
   },
-  pieChartContainer: {
-    position: 'relative',
+  colorDot: {
+    borderRadius: 6,
+    height: 12,
+    marginRight: 8,
+    width: 12,
   },
-  pieSlice: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
+  container: {
+    padding: SPACING.md,
   },
-  pieCenter: {
-    position: 'absolute',
-    top: '20%',
-    left: '20%',
-    alignItems: 'center',
-    justifyContent: 'center',
+  expenseValue: {
+    fontSize: TYPOGRAPHY.fontSize.body1,
+    fontWeight: '600',
   },
-  totalExpense: {
-    fontSize: TYPOGRAPHY.fontSize.h3,
-    fontWeight: '700',
-  },
-  totalLabel: {
-    fontSize: TYPOGRAPHY.fontSize.body3,
-    marginTop: 4,
-  },
-  barChartContainer: {
-    overflow: 'hidden',
-  },
-  barChart: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: SPACING.md,
-    paddingBottom: SPACING.md,
-  },
-  barItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  bar: {
+  horizontalBar: {
     borderRadius: 4,
-  },
-  barValue: {
-    fontSize: TYPOGRAPHY.fontSize.body3,
-    marginBottom: 4,
-  },
-  barLabel: {
-    fontSize: TYPOGRAPHY.fontSize.body3,
-    marginTop: 4,
-    textAlign: 'center',
   },
   horizontalBarChartContainer: {
     flex: 1,
@@ -373,35 +341,20 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   horizontalBarLabel: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     marginBottom: 4,
-  },
-  colorDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  categoryName: {
-    fontSize: TYPOGRAPHY.fontSize.body2,
-    fontWeight: '500',
-    flex: 1,
   },
   horizontalBarValue: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 4,
   },
-  expenseValue: {
-    fontSize: TYPOGRAPHY.fontSize.body1,
-    fontWeight: '600',
-  },
-  percentage: {
-    fontSize: TYPOGRAPHY.fontSize.body2,
-  },
-  horizontalBar: {
-    borderRadius: 4,
+  legendColor: {
+    borderRadius: 6,
+    height: 12,
+    marginRight: 6,
+    width: 12,
   },
   legendContainer: {
     flexDirection: 'row',
@@ -409,23 +362,43 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
   },
   legendItem: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginRight: SPACING.md,
+    flexDirection: 'row',
     marginBottom: SPACING.sm,
+    marginRight: SPACING.md,
   },
-  legendColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 6,
+  legendPercentage: {
+    fontSize: TYPOGRAPHY.fontSize.body3,
   },
   legendText: {
     fontSize: TYPOGRAPHY.fontSize.body2,
     marginRight: 4,
   },
-  legendPercentage: {
+  percentage: {
+    fontSize: TYPOGRAPHY.fontSize.body2,
+  },
+  pieCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    left: '20%',
+    position: 'absolute',
+    top: '20%',
+  },
+  pieChartContainer: {
+    position: 'relative',
+  },
+  pieSlice: {
+    height: '100%',
+    position: 'absolute',
+    width: '100%',
+  },
+  totalExpense: {
+    fontSize: TYPOGRAPHY.fontSize.h3,
+    fontWeight: '700',
+  },
+  totalLabel: {
     fontSize: TYPOGRAPHY.fontSize.body3,
+    marginTop: 4,
   },
 });
 

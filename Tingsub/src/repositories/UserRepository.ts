@@ -36,12 +36,14 @@ export class UserRepository extends BaseRepository<User> {
         enabled: Boolean(reminderSettings?.enabled),
         advanceDays: Number(reminderSettings?.advanceDays || 0),
         repeatInterval: (reminderSettings?.repeatInterval || 'none') as 'none' | 'daily' | 'weekly',
-        notificationChannels: (reminderSettings?.notificationChannels || []).map((channel: any) => ({
-          type: channel.type as 'local',
-          enabled: Boolean(channel.enabled),
-          sound: Boolean(channel.sound),
-          vibration: Boolean(channel.vibration),
-        })),
+        notificationChannels: (reminderSettings?.notificationChannels || []).map(
+          (channel: any) => ({
+            type: channel.type as 'local',
+            enabled: Boolean(channel.enabled),
+            sound: Boolean(channel.sound),
+            vibration: Boolean(channel.vibration),
+          })
+        ),
       },
       createdAt: new Date(realmObj.createdAt),
       updatedAt: new Date(realmObj.updatedAt),

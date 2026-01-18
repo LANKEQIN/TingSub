@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Alert,
-} from 'react-native';
+import { StyleSheet, View, Alert } from 'react-native';
 import { useTheme, Appbar } from 'react-native-paper';
 import { initializeRealm } from '../config/realm';
 import { CategoryRepository } from '../repositories';
@@ -129,30 +125,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingIndicator: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 3,
-    borderColor: 'rgba(154, 207, 255, 0.3)',
-    borderTopColor: '#9ACFFF',
-  },
   emptyContainer: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
   },
   emptyIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 3,
     borderColor: 'rgba(154, 207, 255, 0.3)',
+    borderRadius: 20,
     borderTopColor: '#9ACFFF',
+    borderWidth: 3,
+    height: 40,
+    width: 40,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingIndicator: {
+    borderColor: 'rgba(154, 207, 255, 0.3)',
+    borderRadius: 20,
+    borderTopColor: '#9ACFFF',
+    borderWidth: 3,
+    height: 40,
+    width: 40,
   },
 });
 

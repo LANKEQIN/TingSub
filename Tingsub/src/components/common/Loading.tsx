@@ -42,15 +42,8 @@ const Loading: React.FC<LoadingProps> = ({
 
     return (
       <View style={[styles.inlineContainer, style]}>
-        <ActivityIndicator
-          size={size}
-          color={theme.colors.primary}
-        />
-        {text && (
-          <Text style={[styles.text, { color: theme.colors.text }]}>
-            {text}
-          </Text>
-        )}
+        <ActivityIndicator size={size} color={theme.colors.primary} />
+        {text && <Text style={[styles.text, { color: theme.colors.text }]}>{text}</Text>}
       </View>
     );
   };
@@ -60,22 +53,11 @@ const Loading: React.FC<LoadingProps> = ({
     if (!visible) return null;
 
     return (
-      <RNModal
-        visible={visible}
-        transparent
-        animationType="fade"
-      >
+      <RNModal visible={visible} transparent animationType="fade">
         <View style={[styles.overlay, { backgroundColor: theme.colors.backdrop }]}>
           <View style={[styles.overlayContent, style]}>
-            <ActivityIndicator
-              size={size}
-              color={theme.colors.primary}
-            />
-            {text && (
-              <Text style={[styles.text, { color: theme.colors.text }]}>
-                {text}
-              </Text>
-            )}
+            <ActivityIndicator size={size} color={theme.colors.primary} />
+            {text && <Text style={[styles.text, { color: theme.colors.text }]}>{text}</Text>}
           </View>
         </View>
       </RNModal>
@@ -88,15 +70,8 @@ const Loading: React.FC<LoadingProps> = ({
 
     return (
       <View style={[styles.screenContainer, { backgroundColor: theme.colors.background }]}>
-        <ActivityIndicator
-          size={size}
-          color={theme.colors.primary}
-        />
-        {text && (
-          <Text style={[styles.text, { color: theme.colors.text }]}>
-            {text}
-          </Text>
-        )}
+        <ActivityIndicator size={size} color={theme.colors.primary} />
+        {text && <Text style={[styles.text, { color: theme.colors.text }]}>{text}</Text>}
       </View>
     );
   };
@@ -117,32 +92,32 @@ const Loading: React.FC<LoadingProps> = ({
 // 样式定义
 const styles = StyleSheet.create({
   inlineContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'center',
     paddingVertical: 16,
   },
   overlay: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
   },
   overlayContent: {
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 24,
-    alignItems: 'center',
     justifyContent: 'center',
     minWidth: 120,
+    padding: 24,
   },
   screenContainer: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
   },
   text: {
-    marginTop: 12,
     fontSize: 14,
+    marginTop: 12,
     textAlign: 'center',
   },
 });

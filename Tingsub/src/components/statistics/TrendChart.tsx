@@ -54,26 +54,46 @@ const TrendChart: React.FC<TrendChartProps> = ({
   const screenWidth = Dimensions.get('window').width;
 
   // 计算最大值和最小值
-  const maxExpense = Math.max(...data.map(item => item.expense), 1);
-  const minExpense = Math.min(...data.map(item => item.expense), 0);
+  const maxExpense = Math.max(...data.map((item) => item.expense), 1);
+  const minExpense = Math.min(...data.map((item) => item.expense), 0);
 
   // 获取Y轴刻度
   const getYAxisTicks = (): number[] => {
     const range = maxExpense - minExpense;
-    const step = Math.ceil(range / 5);
-    const ticks: number[] = [];
-    for (let i = 0; i <= 5; i++) {
-      ticks.push(minExpense + step * i);
+    let step: number;
+    let ticks: number[] = [];
+
+    // 处理所有值相同的情况
+    if (range === 0) {
+      const adjustedMax = Math.max(maxExpense, 1);
+      step = adjustedMax / 5;
+      for (let i = 0; i <= 5; i++) {
+        ticks.push(step * i);
+      }
+      return ticks;
     }
+
+    // 计算美观的步长值
+    const magnitude = Math.pow(10, Math.floor(Math.log10(range / 5)));
+    const roughStep = range / (5 * magnitude);
+    step = Math.ceil(roughStep) * magnitude;
+
+    // 从大于等于最小值的第一个刻度开始
+    let startTick = Math.ceil(minExpense / step) * step;
+    for (let i = 0; i <= 5; i++) {
+      ticks.push(startTick + step * i);
+    }
+
     return ticks;
   };
 
   // 获取数据点的Y坐标
   const getYCoordinate = (expense: number): number => {
     const chartHeight = height - 60;
-    const range = maxExpense - minExpense;
-    if (range === 0) return chartHeight / 2;
-    return chartHeight - ((expense - minExpense) / range) * chartHeight;
+    const ticks = getYAxisTicks();
+    const tickRange = ticks[ticks.length - 1] - ticks[0];
+    if (tickRange === 0) return chartHeight / 2;
+    return chartHeight - ((expense - ticks[0]) / tickRange) * chartHeight;
   };
 
   // 获取数据点的X坐标
@@ -89,16 +109,15 @@ const TrendChart: React.FC<TrendChartProps> = ({
 
     const ticks = getYAxisTicks();
     const chartHeight = height - 60;
+    const tickRange = ticks[ticks.length - 1] - ticks[0];
 
     return (
       <View style={styles.gridContainer}>
         {ticks.map((tick, index) => {
-          const y = (chartHeight / 5) * index;
+          const y = chartHeight - ((tick - ticks[0]) / tickRange) * chartHeight;
           return (
             <View key={index} style={[styles.gridLine, { top: y }]}>
-              <Text
-                style={[styles.gridLabel, { color: NEUTRAL_COLORS.text.secondary }]}
-              >
+              <Text style={[styles.gridLabel, { color: NEUTRAL_COLORS.text.secondary }]}>
                 ¥{tick.toLocaleString()}
               </Text>
               <View
@@ -203,7 +222,7 @@ const TrendChart: React.FC<TrendChartProps> = ({
           {data.map((item, index) => {
             const x = getXCoordinate(index);
             const y = getYCoordinate(item.expense);
-            const barHeight = (height - 60) - y;
+            const barHeight = height - 60 - y;
 
             return (
               <View
@@ -220,12 +239,7 @@ const TrendChart: React.FC<TrendChartProps> = ({
                 ]}
               >
                 {showValues && (
-                  <Text
-                    style={[
-                      styles.barValue,
-                      { color: NEUTRAL_COLORS.text.primary },
-                    ]}
-                  >
+                  <Text style={[styles.barValue, { color: NEUTRAL_COLORS.text.primary }]}>
                     ¥{item.expense.toLocaleString()}
                   </Text>
                 )}
@@ -252,9 +266,8 @@ const TrendChart: React.FC<TrendChartProps> = ({
   };
 
   // 计算平均支出
-  const averageExpense = data.length > 0
-    ? data.reduce((sum, item) => sum + item.expense, 0) / data.length
-    : 0;
+  const averageExpense =
+    data.length > 0 ? data.reduce((sum, item) => sum + item.expense, 0) / data.length : 0;
 
   // 计算总支出
   const totalExpense = data.reduce((sum, item) => sum + item.expense, 0);
@@ -262,9 +275,7 @@ const TrendChart: React.FC<TrendChartProps> = ({
   return (
     <View style={[styles.container, style]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: NEUTRAL_COLORS.text.primary }]}>
-          支出趋势
-        </Text>
+        <Text style={[styles.title, { color: NEUTRAL_COLORS.text.primary }]}>支出趋势</Text>
         <View style={styles.summary}>
           <Text style={[styles.summaryLabel, { color: NEUTRAL_COLORS.text.secondary }]}>
             总支出:
@@ -272,39 +283,96 @@ const TrendChart: React.FC<TrendChartProps> = ({
           <Text style={[styles.summaryValue, { color: NEUTRAL_COLORS.text.primary }]}>
             ¥{totalExpense.toLocaleString()}
           </Text>
-          <Text style={[styles.summaryLabel, { color: NEUTRAL_COLORS.text.secondary }]}>
-            平均:
-          </Text>
+          <Text style={[styles.summaryLabel, { color: NEUTRAL_COLORS.text.secondary }]}>平均:</Text>
           <Text style={[styles.summaryValue, { color: NEUTRAL_COLORS.text.primary }]}>
             ¥{averageExpense.toFixed(2)}
           </Text>
         </View>
       </View>
-      <View style={[styles.chartWrapper, { height }]}>
-        {renderChart()}
-      </View>
+      <View style={[styles.chartWrapper, { height }]}>{renderChart()}</View>
     </View>
   );
 };
 
 // 样式定义
 const styles = StyleSheet.create({
+  bar: {
+    alignItems: 'center',
+    borderRadius: 4,
+    justifyContent: 'flex-end',
+    paddingBottom: 4,
+    position: 'absolute',
+  },
+  barChart: {
+    height: '100%',
+    position: 'relative',
+  },
+  barValue: {
+    fontSize: TYPOGRAPHY.fontSize.body3,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  chartContainer: {
+    paddingLeft: 60,
+    position: 'relative',
+  },
+  chartWrapper: {
+    overflow: 'hidden',
+  },
   container: {
     padding: SPACING.md,
   },
+  dataPoint: {
+    borderColor: '#FFFFFF',
+    borderRadius: 6,
+    borderWidth: 2,
+    height: 12,
+    position: 'absolute',
+    width: 12,
+  },
+  dataValue: {
+    fontSize: TYPOGRAPHY.fontSize.body3,
+    fontWeight: '500',
+    position: 'absolute',
+  },
+  gridContainer: {
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  gridLabel: {
+    fontSize: TYPOGRAPHY.fontSize.body3,
+    left: 0,
+    position: 'absolute',
+    textAlign: 'right',
+    width: 50,
+  },
+  gridLine: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    left: 0,
+    position: 'absolute',
+    right: 0,
+  },
+  gridLineHorizontal: {
+    flex: 1,
+    height: 1,
+  },
   header: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: SPACING.md,
   },
-  title: {
-    fontSize: TYPOGRAPHY.fontSize.h4,
-    fontWeight: '600',
+  lineChart: {
+    height: '100%',
+    position: 'relative',
   },
   summary: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
   },
   summaryLabel: {
     fontSize: TYPOGRAPHY.fontSize.body3,
@@ -315,82 +383,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginRight: SPACING.md,
   },
-  chartWrapper: {
-    overflow: 'hidden',
-  },
-  chartContainer: {
-    position: 'relative',
-    paddingLeft: 60,
-  },
-  gridContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  gridLine: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  gridLabel: {
-    position: 'absolute',
-    left: 0,
-    width: 50,
-    fontSize: TYPOGRAPHY.fontSize.body3,
-    textAlign: 'right',
-  },
-  gridLineHorizontal: {
-    flex: 1,
-    height: 1,
+  title: {
+    fontSize: TYPOGRAPHY.fontSize.h4,
+    fontWeight: '600',
   },
   xAxisContainer: {
-    position: 'absolute',
     bottom: 0,
-    left: 60,
-    right: 0,
     height: 20,
+    left: 60,
+    position: 'absolute',
+    right: 0,
   },
   xAxisLabel: {
-    position: 'absolute',
     fontSize: TYPOGRAPHY.fontSize.body3,
+    position: 'absolute',
     transform: [{ translateX: -20 }],
-  },
-  lineChart: {
-    position: 'relative',
-    height: '100%',
-  },
-  dataPoint: {
-    position: 'absolute',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  dataValue: {
-    position: 'absolute',
-    fontSize: TYPOGRAPHY.fontSize.body3,
-    fontWeight: '500',
-  },
-  barChart: {
-    position: 'relative',
-    height: '100%',
-  },
-  bar: {
-    position: 'absolute',
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingBottom: 4,
-  },
-  barValue: {
-    fontSize: TYPOGRAPHY.fontSize.body3,
-    fontWeight: '500',
-    marginBottom: 2,
   },
 });
 

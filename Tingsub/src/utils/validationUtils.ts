@@ -345,9 +345,16 @@ export class ValidationUtils {
    */
   static validateURL(url: string): boolean {
     try {
-      new URL(url);
+      // 使用正则表达式验证URL格式
+      const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+      if (!urlPattern.test(url)) {
+        throw new ValidationError('URL格式不正确');
+      }
       return true;
-    } catch {
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
+      }
       throw new ValidationError('URL格式不正确');
     }
   }

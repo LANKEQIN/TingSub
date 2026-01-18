@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
+import { StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { useTheme, Appbar, SegmentedButtons, Divider, Menu } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import StatCard from '../components/statistics/StatCard';
@@ -36,11 +30,17 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
     try {
       // 计算统计数据
       const activeSubscriptions = subscriptions.filter((sub: any) => sub.status === 'active');
-      const totalExpense = activeSubscriptions.reduce((sum: number, sub: any) => sum + sub.price, 0);
+      const totalExpense = activeSubscriptions.reduce(
+        (sum: number, sub: any) => sum + sub.price,
+        0
+      );
       const subscriptionCount = activeSubscriptions.length;
 
       // 按分类统计支出
-      const categoryStats: Record<string, { expense: number; count: number; name: string; color: string }> = {};
+      const categoryStats: Record<
+        string,
+        { expense: number; count: number; name: string; color: string }
+      > = {};
       activeSubscriptions.forEach((sub: any) => {
         const category = categories.find((cat: any) => cat.id === sub.categoryId);
         if (category) {
@@ -222,7 +222,13 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
             title="订阅数量"
             value={statsData.subscriptionCount}
             unit="个"
-            icon={<MaterialCommunityIcons name="playlist-check" size={24} color={theme.colors.primary} />}
+            icon={
+              <MaterialCommunityIcons
+                name="playlist-check"
+                size={24}
+                color={theme.colors.primary}
+              />
+            }
             style={styles.statCard}
           />
         </View>
@@ -330,56 +336,28 @@ const StatisticsScreen: React.FC<StatisticsScreenProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  periodSelector: {
+  chartContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     padding: 16,
-  },
-  segmentedButtons: {
-    width: '100%',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  statCard: {
-    flex: 1,
-    marginRight: 8,
-  },
-  section: {
-    padding: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
   },
   chartTypeButton: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
     backgroundColor: '#F5F5F5',
     borderRadius: 8,
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   chartTypeText: {
     fontSize: 14,
     marginRight: 4,
   },
-  chartContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+  container: {
+    flex: 1,
+  },
+  divider: {
+    marginVertical: 8,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -390,8 +368,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
   },
-  divider: {
-    marginVertical: 8,
+  periodSelector: {
+    padding: 16,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  section: {
+    padding: 16,
+  },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  segmentedButtons: {
+    width: '100%',
+  },
+  statCard: {
+    flex: 1,
+    marginRight: 8,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
 });
 

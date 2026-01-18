@@ -109,12 +109,12 @@ export const TYPOGRAPHY = {
       semibold: 'SF Pro Text Semibold',
       bold: 'SF Pro Text Bold',
     },
-    // Android
+    // Android - 使用 Google Fonts Roboto
     android: {
-      regular: 'Roboto',
-      medium: 'Roboto Medium',
-      semibold: 'Roboto Medium',
-      bold: 'Roboto Bold',
+      regular: 'Roboto_400Regular',
+      medium: 'Roboto_500Medium',
+      semibold: 'Roboto_500Medium',
+      bold: 'Roboto_700Bold',
     },
     // 通用
     default: 'System',

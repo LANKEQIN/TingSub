@@ -12,4 +12,10 @@ export { JSONExporter, jsonExporter } from './export/jsonExporter';
 export type { NotificationConfig } from './notification/NotificationService';
 export type { CSVExportConfig, CSVExportResult } from './export/csvExporter';
 export type { JSONExportConfig, JSONExportResult } from './export/jsonExporter';
-export type { ExportFormat, ExportType, ExportConfig, ExportResult, StatsData } from './export/ExportService';
+export type {
+  ExportFormat,
+  ExportType,
+  ExportConfig,
+  ExportResult,
+  StatsData,
+} from './export/ExportService';

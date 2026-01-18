@@ -89,7 +89,13 @@ const SettingItem: React.FC<SettingItemProps> = ({
           <MaterialCommunityIcons
             name={value ? 'toggle-switch' : 'toggle-switch-off'}
             size={48}
-            color={disabled ? theme.colors.disabled : (value ? theme.colors.primary : theme.colors.placeholder)}
+            color={
+              disabled
+                ? theme.colors.disabled
+                : value
+                  ? theme.colors.primary
+                  : theme.colors.placeholder
+            }
           />
         );
       case 'toggle':
@@ -97,15 +103,19 @@ const SettingItem: React.FC<SettingItemProps> = ({
           <MaterialCommunityIcons
             name={value ? 'checkbox-marked-circle' : 'checkbox-blank-circle-outline'}
             size={24}
-            color={disabled ? theme.colors.disabled : (value ? theme.colors.primary : theme.colors.placeholder)}
+            color={
+              disabled
+                ? theme.colors.disabled
+                : value
+                  ? theme.colors.primary
+                  : theme.colors.placeholder
+            }
           />
         );
       case 'default':
       default:
         return rightText ? (
-          <Text style={[styles.rightText, { color: theme.colors.placeholder }]}>
-            {rightText}
-          </Text>
+          <Text style={[styles.rightText, { color: theme.colors.placeholder }]}>{rightText}</Text>
         ) : null;
     }
   };
@@ -140,13 +150,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
           {title}
         </Text>
         {description && (
-          <Text
-            style={[
-              styles.description,
-              { color: theme.colors.placeholder },
-              descriptionStyle,
-            ]}
-          >
+          <Text style={[styles.description, { color: theme.colors.placeholder }, descriptionStyle]}>
             {description}
           </Text>
         )}
@@ -159,31 +163,31 @@ const SettingItem: React.FC<SettingItemProps> = ({
 // 样式定义
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
     backgroundColor: 'transparent',
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  content: {
+    flex: 1,
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 4,
   },
   icon: {
     marginRight: 12,
   },
-  content: {
-    flex: 1,
+  rightText: {
+    fontSize: 14,
+    fontWeight: '400',
   },
   title: {
     fontSize: 16,
     fontWeight: '500',
     lineHeight: 24,
-  },
-  description: {
-    fontSize: 14,
-    marginTop: 4,
-    lineHeight: 20,
-  },
-  rightText: {
-    fontSize: 14,
-    fontWeight: '400',
   },
 });
 

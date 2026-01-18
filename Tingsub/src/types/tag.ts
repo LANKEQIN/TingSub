@@ -18,20 +18,12 @@ export interface Tag {
 /**
  * 创建标签参数
  */
-export type CreateTagParams = Omit<
-  Tag,
-  'id' | 'userId' | 'createdAt' | 'updatedAt'
->;
+export type CreateTagParams = Omit<Tag, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
 /**
  * 更新标签参数
  */
-export type UpdateTagParams = Partial<
-  Omit<
-    Tag,
-    'id' | 'userId' | 'createdAt' | 'updatedAt'
-  >
->;
+export type UpdateTagParams = Partial<Omit<Tag, 'id' | 'userId' | 'createdAt' | 'updatedAt'>>;
 
 /**
  * 标签查询参数

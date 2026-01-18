@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Alert,
-} from 'react-native';
+import { StyleSheet, View, Alert } from 'react-native';
 import { useTheme, Appbar } from 'react-native-paper';
 import { initializeRealm } from '../config/realm';
 import { SubscriptionRepository, CategoryRepository, TagRepository } from '../repositories';

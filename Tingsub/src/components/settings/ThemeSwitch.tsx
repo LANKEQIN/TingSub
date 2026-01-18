@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  ViewStyle,
-  TextStyle,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
 
@@ -59,9 +52,7 @@ const ThemeSwitch: React.FC<ThemeSwitchProps> = ({
   onThemeChange,
 }) => {
   const { theme, currentTheme, toggleTheme } = useTheme();
-  const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>(
-    value || theme
-  );
+  const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>(value || theme);
 
   // 处理主题切换
   const handleThemeChange = async (themeValue: 'light' | 'dark' | 'system') => {
@@ -80,12 +71,8 @@ const ThemeSwitch: React.FC<ThemeSwitchProps> = ({
         style={[
           styles.option,
           {
-            backgroundColor: isSelected
-              ? currentTheme.colors.primary
-              : currentTheme.colors.surface,
-            borderColor: isSelected
-              ? currentTheme.colors.primary
-              : currentTheme.colors.placeholder,
+            backgroundColor: isSelected ? currentTheme.colors.primary : currentTheme.colors.surface,
+            borderColor: isSelected ? currentTheme.colors.primary : currentTheme.colors.placeholder,
           },
         ]}
         onPress={() => handleThemeChange(option.value)}
@@ -111,38 +98,32 @@ const ThemeSwitch: React.FC<ThemeSwitchProps> = ({
           {option.label}
         </Text>
         {isSelected && (
-          <MaterialCommunityIcons
-            name="check"
-            size={20}
-            color="#FFFFFF"
-            style={styles.checkIcon}
-          />
+          <MaterialCommunityIcons name="check" size={20} color="#FFFFFF" style={styles.checkIcon} />
         )}
       </TouchableOpacity>
     );
   };
 
-  return (
-    <View style={[styles.container, style]}>
-      {THEME_OPTIONS.map(renderThemeOption)}
-    </View>
-  );
+  return <View style={[styles.container, style]}>{THEME_OPTIONS.map(renderThemeOption)}</View>;
 };
 
 // 样式定义
 const styles = StyleSheet.create({
+  checkIcon: {
+    marginLeft: 8,
+  },
   container: {
-    width: '100%',
     gap: 8,
+    width: '100%',
   },
   option: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderWidth: 2,
-    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   optionIcon: {
     marginRight: 12,
@@ -152,9 +133,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     lineHeight: 24,
-  },
-  checkIcon: {
-    marginLeft: 8,
   },
 });
 

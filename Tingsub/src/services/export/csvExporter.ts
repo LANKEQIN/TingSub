@@ -56,11 +56,7 @@ export class CSVExporter {
     config: CSVExportConfig = {}
   ): Promise<CSVExportResult> {
     try {
-      const {
-        includeHeaders = true,
-        delimiter = ',',
-        dateFormat = 'yyyy-MM-dd',
-      } = config;
+      const { includeHeaders = true, delimiter = ',', dateFormat = 'yyyy-MM-dd' } = config;
 
       if (subscriptions.length === 0) {
         return {
@@ -152,11 +148,7 @@ export class CSVExporter {
     config: CSVExportConfig = {}
   ): Promise<CSVExportResult> {
     try {
-      const {
-        includeHeaders = true,
-        delimiter = ',',
-        dateFormat = 'yyyy-MM-dd',
-      } = config;
+      const { includeHeaders = true, delimiter = ',', dateFormat = 'yyyy-MM-dd' } = config;
 
       if (categories.length === 0) {
         return {
@@ -219,11 +211,7 @@ export class CSVExporter {
    */
   async exportUser(user: User, config: CSVExportConfig = {}): Promise<CSVExportResult> {
     try {
-      const {
-        includeHeaders = true,
-        delimiter = ',',
-        dateFormat = 'yyyy-MM-dd',
-      } = config;
+      const { includeHeaders = true, delimiter = ',', dateFormat = 'yyyy-MM-dd' } = config;
 
       const headers = [
         '用户ID',

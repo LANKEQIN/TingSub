@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-} from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { useTheme, Appbar, Menu, Portal, Dialog, Button, Snackbar } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { initializeRealm } from '../config/realm';
@@ -66,7 +62,9 @@ const CategoryListScreen: React.FC<CategoryListScreenProps> = ({ navigation }) =
       const subscriptions = await subscriptionRepository.getByUserId(currentUser.id);
 
       const cards = categories.map((cat) => {
-        const categorySubscriptions = subscriptions.filter((sub: Subscription) => sub.categoryId === cat.id);
+        const categorySubscriptions = subscriptions.filter(
+          (sub: Subscription) => sub.categoryId === cat.id
+        );
         const subscriptionCount = categorySubscriptions.length;
 
         let monthlyCost = 0;
@@ -245,12 +243,7 @@ const CategoryListScreen: React.FC<CategoryListScreenProps> = ({ navigation }) =
         <Menu
           visible={showSortMenu}
           onDismiss={() => setShowSortMenu(false)}
-          anchor={
-            <Appbar.Action
-              icon="sort"
-              onPress={() => setShowSortMenu(true)}
-            />
-          }
+          anchor={<Appbar.Action icon="sort" onPress={() => setShowSortMenu(true)} />}
         >
           <Menu.Item
             leadingIcon="format-letter-case"
@@ -283,10 +276,7 @@ const CategoryListScreen: React.FC<CategoryListScreenProps> = ({ navigation }) =
             title="按更新时间（最早）"
           />
         </Menu>
-        <Appbar.Action
-          icon="plus"
-          onPress={handleAddCategory}
-        />
+        <Appbar.Action icon="plus" onPress={handleAddCategory} />
       </Appbar.Header>
 
       <View style={styles.content}>
@@ -305,10 +295,7 @@ const CategoryListScreen: React.FC<CategoryListScreenProps> = ({ navigation }) =
       </View>
 
       <Portal>
-        <Dialog
-          visible={deleteDialogVisible}
-          onDismiss={handleDeleteCancel}
-        >
+        <Dialog visible={deleteDialogVisible} onDismiss={handleDeleteCancel}>
           <Dialog.Title>确认删除</Dialog.Title>
           <Dialog.Content>
             <Text style={{ color: theme.colors.text }}>
@@ -317,7 +304,9 @@ const CategoryListScreen: React.FC<CategoryListScreenProps> = ({ navigation }) =
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={handleDeleteCancel}>取消</Button>
-            <Button onPress={handleDeleteConfirm} textColor={theme.colors.error}>删除</Button>
+            <Button onPress={handleDeleteConfirm} textColor={theme.colors.error}>
+              删除
+            </Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -340,28 +329,28 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  statsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 16,
-    paddingBottom: 8,
-  },
   statCard: {
-    width: '48%',
-    marginRight: '4%',
-    marginBottom: 12,
-    padding: 16,
-    borderRadius: 12,
     alignItems: 'center',
+    borderRadius: 12,
+    marginBottom: 12,
+    marginRight: '4%',
+    padding: 16,
+    width: '48%',
+  },
+  statLabel: {
+    fontSize: 12,
+    marginTop: 4,
   },
   statValue: {
     fontSize: 20,
     fontWeight: '600',
     marginTop: 8,
   },
-  statLabel: {
-    fontSize: 12,
-    marginTop: 4,
+  statsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 16,
+    paddingBottom: 8,
   },
 });
 

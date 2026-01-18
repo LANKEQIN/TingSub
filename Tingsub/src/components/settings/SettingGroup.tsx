@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ViewStyle,
-  TextStyle,
-} from 'react-native';
+import { StyleSheet, View, Text, ViewStyle, TextStyle } from 'react-native';
 import Card from '../common/Card';
 import { useTheme } from '../../hooks/useTheme';
 
@@ -50,23 +44,11 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
       {(title || description) && (
         <View style={styles.header}>
           {title && (
-            <Text
-              style={[
-                styles.title,
-                { color: theme.colors.text },
-                titleStyle,
-              ]}
-            >
-              {title}
-            </Text>
+            <Text style={[styles.title, { color: theme.colors.text }, titleStyle]}>{title}</Text>
           )}
           {description && (
             <Text
-              style={[
-                styles.description,
-                { color: theme.colors.placeholder },
-                descriptionStyle,
-              ]}
+              style={[styles.description, { color: theme.colors.placeholder }, descriptionStyle]}
             >
               {description}
             </Text>
@@ -93,28 +75,28 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
 
 // 样式定义
 const styles = StyleSheet.create({
+  card: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
   container: {
     width: '100%',
   },
+  description: {
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 4,
+  },
   header: {
+    paddingBottom: 8,
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 8,
   },
   title: {
     fontSize: 14,
     fontWeight: '600',
     lineHeight: 20,
     textTransform: 'uppercase',
-  },
-  description: {
-    fontSize: 12,
-    marginTop: 4,
-    lineHeight: 16,
-  },
-  card: {
-    borderRadius: 12,
-    overflow: 'hidden',
   },
 });
 

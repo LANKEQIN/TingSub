@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7ed44c2b-cb54-4a78-bd38-f6be72d5828e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Tingsub/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Tingsub/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tingsub/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/Tingsub/app.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tingsub/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Tingsub/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tingsub/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/Tingsub/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tingsub/src/navigation/StackNavigator.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Tingsub/src/navigation/StackNavigator.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tingsub/src/navigation/TabNavigator.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Tingsub/src/navigation/TabNavigator.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/开发计划.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/开发计划.md" afterDir="false" />
-    </list>
+    <list default="true" id="7ed44c2b-cb54-4a78-bd38-f6be72d5828e" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,22 +16,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "LANKEQIN"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;LANKEQIN&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/LANKEQIN/TingSub.git",
-    "accountId": "6035ce4a-a0b5-49a3-8556-7db785a1542b"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/LANKEQIN/TingSub.git&quot;,
+    &quot;accountId&quot;: &quot;6035ce4a-a0b5-49a3-8556-7db785a1542b&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 0
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="38OAMQIfO4RIJm2kUENQ1XeuxFD" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -55,7 +47,8 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "SY01",
-    "settings.editor.selected.configurable": "AndroidSdkUpdater"
+    "kotlin-language-version-configured": "true",
+    "settings.editor.selected.configurable": "preferences.keymap"
   }
 }]]></component>
   <component name="TaskManager">

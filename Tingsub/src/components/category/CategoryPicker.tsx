@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme, Chip } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { CategoryOption } from '../../types/category';
@@ -59,7 +53,9 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
       >
         {selectedCategory ? (
           <View style={styles.selectedCategory}>
-            <View style={[styles.iconContainer, { backgroundColor: selectedCategory.color + '20' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: selectedCategory.color + '20' }]}
+            >
               <MaterialCommunityIcons
                 name={selectedCategory.icon as any}
                 size={20}
@@ -88,15 +84,12 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
     return (
       <View style={[styles.expandedContainer, style]}>
         <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
-            {placeholder}
-          </Text>
-          <TouchableOpacity onPress={handleToggle} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <MaterialCommunityIcons
-              name="close"
-              size={24}
-              color={theme.colors.text}
-            />
+          <Text style={[styles.headerTitle, { color: theme.colors.text }]}>{placeholder}</Text>
+          <TouchableOpacity
+            onPress={handleToggle}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <MaterialCommunityIcons name="close" size={24} color={theme.colors.text} />
           </TouchableOpacity>
         </View>
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -131,7 +124,11 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
                   <MaterialCommunityIcons
                     name={category.icon as any}
                     size={16}
-                    color={selectedCategoryId === category.id ? category.color : theme.colors.text.secondary}
+                    color={
+                      selectedCategoryId === category.id
+                        ? category.color
+                        : theme.colors.text.secondary
+                    }
                   />
                 )}
               >
@@ -148,71 +145,71 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
 };
 
 const styles = StyleSheet.create({
-  collapsedContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  selectedCategory: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+  chip: {
+    marginBottom: 8,
     marginRight: 8,
-  },
-  selectedText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  placeholder: {
-    fontSize: 16,
-    flex: 1,
-  },
-  expandedContainer: {
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  scrollView: {
-    maxHeight: 200,
-    padding: 12,
   },
   chipContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  chip: {
-    marginRight: 8,
-    marginBottom: 8,
-  },
   chipText: {
     fontSize: 14,
+  },
+  collapsedContainer: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  expandedContainer: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: '#EEEEEE',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  iconContainer: {
+    alignItems: 'center',
+    borderRadius: 8,
+    height: 32,
+    justifyContent: 'center',
+    marginRight: 8,
+    width: 32,
+  },
+  placeholder: {
+    flex: 1,
+    fontSize: 16,
+  },
+  scrollView: {
+    maxHeight: 200,
+    padding: 12,
+  },
+  selectedCategory: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+  },
+  selectedText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
 

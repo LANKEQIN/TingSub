@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  GestureResponderEvent,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, GestureResponderEvent } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Card from '../common/Card';
@@ -19,30 +13,24 @@ interface CategoryCardProps {
   style?: any;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({
-  category,
-  onPress,
-  onLongPress,
-  style,
-}) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, onPress, onLongPress, style }) => {
   const theme = useTheme() as any;
 
   const cardContent = (
     <View style={[styles.container, style]}>
       <View style={styles.header}>
         <View style={[styles.iconContainer, { backgroundColor: category.color + '20' }]}>
-          <MaterialCommunityIcons
-            name={category.icon as any}
-            size={32}
-            color={category.color}
-          />
+          <MaterialCommunityIcons name={category.icon as any} size={32} color={category.color} />
         </View>
         <View style={styles.headerInfo}>
           <Text style={[styles.name, { color: theme.colors.text }]} numberOfLines={1}>
             {category.name}
           </Text>
           {category.description && (
-            <Text style={[styles.description, { color: theme.colors.text.secondary }]} numberOfLines={1}>
+            <Text
+              style={[styles.description, { color: theme.colors.text.secondary }]}
+              numberOfLines={1}
+            >
               {category.description}
             </Text>
           )}
@@ -61,9 +49,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
             size={16}
             color={theme.colors.text.tertiary}
           />
-          <Text style={[styles.statLabel, { color: theme.colors.text.tertiary }]}>
-            订阅数
-          </Text>
+          <Text style={[styles.statLabel, { color: theme.colors.text.tertiary }]}>订阅数</Text>
           <Text style={[styles.statValue, { color: theme.colors.text }]}>
             {category.subscriptionCount}
           </Text>
@@ -77,9 +63,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
             size={16}
             color={theme.colors.text.tertiary}
           />
-          <Text style={[styles.statLabel, { color: theme.colors.text.tertiary }]}>
-            月支出
-          </Text>
+          <Text style={[styles.statLabel, { color: theme.colors.text.tertiary }]}>月支出</Text>
           <Text style={[styles.statValue, { color: theme.colors.text }]}>
             {formatCurrency(category.monthlyCost, 'CNY')}
           </Text>
@@ -88,14 +72,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         <View style={styles.divider} />
 
         <View style={styles.statItem}>
-          <MaterialCommunityIcons
-            name="trending-up"
-            size={16}
-            color={theme.colors.text.tertiary}
-          />
-          <Text style={[styles.statLabel, { color: theme.colors.text.tertiary }]}>
-            总支出
-          </Text>
+          <MaterialCommunityIcons name="trending-up" size={16} color={theme.colors.text.tertiary} />
+          <Text style={[styles.statLabel, { color: theme.colors.text.tertiary }]}>总支出</Text>
           <Text style={[styles.statValue, { color: theme.colors.text }]}>
             {formatCurrency(category.totalCost, 'CNY')}
           </Text>
@@ -106,11 +84,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
 
   if (onPress || onLongPress) {
     return (
-      <TouchableOpacity
-        onPress={onPress}
-        onLongPress={onLongPress}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity onPress={onPress} onLongPress={onLongPress} activeOpacity={0.7}>
         <Card pressable={false}>{cardContent}</Card>
       </TouchableOpacity>
     );
@@ -123,46 +97,46 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
   },
-  header: {
-    flexDirection: 'row',
+  defaultBadge: {
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
+    borderRadius: 12,
+    height: 24,
     justifyContent: 'center',
+    width: 24,
+  },
+  description: {
+    fontSize: 13,
+  },
+  divider: {
+    backgroundColor: '#E0E0E0',
+    height: 32,
+    width: 1,
+  },
+  header: {
     alignItems: 'center',
-    marginRight: 12,
+    flexDirection: 'row',
+    marginBottom: 16,
   },
   headerInfo: {
     flex: 1,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    borderRadius: 16,
+    height: 56,
+    justifyContent: 'center',
+    marginRight: 12,
+    width: 56,
   },
   name: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 4,
   },
-  description: {
-    fontSize: 13,
-  },
-  defaultBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   statItem: {
+    alignItems: 'center',
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
   },
   statLabel: {
@@ -174,10 +148,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  divider: {
-    width: 1,
-    height: 32,
-    backgroundColor: '#E0E0E0',
+  statsContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });
 
