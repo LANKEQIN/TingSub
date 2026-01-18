@@ -164,6 +164,14 @@ export const TYPOGRAPHY = {
     allowFontScaling: true, // 允许系统字体缩放
     maxFontSizeMultiplier: 1.3, // 最大字体缩放倍数
   },
+
+  // 字体大小缩放选项
+  fontScale: {
+    small: 0.85, // 小字体
+    medium: 1.0, // 中字体(默认)
+    large: 1.15, // 大字体
+    extraLarge: 1.3, // 超大字体
+  },
 } as const;
 
 // 间距规范（单位：pt）

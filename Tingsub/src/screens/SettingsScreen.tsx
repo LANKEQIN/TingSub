@@ -5,8 +5,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SettingGroup from '../components/settings/SettingGroup';
 import SettingItem from '../components/settings/SettingItem';
 import ThemeSwitch from '../components/settings/ThemeSwitch';
+import FontScaleSwitch from '../components/settings/FontScaleSwitch';
 import { useUserStore } from '../store/userStore';
 import { useTheme as useCustomTheme } from '../hooks/useTheme';
+import { useFontScale } from '../hooks/useFontScale';
 import { StorageUtils } from '../utils/storageUtils';
 
 interface SettingsScreenProps {
@@ -16,6 +18,7 @@ interface SettingsScreenProps {
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const theme = useTheme() as any;
   const { currentTheme, toggleTheme } = useCustomTheme();
+  const { fontScale } = useFontScale();
   const { currentUser, updateTheme, updateReminderSettings } = useUserStore();
 
   const [clearDataDialogVisible, setClearDataDialogVisible] = useState(false);
@@ -190,6 +193,16 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
               value={currentTheme.mode as 'light' | 'dark' | 'system'}
               onThemeChange={handleThemeChange}
             />
+          </View>
+          <SettingItem
+            title="字体大小"
+            description="调整应用字体大小"
+            icon="format-size"
+            type="chevron"
+            onPress={() => {}}
+          />
+          <View style={styles.fontScaleSwitchContainer}>
+            <FontScaleSwitch value={fontScale} />
           </View>
         </SettingGroup>
 
@@ -394,6 +407,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   themeSwitchContainer: {
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+  },
+  fontScaleSwitchContainer: {
     paddingBottom: 16,
     paddingHorizontal: 16,
   },
