@@ -420,10 +420,7 @@ export class SubscriptionRepository extends BaseRepository<Subscription> {
    * @param order 排序顺序
    * @returns 订阅数组
    */
-  async sortByRenewalDate(
-    userId: string,
-    order: 'asc' | 'desc' = 'asc'
-  ): Promise<Subscription[]> {
+  async sortByRenewalDate(userId: string, order: 'asc' | 'desc' = 'asc'): Promise<Subscription[]> {
     return this.executeOperation(() => {
       const objects = this.realm
         .objects('Subscription')
@@ -455,10 +452,7 @@ export class SubscriptionRepository extends BaseRepository<Subscription> {
    * @param order 排序顺序
    * @returns 订阅数组
    */
-  async sortByCreatedAt(
-    userId: string,
-    order: 'asc' | 'desc' = 'desc'
-  ): Promise<Subscription[]> {
+  async sortByCreatedAt(userId: string, order: 'asc' | 'desc' = 'desc'): Promise<Subscription[]> {
     return this.executeOperation(() => {
       const objects = this.realm
         .objects('Subscription')
@@ -487,9 +481,11 @@ export class SubscriptionRepository extends BaseRepository<Subscription> {
 
       const now = new Date();
       const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      const upcomingRenewals = objects
-        .filtered('status == "active" AND renewalDate >= $0 AND renewalDate <= $1', now, sevenDaysLater)
-        .length;
+      const upcomingRenewals = objects.filtered(
+        'status == "active" AND renewalDate >= $0 AND renewalDate <= $1',
+        now,
+        sevenDaysLater
+      ).length;
 
       const expiringSoon = upcomingRenewals;
 

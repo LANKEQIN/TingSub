@@ -100,12 +100,7 @@ export class ExportService {
           );
 
         case 'categories':
-          return this.exportCategories(
-            format,
-            data.categories || [],
-            csvConfig,
-            jsonConfig
-          );
+          return this.exportCategories(format, data.categories || [], csvConfig, jsonConfig);
 
         case 'user':
           return this.exportUser(format, data.user, csvConfig, jsonConfig);

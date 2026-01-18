@@ -23,6 +23,9 @@ export type TabParamList = {
   Profile: undefined;
 };
 
-export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<RootStackParamList, T>;
+export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<
+  RootStackParamList,
+  T
+>;
 
 export type TabScreenProps<T extends keyof TabParamList> = BottomTabScreenProps<TabParamList, T>;

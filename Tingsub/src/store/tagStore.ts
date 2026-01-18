@@ -20,15 +20,8 @@ interface TagState {
   // 标签操作方法
   loadTags: (repository: TagRepository, userId: string) => Promise<void>;
   loadTag: (repository: TagRepository, id: string) => Promise<void>;
-  createTag: (
-    repository: TagRepository,
-    params: CreateTagParams
-  ) => Promise<Tag>;
-  updateTag: (
-    repository: TagRepository,
-    id: string,
-    params: UpdateTagParams
-  ) => Promise<Tag>;
+  createTag: (repository: TagRepository, params: CreateTagParams) => Promise<Tag>;
+  updateTag: (repository: TagRepository, id: string, params: UpdateTagParams) => Promise<Tag>;
   deleteTag: (repository: TagRepository, id: string) => Promise<void>;
   clearError: () => void;
 }
@@ -78,10 +71,7 @@ export const useTagStore = create<TagState>((set, get) => ({
   /**
    * 创建标签
    */
-  createTag: async (
-    repository: TagRepository,
-    params: CreateTagParams
-  ) => {
+  createTag: async (repository: TagRepository, params: CreateTagParams) => {
     set({ isLoading: true, error: null });
 
     try {
@@ -105,25 +95,18 @@ export const useTagStore = create<TagState>((set, get) => ({
   /**
    * 更新标签
    */
-  updateTag: async (
-    repository: TagRepository,
-    id: string,
-    params: UpdateTagParams
-  ) => {
+  updateTag: async (repository: TagRepository, id: string, params: UpdateTagParams) => {
     set({ isLoading: true, error: null });
 
     try {
       const updatedTag = await repository.updateTag(id, params);
 
       const { tags, currentTag } = get();
-      const newTags = tags.map((tag) =>
-        tag.id === id ? updatedTag : tag
-      );
+      const newTags = tags.map((tag) => (tag.id === id ? updatedTag : tag));
 
       set({
         tags: newTags,
-        currentTag:
-          currentTag?.id === id ? updatedTag : currentTag,
+        currentTag: currentTag?.id === id ? updatedTag : currentTag,
         isLoading: false,
       });
 

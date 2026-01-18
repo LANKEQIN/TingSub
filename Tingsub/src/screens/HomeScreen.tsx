@@ -117,11 +117,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     });
 
     const expiring = cardData.filter((sub) => sub.isExpiringSoon || sub.isExpired);
-    const recent = [...cardData].sort((a, b) => {
-      const dateA = new Date(a.renewalDate).getTime();
-      const dateB = new Date(b.renewalDate).getTime();
-      return dateA - dateB;
-    }).slice(0, 5);
+    const recent = [...cardData]
+      .sort((a, b) => {
+        const dateA = new Date(a.renewalDate).getTime();
+        const dateB = new Date(b.renewalDate).getTime();
+        return dateA - dateB;
+      })
+      .slice(0, 5);
 
     setExpiringSoon(expiring);
     setRecentSubscriptions(recent);
@@ -182,7 +184,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         title="月度支出"
         value={stats.monthlyExpense}
         unit="元"
-        icon={<MaterialCommunityIcons name="calendar-month" size={24} color={theme.colors.primary} />}
+        icon={
+          <MaterialCommunityIcons name="calendar-month" size={24} color={theme.colors.primary} />
+        }
         compact
         style={styles.statCard}
       />
@@ -190,7 +194,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         title="年度支出"
         value={stats.yearlyExpense}
         unit="元"
-        icon={<MaterialCommunityIcons name="calendar-heart" size={24} color={theme.colors.primary} />}
+        icon={
+          <MaterialCommunityIcons name="calendar-heart" size={24} color={theme.colors.primary} />
+        }
         compact
         style={styles.statCard}
       />
@@ -198,7 +204,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         title="订阅数量"
         value={stats.totalSubscriptions}
         unit="个"
-        icon={<MaterialCommunityIcons name="playlist-check" size={24} color={theme.colors.primary} />}
+        icon={
+          <MaterialCommunityIcons name="playlist-check" size={24} color={theme.colors.primary} />
+        }
         compact
         style={styles.statCard}
       />
@@ -244,7 +252,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         value={searchQuery}
         onSubmitEditing={handleSearch}
         style={styles.searchBar}
-        icon={() => <MaterialCommunityIcons name="magnify" size={24} color={theme.colors.text.secondary} />}
+        icon={() => (
+          <MaterialCommunityIcons name="magnify" size={24} color={theme.colors.text.secondary} />
+        )}
       />
 
       <ScrollView
@@ -265,7 +275,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {expiringSoon.length > 0 && (
           <>
-            {renderSectionHeader('即将到期', 'alert-circle', () => navigation.navigate('Subscriptions'))}
+            {renderSectionHeader('即将到期', 'alert-circle', () =>
+              navigation.navigate('Subscriptions')
+            )}
             <SubscriptionList
               subscriptions={expiringSoon}
               onPress={handleSubscriptionPress}
@@ -277,7 +289,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {recentSubscriptions.length > 0 && (
           <>
-            {renderSectionHeader('最近订阅', 'clock-outline', () => navigation.navigate('Subscriptions'))}
+            {renderSectionHeader('最近订阅', 'clock-outline', () =>
+              navigation.navigate('Subscriptions')
+            )}
             <SubscriptionList
               subscriptions={recentSubscriptions}
               onPress={handleSubscriptionPress}
@@ -289,7 +303,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {subscriptions.length === 0 && (
           <View style={styles.emptyContainer}>
-            <MaterialCommunityIcons name="inbox-outline" size={64} color={theme.colors.text.tertiary} />
+            <MaterialCommunityIcons
+              name="inbox-outline"
+              size={64}
+              color={theme.colors.text.tertiary}
+            />
             <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>
               还没有订阅，点击右下角按钮添加
             </Text>
@@ -310,58 +328,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchBar: {
-    margin: 16,
-    elevation: 2,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 80,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  statCard: {
-    width: '48%',
-    marginRight: '4%',
-    marginBottom: 12,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  sectionHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  seeMoreButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  seeMoreText: {
-    fontSize: 14,
-    marginRight: 4,
-  },
   emptyContainer: {
-    paddingVertical: 64,
     alignItems: 'center',
+    paddingVertical: 64,
   },
   emptyText: {
     fontSize: 16,
@@ -369,9 +338,58 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   fab: {
+    bottom: 16,
     position: 'absolute',
     right: 16,
-    bottom: 16,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scrollContent: {
+    paddingBottom: 80,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  searchBar: {
+    elevation: 2,
+    margin: 16,
+  },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  sectionHeaderLeft: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  seeMoreButton: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  seeMoreText: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  statCard: {
+    marginBottom: 12,
+    marginRight: '4%',
+    width: '48%',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
 });
 

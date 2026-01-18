@@ -109,12 +109,12 @@ export const TYPOGRAPHY = {
       semibold: 'SF Pro Text Semibold',
       bold: 'SF Pro Text Bold',
     },
-    // Android
+    // Android - 使用 Google Fonts Roboto
     android: {
-      regular: 'Roboto',
-      medium: 'Roboto Medium',
-      semibold: 'Roboto Medium',
-      bold: 'Roboto Bold',
+      regular: 'Roboto_400Regular',
+      medium: 'Roboto_500Medium',
+      semibold: 'Roboto_500Medium',
+      bold: 'Roboto_700Bold',
     },
     // 通用
     default: 'System',
@@ -163,6 +163,14 @@ export const TYPOGRAPHY = {
   fontScaling: {
     allowFontScaling: true, // 允许系统字体缩放
     maxFontSizeMultiplier: 1.3, // 最大字体缩放倍数
+  },
+
+  // 字体大小缩放选项
+  fontScale: {
+    small: 0.85, // 小字体
+    medium: 1.0, // 中字体(默认)
+    large: 1.15, // 大字体
+    extraLarge: 1.3, // 超大字体
   },
 } as const;
 

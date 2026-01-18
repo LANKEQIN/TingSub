@@ -72,19 +72,13 @@ const Modal: React.FC<ModalProps> = ({
   const renderHeader = () => {
     return (
       <View style={styles.header}>
-        <Text style={[styles.title, titleStyle, { color: theme.colors.text }]}>
-          {title}
-        </Text>
+        <Text style={[styles.title, titleStyle, { color: theme.colors.text }]}>{title}</Text>
         <TouchableOpacity
           onPress={onClose}
           style={styles.closeButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <MaterialCommunityIcons
-            name="close"
-            size={24}
-            color={theme.colors.text}
-          />
+          <MaterialCommunityIcons name="close" size={24} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
     );
@@ -97,12 +91,7 @@ const Modal: React.FC<ModalProps> = ({
     return (
       <View style={styles.footer}>
         {showCancel && (
-          <Button
-            title={cancelText}
-            type="secondary"
-            onPress={onClose}
-            style={styles.button}
-          />
+          <Button title={cancelText} type="secondary" onPress={onClose} style={styles.button} />
         )}
         {showConfirm && (
           <Button
@@ -117,20 +106,9 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <RNModal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <RNModal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={[styles.overlay, { backgroundColor: theme.colors.backdrop }]}>
-        <View
-          style={[
-            styles.container,
-            { maxHeight: screenHeight * 0.8 },
-            containerStyle,
-          ]}
-        >
+        <View style={[styles.container, { maxHeight: screenHeight * 0.8 }, containerStyle]}>
           {title && renderHeader()}
           <View style={[styles.content, contentStyle]}>{children}</View>
           {renderFooter()}
@@ -142,50 +120,50 @@ const Modal: React.FC<ModalProps> = ({
 
 // 样式定义
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  container: {
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    flex: 1,
+  button: {
+    minWidth: 88,
   },
   closeButton: {
     padding: 4,
+  },
+  container: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    overflow: 'hidden',
+    width: '100%',
   },
   content: {
     paddingHorizontal: 16,
     paddingVertical: 20,
   },
   footer: {
+    borderTopColor: '#EEEEEE',
+    borderTopWidth: 1,
     flexDirection: 'row',
+    gap: 12,
     justifyContent: 'flex-end',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#EEEEEE',
-    gap: 12,
   },
-  button: {
-    minWidth: 88,
+  header: {
+    alignItems: 'center',
+    borderBottomColor: '#EEEEEE',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  overlay: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  title: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
 

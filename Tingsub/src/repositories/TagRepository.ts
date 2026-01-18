@@ -97,7 +97,9 @@ export class TagRepository extends BaseRepository<Tag> {
    */
   async findByName(userId: string, name: string): Promise<Tag | null> {
     return this.executeOperation(() => {
-      const objects = this.realm.objects('Tag').filtered('userId == $0 AND name == $1', userId, name);
+      const objects = this.realm
+        .objects('Tag')
+        .filtered('userId == $0 AND name == $1', userId, name);
       if (objects.length === 0) {
         return null;
       }
@@ -502,7 +504,9 @@ export class TagRepository extends BaseRepository<Tag> {
       }
 
       this.realm.write(() => {
-        const subscriptions = this.realm.objects('Subscription').filtered('tags CONTAINS $0', sourceTagId);
+        const subscriptions = this.realm
+          .objects('Subscription')
+          .filtered('tags CONTAINS $0', sourceTagId);
 
         for (const subscription of subscriptions) {
           const tags = (subscription as any).tags;

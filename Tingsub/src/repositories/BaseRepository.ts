@@ -219,7 +219,10 @@ export abstract class BaseRepository<T extends { id: string }> {
    * @param pageSize 每页大小
    * @returns 分页结果
    */
-  async paginate(page: number, pageSize: number): Promise<{
+  async paginate(
+    page: number,
+    pageSize: number
+  ): Promise<{
     data: T[];
     total: number;
     page: number;
@@ -232,7 +235,9 @@ export abstract class BaseRepository<T extends { id: string }> {
       const totalPages = Math.ceil(total / pageSize);
       const startIndex = (page - 1) * pageSize;
       const endIndex = startIndex + pageSize;
-      const pageData = allObjects.slice(startIndex, endIndex).map((obj: any) => obj.toType?.() || obj);
+      const pageData = allObjects
+        .slice(startIndex, endIndex)
+        .map((obj: any) => obj.toType?.() || obj);
 
       return {
         data: pageData,

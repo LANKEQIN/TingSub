@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  Text,
-  Alert,
-} from 'react-native';
+import { StyleSheet, View, ScrollView, Text, Alert } from 'react-native';
 import { useTheme, Appbar, Portal, Dialog, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { initializeRealm } from '../config/realm';
@@ -131,7 +125,12 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ navigation,
 
   const renderInfoRow = (icon: string, label: string, value: string | number) => (
     <View style={styles.infoRow}>
-      <MaterialCommunityIcons name={icon as any} size={20} color={theme.colors.text.secondary} style={styles.infoIcon} />
+      <MaterialCommunityIcons
+        name={icon as any}
+        size={20}
+        color={theme.colors.text.secondary}
+        style={styles.infoIcon}
+      />
       <Text style={[styles.infoLabel, { color: theme.colors.text.secondary }]}>{label}</Text>
       <Text style={[styles.infoValue, { color: theme.colors.text }]}>{value}</Text>
     </View>
@@ -158,10 +157,12 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ navigation,
   if (!category) {
     return (
       <View style={[styles.container, styles.emptyContainer]}>
-        <MaterialCommunityIcons name="alert-circle-outline" size={64} color={theme.colors.text.tertiary} />
-        <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>
-          分类不存在
-        </Text>
+        <MaterialCommunityIcons
+          name="alert-circle-outline"
+          size={64}
+          color={theme.colors.text.tertiary}
+        />
+        <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>分类不存在</Text>
       </View>
     );
   }
@@ -187,36 +188,59 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ navigation,
             <View style={styles.headerInfo}>
               <Text style={[styles.name, { color: theme.colors.text }]}>{category.name}</Text>
               {category.description && (
-                <Text style={[styles.description, { color: theme.colors.text.secondary }]} numberOfLines={2}>
+                <Text
+                  style={[styles.description, { color: theme.colors.text.secondary }]}
+                  numberOfLines={2}
+                >
                   {category.description}
                 </Text>
               )}
               {category.isDefault && (
-                <View style={[styles.defaultBadge, { backgroundColor: theme.colors.primary + '20' }]}>
+                <View
+                  style={[styles.defaultBadge, { backgroundColor: theme.colors.primary + '20' }]}
+                >
                   <MaterialCommunityIcons name="star" size={12} color={theme.colors.primary} />
-                  <Text style={[styles.defaultBadgeText, { color: theme.colors.primary }]}>默认分类</Text>
+                  <Text style={[styles.defaultBadgeText, { color: theme.colors.primary }]}>
+                    默认分类
+                  </Text>
                 </View>
               )}
             </View>
           </View>
         </View>
 
-        {renderSection('统计信息', 'chart-bar', (
+        {renderSection(
+          '统计信息',
+          'chart-bar',
           <View style={styles.statsContainer}>
             <View style={[styles.statCard, { backgroundColor: theme.colors.surface }]}>
-              <MaterialCommunityIcons name="playlist-check" size={24} color={theme.colors.primary} />
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>{subscriptions.length}</Text>
+              <MaterialCommunityIcons
+                name="playlist-check"
+                size={24}
+                color={theme.colors.primary}
+              />
+              <Text style={[styles.statValue, { color: theme.colors.text }]}>
+                {subscriptions.length}
+              </Text>
               <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>订阅数</Text>
             </View>
             <View style={[styles.statCard, { backgroundColor: theme.colors.surface }]}>
-              <MaterialCommunityIcons name="calendar-month" size={24} color={theme.colors.primary} />
+              <MaterialCommunityIcons
+                name="calendar-month"
+                size={24}
+                color={theme.colors.primary}
+              />
               <Text style={[styles.statValue, { color: theme.colors.text }]}>
                 ¥{stats.monthlyCost.toFixed(2)}
               </Text>
               <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>月支出</Text>
             </View>
             <View style={[styles.statCard, { backgroundColor: theme.colors.surface }]}>
-              <MaterialCommunityIcons name="calendar-heart" size={24} color={theme.colors.primary} />
+              <MaterialCommunityIcons
+                name="calendar-heart"
+                size={24}
+                color={theme.colors.primary}
+              />
               <Text style={[styles.statValue, { color: theme.colors.text }]}>
                 ¥{stats.yearlyCost.toFixed(2)}
               </Text>
@@ -230,45 +254,50 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ navigation,
               <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>总支出</Text>
             </View>
           </View>
-        ))}
+        )}
 
-        {renderSection('分类信息', 'information', (
+        {renderSection(
+          '分类信息',
+          'information',
           <View style={styles.infoContainer}>
             {renderInfoRow('palette', '分类颜色', category.color)}
             {renderInfoRow('shape', '分类图标', category.icon)}
             {renderInfoRow('calendar-plus', '创建时间', formatDate(category.createdAt))}
             {renderInfoRow('calendar-edit', '更新时间', formatDate(category.updatedAt))}
           </View>
-        ))}
+        )}
 
-        {subscriptions.length > 0 && renderSection('分类订阅', 'playlist-check', (
-          <View style={styles.subscriptionsContainer}>
-            {subscriptions.map((subscription) => (
-              <SubscriptionCard
-                key={subscription.id}
-                subscription={{
-                  id: subscription.id,
-                  name: subscription.name,
-                  description: subscription.description,
-                  price: subscription.price,
-                  currency: subscription.currency,
-                  type: subscription.type,
-                  status: subscription.status,
-                  renewalDate: new Date(subscription.renewalDate),
-                  categoryName: category.name,
-                  categoryColor: category.color,
-                  categoryIcon: category.icon,
-                  tags: subscription.tags,
-                  autoRenew: subscription.autoRenew,
-                  isExpiringSoon: false,
-                  isExpired: false,
-                }}
-                onPress={() => handleSubscriptionPress(subscription)}
-                style={styles.subscriptionCard}
-              />
-            ))}
-          </View>
-        ))}
+        {subscriptions.length > 0 &&
+          renderSection(
+            '分类订阅',
+            'playlist-check',
+            <View style={styles.subscriptionsContainer}>
+              {subscriptions.map((subscription) => (
+                <SubscriptionCard
+                  key={subscription.id}
+                  subscription={{
+                    id: subscription.id,
+                    name: subscription.name,
+                    description: subscription.description,
+                    price: subscription.price,
+                    currency: subscription.currency,
+                    type: subscription.type,
+                    status: subscription.status,
+                    renewalDate: new Date(subscription.renewalDate),
+                    categoryName: category.name,
+                    categoryColor: category.color,
+                    categoryIcon: category.icon,
+                    tags: subscription.tags,
+                    autoRenew: subscription.autoRenew,
+                    isExpiringSoon: false,
+                    isExpired: false,
+                  }}
+                  onPress={() => handleSubscriptionPress(subscription)}
+                  style={styles.subscriptionCard}
+                />
+              ))}
+            </View>
+          )}
 
         {!category.isDefault && (
           <View style={styles.actionsContainer}>
@@ -295,7 +324,9 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ navigation,
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setShowDeleteDialog(false)}>取消</Button>
-            <Button onPress={confirmDelete} textColor={theme.colors.error}>删除</Button>
+            <Button onPress={confirmDelete} textColor={theme.colors.error}>
+              删除
+            </Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -304,25 +335,37 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ navigation,
 };
 
 const styles = StyleSheet.create({
+  actionButton: {
+    width: '100%',
+  },
+  actionsContainer: {
+    marginHorizontal: 16,
+    marginTop: 24,
+  },
   container: {
     flex: 1,
   },
-  loadingContainer: {
-    justifyContent: 'center',
+  defaultBadge: {
     alignItems: 'center',
+    alignSelf: 'flex-start',
+    borderRadius: 12,
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  loadingIndicator: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 3,
-    borderColor: 'rgba(154, 207, 255, 0.3)',
-    borderTopColor: '#9ACFFF',
+  defaultBadgeText: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginLeft: 4,
+  },
+  description: {
+    fontSize: 14,
+    marginBottom: 8,
   },
   emptyContainer: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     padding: 32,
   },
   emptyText: {
@@ -330,62 +373,78 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'center',
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 24,
-  },
   headerCard: {
-    padding: 20,
-    margin: 16,
     borderRadius: 12,
     elevation: 2,
+    margin: 16,
+    padding: 20,
   },
   headerContent: {
-    flexDirection: 'row',
     alignItems: 'flex-start',
-  },
-  iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
+    flexDirection: 'row',
   },
   headerInfo: {
     flex: 1,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    borderRadius: 16,
+    height: 64,
+    justifyContent: 'center',
+    marginRight: 16,
+    width: 64,
+  },
+  infoContainer: {
+    backgroundColor: 'rgba(154, 207, 255, 0.05)',
+    borderRadius: 12,
+    padding: 16,
+  },
+  infoIcon: {
+    marginRight: 12,
+  },
+  infoLabel: {
+    flex: 1,
+    fontSize: 14,
+  },
+  infoRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingIndicator: {
+    borderColor: 'rgba(154, 207, 255, 0.3)',
+    borderRadius: 20,
+    borderTopColor: '#9ACFFF',
+    borderWidth: 3,
+    height: 40,
+    width: 40,
   },
   name: {
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 4,
   },
-  description: {
-    fontSize: 14,
-    marginBottom: 8,
+  scrollContent: {
+    paddingBottom: 24,
   },
-  defaultBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  defaultBadgeText: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginLeft: 4,
+  scrollView: {
+    flex: 1,
   },
   section: {
-    marginTop: 8,
     marginHorizontal: 16,
+    marginTop: 8,
   },
   sectionHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     marginBottom: 12,
   },
   sectionTitle: {
@@ -393,62 +452,34 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
-  statsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
   statCard: {
-    width: '48%',
-    marginRight: '4%',
-    marginBottom: 12,
-    padding: 16,
-    borderRadius: 12,
     alignItems: 'center',
+    borderRadius: 12,
+    marginBottom: 12,
+    marginRight: '4%',
+    padding: 16,
+    width: '48%',
+  },
+  statLabel: {
+    fontSize: 12,
+    marginTop: 4,
   },
   statValue: {
     fontSize: 18,
     fontWeight: '600',
     marginTop: 8,
   },
-  statLabel: {
-    fontSize: 12,
-    marginTop: 4,
-  },
-  infoContainer: {
-    backgroundColor: 'rgba(154, 207, 255, 0.05)',
-    borderRadius: 12,
-    padding: 16,
-  },
-  infoRow: {
+  statsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    flexWrap: 'wrap',
   },
-  infoIcon: {
-    marginRight: 12,
-  },
-  infoLabel: {
-    fontSize: 14,
-    flex: 1,
-  },
-  infoValue: {
-    fontSize: 14,
-    fontWeight: '500',
+  subscriptionCard: {
+    marginBottom: 8,
   },
   subscriptionsContainer: {
     backgroundColor: 'rgba(154, 207, 255, 0.05)',
     borderRadius: 12,
     padding: 8,
-  },
-  subscriptionCard: {
-    marginBottom: 8,
-  },
-  actionsContainer: {
-    marginTop: 24,
-    marginHorizontal: 16,
-  },
-  actionButton: {
-    width: '100%',
   },
 });
 

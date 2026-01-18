@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Image,
-  ViewStyle,
-  TextStyle,
-} from 'react-native';
+import { StyleSheet, View, Text, Image, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Button from './Button';
@@ -50,21 +43,11 @@ const Empty: React.FC<EmptyProps> = ({
   // 渲染图标或图片
   const renderIcon = () => {
     if (imageSource) {
-      return (
-        <Image
-          source={imageSource}
-          style={styles.image}
-          resizeMode="contain"
-        />
-      );
+      return <Image source={imageSource} style={styles.image} resizeMode="contain" />;
     }
 
     return (
-      <MaterialCommunityIcons
-        name={iconName as any}
-        size={80}
-        color={theme.colors.placeholder}
-      />
+      <MaterialCommunityIcons name={iconName as any} size={80} color={theme.colors.placeholder} />
     );
   };
 
@@ -73,24 +56,16 @@ const Empty: React.FC<EmptyProps> = ({
       <View style={styles.content}>
         {renderIcon()}
         {title && (
-          <Text style={[styles.title, titleStyle, { color: theme.colors.text }]}>
-            {title}
-          </Text>
+          <Text style={[styles.title, titleStyle, { color: theme.colors.text }]}>{title}</Text>
         )}
         {description && (
-          <Text
-            style={[styles.description, descriptionStyle, { color: theme.colors.placeholder }]}
-          >
+          <Text style={[styles.description, descriptionStyle, { color: theme.colors.placeholder }]}>
             {description}
           </Text>
         )}
         {buttonText && onButtonPress && (
           <View style={styles.buttonContainer}>
-            <Button
-              title={buttonText}
-              type="primary"
-              onPress={onButtonPress}
-            />
+            <Button title={buttonText} type="primary" onPress={onButtonPress} />
           </View>
         )}
       </View>
@@ -100,35 +75,35 @@ const Empty: React.FC<EmptyProps> = ({
 
 // 样式定义
 const styles = StyleSheet.create({
+  buttonContainer: {
+    marginTop: 8,
+  },
   container: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     padding: 24,
   },
   content: {
     alignItems: 'center',
     maxWidth: 300,
   },
+  description: {
+    fontSize: 14,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
   image: {
-    width: 120,
     height: 120,
     marginBottom: 16,
+    width: 120,
   },
   title: {
     fontSize: 18,
     fontWeight: '600',
-    marginTop: 16,
     marginBottom: 8,
+    marginTop: 16,
     textAlign: 'center',
-  },
-  description: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  buttonContainer: {
-    marginTop: 8,
   },
 });
 

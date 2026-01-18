@@ -21,19 +21,13 @@ export interface Category {
 /**
  * 创建分类参数
  */
-export type CreateCategoryParams = Omit<
-  Category,
-  'id' | 'userId' | 'createdAt' | 'updatedAt'
->;
+export type CreateCategoryParams = Omit<Category, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
 /**
  * 更新分类参数
  */
 export type UpdateCategoryParams = Partial<
-  Omit<
-    Category,
-    'id' | 'userId' | 'createdAt' | 'updatedAt'
-  >
+  Omit<Category, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
 >;
 
 /**

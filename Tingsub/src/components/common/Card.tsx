@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  ViewStyle,
-  TouchableOpacity,
-  GestureResponderEvent,
-} from 'react-native';
+import { StyleSheet, View, ViewStyle, TouchableOpacity, GestureResponderEvent } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
 // 卡片Props接口
@@ -70,11 +64,7 @@ const Card: React.FC<CardProps> = ({
   // 如果可点击，使用TouchableOpacity包裹
   if (pressable && onPress) {
     return (
-      <TouchableOpacity
-        onPress={onPress}
-        activeOpacity={0.7}
-        style={[getCardStyle(), style]}
-      >
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={[getCardStyle(), style]}>
         {children}
       </TouchableOpacity>
     );

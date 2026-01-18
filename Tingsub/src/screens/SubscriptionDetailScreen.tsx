@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { StyleSheet, View, ScrollView, Text, TouchableOpacity, Alert } from 'react-native';
 import { useTheme, Appbar, Portal, Dialog, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { initializeRealm } from '../config/realm';
@@ -15,7 +8,11 @@ import { useSubscriptionStore } from '../store/subscriptionStore';
 import { useCategoryStore } from '../store/categoryStore';
 import type { Subscription } from '../types/subscription';
 import type { Category } from '../types/category';
-import { formatCurrency, formatSubscriptionType, formatSubscriptionStatus } from '../utils/formatUtils';
+import {
+  formatCurrency,
+  formatSubscriptionType,
+  formatSubscriptionStatus,
+} from '../utils/formatUtils';
 import { formatDate, isExpiringWithinDays, isExpired, daysBetween } from '../utils/dateUtils';
 
 interface SubscriptionDetailScreenProps {
@@ -27,7 +24,10 @@ interface SubscriptionDetailScreenProps {
   };
 }
 
-const SubscriptionDetailScreen: React.FC<SubscriptionDetailScreenProps> = ({ navigation, route }) => {
+const SubscriptionDetailScreen: React.FC<SubscriptionDetailScreenProps> = ({
+  navigation,
+  route,
+}) => {
   const theme = useTheme() as any;
 
   const { id } = route.params;
@@ -138,7 +138,12 @@ const SubscriptionDetailScreen: React.FC<SubscriptionDetailScreenProps> = ({ nav
 
   const renderInfoRow = (icon: string, label: string, value: string | number) => (
     <View style={styles.infoRow}>
-      <MaterialCommunityIcons name={icon as any} size={20} color={theme.colors.text.secondary} style={styles.infoIcon} />
+      <MaterialCommunityIcons
+        name={icon as any}
+        size={20}
+        color={theme.colors.text.secondary}
+        style={styles.infoIcon}
+      />
       <Text style={[styles.infoLabel, { color: theme.colors.text.secondary }]}>{label}</Text>
       <Text style={[styles.infoValue, { color: theme.colors.text }]}>{value}</Text>
     </View>
@@ -165,10 +170,12 @@ const SubscriptionDetailScreen: React.FC<SubscriptionDetailScreenProps> = ({ nav
   if (!subscription) {
     return (
       <View style={[styles.container, styles.emptyContainer]}>
-        <MaterialCommunityIcons name="alert-circle-outline" size={64} color={theme.colors.text.tertiary} />
-        <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>
-          订阅不存在
-        </Text>
+        <MaterialCommunityIcons
+          name="alert-circle-outline"
+          size={64}
+          color={theme.colors.text.tertiary}
+        />
+        <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>订阅不存在</Text>
       </View>
     );
   }
@@ -213,11 +220,14 @@ const SubscriptionDetailScreen: React.FC<SubscriptionDetailScreenProps> = ({ nav
           </View>
         </View>
 
-        {renderSection('基本信息', 'information', (
+        {renderSection(
+          '基本信息',
+          'information',
           <View style={styles.infoContainer}>
             {renderInfoRow('calendar-clock', '续费日期', formatDate(subscription.renewalDate))}
             {renderInfoRow('calendar', '开始日期', formatDate(subscription.startDate))}
-            {subscription.endDate && renderInfoRow('calendar-check', '结束日期', formatDate(subscription.endDate))}
+            {subscription.endDate &&
+              renderInfoRow('calendar-check', '结束日期', formatDate(subscription.endDate))}
             {renderInfoRow('web', '订阅平台', subscription.platform)}
             {renderInfoRow('credit-card', '支付方式', subscription.paymentMethod)}
             <View style={styles.infoRow}>
@@ -227,7 +237,9 @@ const SubscriptionDetailScreen: React.FC<SubscriptionDetailScreenProps> = ({ nav
                 color={theme.colors.text.secondary}
                 style={styles.infoIcon}
               />
-              <Text style={[styles.infoLabel, { color: theme.colors.text.secondary }]}>自动续费</Text>
+              <Text style={[styles.infoLabel, { color: theme.colors.text.secondary }]}>
+                自动续费
+              </Text>
               <TouchableOpacity onPress={handleToggleAutoRenew}>
                 <Text style={[styles.infoValue, { color: theme.colors.primary }]}>
                   {subscription.autoRenew ? '是' : '否'}
@@ -235,60 +247,92 @@ const SubscriptionDetailScreen: React.FC<SubscriptionDetailScreenProps> = ({ nav
               </TouchableOpacity>
             </View>
           </View>
-        ))}
+        )}
 
-        {renderSection('费用信息', 'currency-cny', (
+        {renderSection(
+          '费用信息',
+          'currency-cny',
           <View style={styles.infoContainer}>
-            {renderInfoRow('calendar-month', '月度费用', formatCurrency(
-              subscription.type === 'weekly' ? subscription.price * 4.33 :
-              subscription.type === 'monthly' ? subscription.price :
-              subscription.type === 'quarterly' ? subscription.price / 3 :
-              subscription.type === 'yearly' ? subscription.price / 12 : 0,
-              subscription.currency
-            ))}
-            {renderInfoRow('calendar-year', '年度费用', formatCurrency(
-              subscription.type === 'weekly' ? subscription.price * 52 :
-              subscription.type === 'monthly' ? subscription.price * 12 :
-              subscription.type === 'quarterly' ? subscription.price * 4 :
-              subscription.type === 'yearly' ? subscription.price : subscription.price,
-              subscription.currency
-            ))}
+            {renderInfoRow(
+              'calendar-month',
+              '月度费用',
+              formatCurrency(
+                subscription.type === 'weekly'
+                  ? subscription.price * 4.33
+                  : subscription.type === 'monthly'
+                    ? subscription.price
+                    : subscription.type === 'quarterly'
+                      ? subscription.price / 3
+                      : subscription.type === 'yearly'
+                        ? subscription.price / 12
+                        : 0,
+                subscription.currency
+              )
+            )}
+            {renderInfoRow(
+              'calendar-year',
+              '年度费用',
+              formatCurrency(
+                subscription.type === 'weekly'
+                  ? subscription.price * 52
+                  : subscription.type === 'monthly'
+                    ? subscription.price * 12
+                    : subscription.type === 'quarterly'
+                      ? subscription.price * 4
+                      : subscription.type === 'yearly'
+                        ? subscription.price
+                        : subscription.price,
+                subscription.currency
+              )
+            )}
           </View>
-        ))}
+        )}
 
-        {renderSection('时间信息', 'clock-outline', (
+        {renderSection(
+          '时间信息',
+          'clock-outline',
           <View style={styles.infoContainer}>
             {renderInfoRow('calendar-range', '距离续费', `${getDaysUntilRenewal()}天`)}
             {renderInfoRow('calendar-plus', '创建时间', formatDate(subscription.createdAt))}
             {renderInfoRow('calendar-edit', '更新时间', formatDate(subscription.updatedAt))}
           </View>
-        ))}
+        )}
 
-        {subscription.tags && subscription.tags.length > 0 && renderSection('标签', 'tag', (
-          <View style={styles.tagsContainer}>
-            {subscription.tags.map((tag, index) => (
-              <View key={index} style={[styles.tag, { borderColor: category?.color }]}>
-                <Text style={[styles.tagText, { color: category?.color }]}>{tag}</Text>
-              </View>
-            ))}
-          </View>
-        ))}
+        {subscription.tags &&
+          subscription.tags.length > 0 &&
+          renderSection(
+            '标签',
+            'tag',
+            <View style={styles.tagsContainer}>
+              {subscription.tags.map((tag, index) => (
+                <View key={index} style={[styles.tag, { borderColor: category?.color }]}>
+                  <Text style={[styles.tagText, { color: category?.color }]}>{tag}</Text>
+                </View>
+              ))}
+            </View>
+          )}
 
-        {subscription.description && renderSection('描述', 'text', (
-          <View style={styles.descriptionContainer}>
-            <Text style={[styles.description, { color: theme.colors.text }]}>
-              {subscription.description}
-            </Text>
-          </View>
-        ))}
+        {subscription.description &&
+          renderSection(
+            '描述',
+            'text',
+            <View style={styles.descriptionContainer}>
+              <Text style={[styles.description, { color: theme.colors.text }]}>
+                {subscription.description}
+              </Text>
+            </View>
+          )}
 
-        {subscription.notes && renderSection('备注', 'note', (
-          <View style={styles.descriptionContainer}>
-            <Text style={[styles.description, { color: theme.colors.text }]}>
-              {subscription.notes}
-            </Text>
-          </View>
-        ))}
+        {subscription.notes &&
+          renderSection(
+            '备注',
+            'note',
+            <View style={styles.descriptionContainer}>
+              <Text style={[styles.description, { color: theme.colors.text }]}>
+                {subscription.notes}
+              </Text>
+            </View>
+          )}
 
         <View style={styles.actionsContainer}>
           {subscription.status === 'active' && (
@@ -317,13 +361,13 @@ const SubscriptionDetailScreen: React.FC<SubscriptionDetailScreenProps> = ({ nav
         <Dialog visible={showDeleteDialog} onDismiss={() => setShowDeleteDialog(false)}>
           <Dialog.Title>确认删除</Dialog.Title>
           <Dialog.Content>
-            <Text style={{ color: theme.colors.text }}>
-              确定要删除这个订阅吗？此操作无法撤销。
-            </Text>
+            <Text style={{ color: theme.colors.text }}>确定要删除这个订阅吗？此操作无法撤销。</Text>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setShowDeleteDialog(false)}>取消</Button>
-            <Button onPress={confirmDelete} textColor={theme.colors.error}>删除</Button>
+            <Button onPress={confirmDelete} textColor={theme.colors.error}>
+              删除
+            </Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -338,7 +382,9 @@ const SubscriptionDetailScreen: React.FC<SubscriptionDetailScreenProps> = ({ nav
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setShowCancelDialog(false)}>取消</Button>
-            <Button onPress={confirmCancel} textColor={theme.colors.error}>确认</Button>
+            <Button onPress={confirmCancel} textColor={theme.colors.error}>
+              确认
+            </Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -347,25 +393,36 @@ const SubscriptionDetailScreen: React.FC<SubscriptionDetailScreenProps> = ({ nav
 };
 
 const styles = StyleSheet.create({
+  actionButton: {
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+    marginTop: 24,
+  },
+  category: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
   container: {
     flex: 1,
   },
-  loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+  description: {
+    fontSize: 14,
+    lineHeight: 22,
   },
-  loadingIndicator: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 3,
-    borderColor: 'rgba(154, 207, 255, 0.3)',
-    borderTopColor: '#9ACFFF',
+  descriptionContainer: {
+    backgroundColor: 'rgba(154, 207, 255, 0.05)',
+    borderRadius: 12,
+    padding: 16,
   },
   emptyContainer: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     padding: 32,
   },
   emptyText: {
@@ -373,55 +430,65 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'center',
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 24,
-  },
   headerCard: {
-    padding: 20,
-    margin: 16,
     borderRadius: 12,
     elevation: 2,
+    margin: 16,
+    padding: 20,
   },
   headerContent: {
+    alignItems: 'center',
     flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 16,
-  },
-  iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
   },
   headerInfo: {
     flex: 1,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    borderRadius: 16,
+    height: 64,
+    justifyContent: 'center',
+    marginRight: 16,
+    width: 64,
+  },
+  infoContainer: {
+    backgroundColor: 'rgba(154, 207, 255, 0.05)',
+    borderRadius: 12,
+    padding: 16,
+  },
+  infoIcon: {
+    marginRight: 12,
+  },
+  infoLabel: {
+    flex: 1,
+    fontSize: 14,
+  },
+  infoRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingIndicator: {
+    borderColor: 'rgba(154, 207, 255, 0.3)',
+    borderRadius: 20,
+    borderTopColor: '#9ACFFF',
+    borderWidth: 3,
+    height: 40,
+    width: 40,
   },
   name: {
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 4,
-  },
-  category: {
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  priceSection: {
-    alignItems: 'flex-end',
   },
   price: {
     fontSize: 28,
@@ -430,13 +497,22 @@ const styles = StyleSheet.create({
   priceLabel: {
     fontSize: 14,
   },
+  priceSection: {
+    alignItems: 'flex-end',
+  },
+  scrollContent: {
+    paddingBottom: 24,
+  },
+  scrollView: {
+    flex: 1,
+  },
   section: {
-    marginTop: 8,
     marginHorizontal: 16,
+    marginTop: 8,
   },
   sectionHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     marginBottom: 12,
   },
   sectionTitle: {
@@ -444,64 +520,34 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
-  infoContainer: {
-    backgroundColor: 'rgba(154, 207, 255, 0.05)',
+  statusBadge: {
+    alignSelf: 'flex-start',
     borderRadius: 12,
-    padding: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  infoIcon: {
-    marginRight: 12,
-  },
-  infoLabel: {
-    fontSize: 14,
-    flex: 1,
-  },
-  infoValue: {
-    fontSize: 14,
+  statusText: {
+    fontSize: 12,
     fontWeight: '500',
   },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    backgroundColor: 'rgba(154, 207, 255, 0.05)',
-    borderRadius: 12,
-    padding: 16,
-  },
   tag: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
-    marginRight: 8,
     marginBottom: 8,
+    marginRight: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   tagText: {
     fontSize: 14,
     fontWeight: '500',
   },
-  descriptionContainer: {
+  tagsContainer: {
     backgroundColor: 'rgba(154, 207, 255, 0.05)',
     borderRadius: 12,
-    padding: 16,
-  },
-  description: {
-    fontSize: 14,
-    lineHeight: 22,
-  },
-  actionsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 24,
-    marginHorizontal: 16,
-  },
-  actionButton: {
-    flex: 1,
-    marginHorizontal: 4,
+    flexWrap: 'wrap',
+    padding: 16,
   },
 });
 

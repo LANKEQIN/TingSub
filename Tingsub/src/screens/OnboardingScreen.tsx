@@ -153,10 +153,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: fadeAnim.value,
-    transform: [
-      { translateX: slideAnim.value },
-      { scale: scaleAnim.value },
-    ],
+    transform: [{ translateX: slideAnim.value }, { scale: scaleAnim.value }],
   }));
 
   const renderDots = () => {
@@ -168,7 +165,10 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
             style={[
               styles.dot,
               index === currentIndex && styles.activeDot,
-              { backgroundColor: index === currentIndex ? theme.colors.primary : NEUTRAL_COLORS.border.medium },
+              {
+                backgroundColor:
+                  index === currentIndex ? theme.colors.primary : NEUTRAL_COLORS.border.medium,
+              },
             ]}
             onPress={() => handleDotPress(index)}
             activeOpacity={0.7}
@@ -184,21 +184,23 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     return (
       <View style={styles.content}>
         <Animated.View style={[styles.iconContainer, animatedStyle]}>
-          <MaterialCommunityIcons
-            name={data.icon as any}
-            size={120}
-            color={data.color}
-          />
+          <MaterialCommunityIcons name={data.icon as any} size={120} color={data.color} />
         </Animated.View>
 
         <Animated.View style={[styles.textContainer, animatedStyle]}>
-          <Text style={[styles.title, { color: NEUTRAL_COLORS.text.primary }]} allowFontScaling={true}>
+          <Text
+            style={[styles.title, { color: NEUTRAL_COLORS.text.primary }]}
+            allowFontScaling={true}
+          >
             {data.title}
           </Text>
           <Text style={[styles.subtitle, { color: data.color }]} allowFontScaling={true}>
             {data.subtitle}
           </Text>
-          <Text style={[styles.description, { color: NEUTRAL_COLORS.text.secondary }]} allowFontScaling={true}>
+          <Text
+            style={[styles.description, { color: NEUTRAL_COLORS.text.secondary }]}
+            allowFontScaling={true}
+          >
             {data.description}
           </Text>
         </Animated.View>
@@ -208,12 +210,11 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
         <View style={styles.buttonContainer}>
           {currentIndex < onboardingData.length - 1 ? (
             <>
-              <TouchableOpacity
-                style={styles.skipButton}
-                onPress={handleSkip}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.skipButtonText, { color: NEUTRAL_COLORS.text.secondary }]} allowFontScaling={true}>
+              <TouchableOpacity style={styles.skipButton} onPress={handleSkip} activeOpacity={0.7}>
+                <Text
+                  style={[styles.skipButtonText, { color: NEUTRAL_COLORS.text.secondary }]}
+                  allowFontScaling={true}
+                >
                   跳过
                 </Text>
               </TouchableOpacity>
@@ -245,24 +246,29 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     return (
       <View style={styles.inputContent}>
         <Animated.View style={[styles.iconContainer, animatedStyle]}>
-          <MaterialCommunityIcons
-            name="account-circle"
-            size={120}
-            color={theme.colors.primary}
-          />
+          <MaterialCommunityIcons name="account-circle" size={120} color={theme.colors.primary} />
         </Animated.View>
 
         <Animated.View style={[styles.textContainer, animatedStyle]}>
-          <Text style={[styles.title, { color: NEUTRAL_COLORS.text.primary }]} allowFontScaling={true}>
+          <Text
+            style={[styles.title, { color: NEUTRAL_COLORS.text.primary }]}
+            allowFontScaling={true}
+          >
             创建您的账户
           </Text>
-          <Text style={[styles.description, { color: NEUTRAL_COLORS.text.secondary }]} allowFontScaling={true}>
+          <Text
+            style={[styles.description, { color: NEUTRAL_COLORS.text.secondary }]}
+            allowFontScaling={true}
+          >
             请输入您的用户名,开始使用汀阅
           </Text>
         </Animated.View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.inputLabel, { color: NEUTRAL_COLORS.text.secondary }]} allowFontScaling={true}>
+          <Text
+            style={[styles.inputLabel, { color: NEUTRAL_COLORS.text.secondary }]}
+            allowFontScaling={true}
+          >
             用户名
           </Text>
           <View style={[styles.inputWrapper, { borderColor: theme.colors.border }]}>
@@ -298,7 +304,10 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
           onPress={() => setShowInput(false)}
           activeOpacity={0.7}
         >
-          <Text style={[styles.backButtonText, { color: NEUTRAL_COLORS.text.secondary }]} allowFontScaling={true}>
+          <Text
+            style={[styles.backButtonText, { color: NEUTRAL_COLORS.text.secondary }]}
+            allowFontScaling={true}
+          >
             返回
           </Text>
         </TouchableOpacity>
@@ -324,34 +333,120 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  activeDot: {
+    width: 24,
+  },
+  backButton: {
+    marginTop: 16,
+  },
+  backButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
   backgroundImage: {
-    position: 'absolute',
-    width: width,
     height: height,
     opacity: 0.05,
+    position: 'absolute',
+    width: width,
   },
   backgroundImageStyle: {
     resizeMode: 'cover',
   },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  buttonContainer: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  buttonContent: {
+    height: 52,
+    paddingVertical: 12,
+  },
+  container: {
+    flex: 1,
   },
   content: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: 32,
+  },
+  description: {
+    fontSize: 16,
+    lineHeight: 24,
+    paddingHorizontal: 16,
+    textAlign: 'center',
+  },
+  dot: {
+    borderRadius: 4,
+    height: 8,
+    marginHorizontal: 6,
+    width: 8,
+  },
+  dotsContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 40,
   },
   iconContainer: {
     marginBottom: 40,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+  },
+  inputContainer: {
+    marginBottom: 32,
+    width: '100%',
+  },
+  inputContent: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  inputWrapper: {
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    height: 52,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  nextButton: {
+    width: '100%',
+  },
+  overlay: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  skipButton: {
+    marginBottom: 16,
+  },
+  skipButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  startButton: {
+    marginBottom: 16,
+    width: '100%',
+  },
+  subtitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
   },
   textContainer: {
     alignItems: 'center',
@@ -362,92 +457,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 12,
     textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    textAlign: 'center',
-    paddingHorizontal: 16,
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 6,
-  },
-  activeDot: {
-    width: 24,
-  },
-  buttonContainer: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  skipButton: {
-    marginBottom: 16,
-  },
-  skipButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  nextButton: {
-    width: '100%',
-  },
-  startButton: {
-    width: '100%',
-    marginBottom: 16,
-  },
-  buttonContent: {
-    paddingVertical: 12,
-    height: 52,
-  },
-  inputContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  inputContainer: {
-    width: '100%',
-    marginBottom: 32,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    height: 52,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-  },
-  backButton: {
-    marginTop: 16,
-  },
-  backButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
   },
 });
 

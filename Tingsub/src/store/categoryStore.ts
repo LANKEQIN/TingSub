@@ -67,7 +67,11 @@ interface CategoryState {
   updateName: (repository: CategoryRepository, id: string, name: string) => Promise<void>;
   updateColor: (repository: CategoryRepository, id: string, color: string) => Promise<void>;
   updateIcon: (repository: CategoryRepository, id: string, icon: string) => Promise<void>;
-  updateDescription: (repository: CategoryRepository, id: string, description: string) => Promise<void>;
+  updateDescription: (
+    repository: CategoryRepository,
+    id: string,
+    description: string
+  ) => Promise<void>;
   initializeDefaultCategories: (
     repository: CategoryRepository,
     userId: string
@@ -121,10 +125,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   /**
    * 创建分类
    */
-  createCategory: async (
-    repository: CategoryRepository,
-    params: CreateCategoryParams
-  ) => {
+  createCategory: async (repository: CategoryRepository, params: CreateCategoryParams) => {
     set({ isLoading: true, error: null });
 
     try {
@@ -159,14 +160,11 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       const updatedCategory = await repository.updateCategory(id, params);
 
       const { categories, currentCategory } = get();
-      const newCategories = categories.map((cat) =>
-        cat.id === id ? updatedCategory : cat
-      );
+      const newCategories = categories.map((cat) => (cat.id === id ? updatedCategory : cat));
 
       set({
         categories: newCategories,
-        currentCategory:
-          currentCategory?.id === id ? updatedCategory : currentCategory,
+        currentCategory: currentCategory?.id === id ? updatedCategory : currentCategory,
         isLoading: false,
       });
 
@@ -221,10 +219,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   /**
    * 查询分类
    */
-  queryCategories: async (
-    repository: CategoryRepository,
-    params: CategoryQueryParams
-  ) => {
+  queryCategories: async (repository: CategoryRepository, params: CategoryQueryParams) => {
     set({ isLoading: true, error: null });
 
     try {
@@ -275,11 +270,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   /**
    * 搜索分类
    */
-  searchCategories: async (
-    repository: CategoryRepository,
-    userId: string,
-    keyword: string
-  ) => {
+  searchCategories: async (repository: CategoryRepository, userId: string, keyword: string) => {
     set({ isLoading: true, error: null });
 
     try {
@@ -363,14 +354,11 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       const updatedCategory = await repository.updateName(id, name);
 
       const { categories, currentCategory } = get();
-      const newCategories = categories.map((cat) =>
-        cat.id === id ? updatedCategory : cat
-      );
+      const newCategories = categories.map((cat) => (cat.id === id ? updatedCategory : cat));
 
       set({
         categories: newCategories,
-        currentCategory:
-          currentCategory?.id === id ? updatedCategory : currentCategory,
+        currentCategory: currentCategory?.id === id ? updatedCategory : currentCategory,
         isLoading: false,
       });
     } catch (error) {
@@ -390,14 +378,11 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       const updatedCategory = await repository.updateColor(id, color);
 
       const { categories, currentCategory } = get();
-      const newCategories = categories.map((cat) =>
-        cat.id === id ? updatedCategory : cat
-      );
+      const newCategories = categories.map((cat) => (cat.id === id ? updatedCategory : cat));
 
       set({
         categories: newCategories,
-        currentCategory:
-          currentCategory?.id === id ? updatedCategory : currentCategory,
+        currentCategory: currentCategory?.id === id ? updatedCategory : currentCategory,
         isLoading: false,
       });
     } catch (error) {
@@ -417,14 +402,11 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       const updatedCategory = await repository.updateIcon(id, icon);
 
       const { categories, currentCategory } = get();
-      const newCategories = categories.map((cat) =>
-        cat.id === id ? updatedCategory : cat
-      );
+      const newCategories = categories.map((cat) => (cat.id === id ? updatedCategory : cat));
 
       set({
         categories: newCategories,
-        currentCategory:
-          currentCategory?.id === id ? updatedCategory : currentCategory,
+        currentCategory: currentCategory?.id === id ? updatedCategory : currentCategory,
         isLoading: false,
       });
     } catch (error) {
@@ -437,25 +419,18 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   /**
    * 更新分类描述
    */
-  updateDescription: async (
-    repository: CategoryRepository,
-    id: string,
-    description: string
-  ) => {
+  updateDescription: async (repository: CategoryRepository, id: string, description: string) => {
     set({ isLoading: true, error: null });
 
     try {
       const updatedCategory = await repository.updateDescription(id, description);
 
       const { categories, currentCategory } = get();
-      const newCategories = categories.map((cat) =>
-        cat.id === id ? updatedCategory : cat
-      );
+      const newCategories = categories.map((cat) => (cat.id === id ? updatedCategory : cat));
 
       set({
         categories: newCategories,
-        currentCategory:
-          currentCategory?.id === id ? updatedCategory : currentCategory,
+        currentCategory: currentCategory?.id === id ? updatedCategory : currentCategory,
         isLoading: false,
       });
     } catch (error) {
@@ -468,10 +443,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   /**
    * 初始化默认分类
    */
-  initializeDefaultCategories: async (
-    repository: CategoryRepository,
-    userId: string
-  ) => {
+  initializeDefaultCategories: async (repository: CategoryRepository, userId: string) => {
     set({ isLoading: true, error: null });
 
     try {

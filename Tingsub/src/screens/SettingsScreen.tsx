@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  Text,
-  Alert,
-  Linking,
-} from 'react-native';
+import { StyleSheet, View, ScrollView, Text, Alert, Linking } from 'react-native';
 import { useTheme, Appbar, Dialog, Portal, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SettingGroup from '../components/settings/SettingGroup';
 import SettingItem from '../components/settings/SettingItem';
 import ThemeSwitch from '../components/settings/ThemeSwitch';
+import FontScaleSwitch from '../components/settings/FontScaleSwitch';
 import { useUserStore } from '../store/userStore';
 import { useTheme as useCustomTheme } from '../hooks/useTheme';
+import { useFontScale } from '../hooks/useFontScale';
 import { StorageUtils } from '../utils/storageUtils';
 
 interface SettingsScreenProps {
@@ -23,6 +18,7 @@ interface SettingsScreenProps {
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const theme = useTheme() as any;
   const { currentTheme, toggleTheme } = useCustomTheme();
+  const { fontScale } = useFontScale();
   const { currentUser, updateTheme, updateReminderSettings } = useUserStore();
 
   const [clearDataDialogVisible, setClearDataDialogVisible] = useState(false);
@@ -198,6 +194,16 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
               onThemeChange={handleThemeChange}
             />
           </View>
+          <SettingItem
+            title="字体大小"
+            description="调整应用字体大小"
+            icon="format-size"
+            type="chevron"
+            onPress={() => {}}
+          />
+          <View style={styles.fontScaleSwitchContainer}>
+            <FontScaleSwitch value={fontScale} />
+          </View>
         </SettingGroup>
 
         {/* 通知设置 */}
@@ -218,16 +224,12 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
                 icon="calendar-clock"
                 type="chevron"
                 onPress={() => {
-                  Alert.alert(
-                    '选择提前天数',
-                    '请选择提前提醒的天数',
-                    [
-                      { text: '1天', onPress: () => handleAdvanceDaysChange(1) },
-                      { text: '3天', onPress: () => handleAdvanceDaysChange(3) },
-                      { text: '7天', onPress: () => handleAdvanceDaysChange(7) },
-                      { text: '取消', style: 'cancel' },
-                    ]
-                  );
+                  Alert.alert('选择提前天数', '请选择提前提醒的天数', [
+                    { text: '1天', onPress: () => handleAdvanceDaysChange(1) },
+                    { text: '3天', onPress: () => handleAdvanceDaysChange(3) },
+                    { text: '7天', onPress: () => handleAdvanceDaysChange(7) },
+                    { text: '取消', style: 'cancel' },
+                  ]);
                 }}
               />
               <SettingItem
@@ -320,18 +322,13 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
 
         {/* 版本信息 */}
         <View style={styles.versionContainer}>
-          <Text style={[styles.versionText, { color: theme.colors.placeholder }]}>
-            汀阅 v1.0.0
-          </Text>
+          <Text style={[styles.versionText, { color: theme.colors.placeholder }]}>汀阅 v1.0.0</Text>
         </View>
       </ScrollView>
 
       {/* 清除数据确认对话框 */}
       <Portal>
-        <Dialog
-          visible={clearDataDialogVisible}
-          onDismiss={() => setClearDataDialogVisible(false)}
-        >
+        <Dialog visible={clearDataDialogVisible} onDismiss={() => setClearDataDialogVisible(false)}>
           <Dialog.Title>确认清除数据</Dialog.Title>
           <Dialog.Content>
             <Text style={styles.dialogText}>
@@ -349,10 +346,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
 
       {/* 关于对话框 */}
       <Portal>
-        <Dialog
-          visible={aboutDialogVisible}
-          onDismiss={() => setAboutDialogVisible(false)}
-        >
+        <Dialog visible={aboutDialogVisible} onDismiss={() => setAboutDialogVisible(false)}>
           <Dialog.Title>关于汀阅</Dialog.Title>
           <Dialog.Content>
             <View style={styles.aboutContent}>
@@ -362,9 +356,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
                 color={theme.colors.primary}
                 style={styles.aboutIcon}
               />
-              <Text style={[styles.aboutTitle, { color: theme.colors.text }]}>
-                汀阅 TingSub
-              </Text>
+              <Text style={[styles.aboutTitle, { color: theme.colors.text }]}>汀阅 TingSub</Text>
               <Text style={[styles.aboutVersion, { color: theme.colors.placeholder }]}>
                 版本 1.0.0
               </Text>
@@ -383,30 +375,14 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  themeSwitchContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  versionContainer: {
-    paddingVertical: 24,
-    alignItems: 'center',
-  },
-  versionText: {
-    fontSize: 12,
-  },
-  dialogText: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
   aboutContent: {
     alignItems: 'center',
     paddingVertical: 16,
+  },
+  aboutDescription: {
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: 'center',
   },
   aboutIcon: {
     marginBottom: 16,
@@ -420,10 +396,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 16,
   },
-  aboutDescription: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 22,
+  container: {
+    flex: 1,
+  },
+  dialogText: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  themeSwitchContainer: {
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+  },
+  fontScaleSwitchContainer: {
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+  },
+  versionContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  versionText: {
+    fontSize: 12,
   },
 });
 

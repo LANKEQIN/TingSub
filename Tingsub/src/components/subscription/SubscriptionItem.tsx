@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  GestureResponderEvent,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, GestureResponderEvent } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { SubscriptionCardData } from '../../types/subscription';
@@ -57,7 +51,9 @@ const SubscriptionItem: React.FC<SubscriptionItemProps> = ({
   const itemContent = (
     <View style={[styles.container, style]}>
       <View style={styles.leftSection}>
-        <View style={[styles.iconContainer, { backgroundColor: subscription.categoryColor + '20' }]}>
+        <View
+          style={[styles.iconContainer, { backgroundColor: subscription.categoryColor + '20' }]}
+        >
           <MaterialCommunityIcons
             name={subscription.categoryIcon as any}
             size={24}
@@ -95,17 +91,16 @@ const SubscriptionItem: React.FC<SubscriptionItemProps> = ({
 
       <View style={styles.rightSection}>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '20' }]}>
-          <Text style={[styles.statusText, { color: getStatusColor() }]}>
-            {getStatusText()}
-          </Text>
+          <Text style={[styles.statusText, { color: getStatusColor() }]}>{getStatusText()}</Text>
         </View>
         <Text
           style={[
             styles.renewalDate,
             {
-              color: subscription.isExpiringSoon || subscription.isExpired
-                ? '#FF9800'
-                : theme.colors.text.tertiary,
+              color:
+                subscription.isExpiringSoon || subscription.isExpired
+                  ? '#FF9800'
+                  : theme.colors.text.tertiary,
             },
           ]}
           numberOfLines={1}
@@ -119,17 +114,15 @@ const SubscriptionItem: React.FC<SubscriptionItemProps> = ({
   const container = (
     <>
       {onPress || onLongPress ? (
-        <TouchableOpacity
-          onPress={onPress}
-          onLongPress={onLongPress}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity onPress={onPress} onLongPress={onLongPress} activeOpacity={0.7}>
           {itemContent}
         </TouchableOpacity>
       ) : (
         itemContent
       )}
-      {showDivider && <View style={[styles.divider, { backgroundColor: theme.colors.border.light }]} />}
+      {showDivider && (
+        <View style={[styles.divider, { backgroundColor: theme.colors.border.light }]} />
+      )}
     </>
   );
 
@@ -137,40 +130,6 @@ const SubscriptionItem: React.FC<SubscriptionItemProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: 'transparent',
-  },
-  leftSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  infoSection: {
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  name: {
-    fontSize: 15,
-    fontWeight: '600',
-    flex: 1,
-  },
   autoRenewIcon: {
     marginLeft: 4,
   },
@@ -178,37 +137,71 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 4,
   },
-  metaRow: {
-    flexDirection: 'row',
+  container: {
     alignItems: 'center',
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
-  metaText: {
-    fontSize: 12,
+  divider: {
+    height: 1,
+    marginLeft: 68,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    borderRadius: 10,
+    height: 40,
+    justifyContent: 'center',
+    marginRight: 12,
+    width: 40,
+  },
+  infoSection: {
+    flex: 1,
+  },
+  leftSection: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+  },
+  metaRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
   },
   metaSeparator: {
     fontSize: 12,
     marginHorizontal: 4,
+  },
+  metaText: {
+    fontSize: 12,
+  },
+  name: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  nameRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 2,
+  },
+  renewalDate: {
+    fontSize: 11,
   },
   rightSection: {
     alignItems: 'flex-end',
     marginLeft: 8,
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
     borderRadius: 10,
     marginBottom: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   statusText: {
     fontSize: 10,
     fontWeight: '500',
-  },
-  renewalDate: {
-    fontSize: 11,
-  },
-  divider: {
-    height: 1,
-    marginLeft: 68,
   },
 });
 

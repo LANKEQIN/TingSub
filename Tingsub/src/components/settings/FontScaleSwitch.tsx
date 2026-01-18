@@ -2,77 +2,54 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
+import { useFontScale, FontScaleType, FONT_SCALE_OPTIONS } from '../../hooks/useFontScale';
 
-// 主题选项
-export interface ThemeOption {
-  value: 'light' | 'dark' | 'system';
-  label: string;
-  icon: string;
-}
-
-// 主题切换器Props接口
-export interface ThemeSwitchProps {
-  // 当前主题值
-  value?: 'light' | 'dark' | 'system';
+// 字体大小切换器Props接口
+export interface FontScaleSwitchProps {
+  // 当前字体大小值
+  value?: FontScaleType;
   // 自定义样式
   style?: ViewStyle;
   // 标题样式
   titleStyle?: TextStyle;
   // 是否显示图标
   showIcon?: boolean;
-  // 主题切换回调
-  onThemeChange?: (theme: 'light' | 'dark' | 'system') => void;
+  // 字体大小切换回调
+  onFontScaleChange?: (fontScale: FontScaleType) => void;
 }
 
-// 主题选项列表
-const THEME_OPTIONS: ThemeOption[] = [
-  {
-    value: 'light',
-    label: '浅色模式',
-    icon: 'white-balance-sunny',
-  },
-  {
-    value: 'dark',
-    label: '深色模式',
-    icon: 'moon-waning-crescent',
-  },
-  {
-    value: 'system',
-    label: '跟随系统',
-    icon: 'theme-light-dark',
-  },
-];
-
-// 主题切换器组件
-const ThemeSwitch: React.FC<ThemeSwitchProps> = ({
+// 字体大小切换器组件
+const FontScaleSwitch: React.FC<FontScaleSwitchProps> = ({
   value,
   style,
   titleStyle,
   showIcon = true,
-  onThemeChange,
+  onFontScaleChange,
 }) => {
-  const { theme, currentTheme, toggleTheme } = useTheme();
-  const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>(value || theme);
+  const { currentTheme } = useTheme();
+  const { fontScale, changeFontScale } = useFontScale();
+  const [selectedFontScale, setSelectedFontScale] = useState<FontScaleType>(value || fontScale);
 
-  // 当外部value或theme变化时，同步更新内部状态
+  // 当外部value或fontScale变化时，同步更新内部状态
   useEffect(() => {
     if (value !== undefined) {
-      setSelectedTheme(value);
+      setSelectedFontScale(value);
     } else {
-      setSelectedTheme(theme);
+      setSelectedFontScale(fontScale);
     }
-  }, [value, theme]);
+  }, [value, fontScale]);
 
-  // 处理主题切换
-  const handleThemeChange = async (themeValue: 'light' | 'dark' | 'system') => {
-    setSelectedTheme(themeValue);
-    await toggleTheme(themeValue);
-    onThemeChange?.(themeValue);
+  // 处理字体大小切换
+  const handleFontScaleChange = async (fontScaleValue: FontScaleType) => {
+    setSelectedFontScale(fontScaleValue);
+    await changeFontScale(fontScaleValue);
+    onFontScaleChange?.(fontScaleValue);
   };
 
-  // 渲染主题选项
-  const renderThemeOption = (option: ThemeOption) => {
-    const isSelected = selectedTheme === option.value;
+  // 渲染字体大小选项
+  const renderFontScaleOption = (option: typeof FONT_SCALE_OPTIONS[number]) => {
+    const isSelected = selectedFontScale === option.value;
+    const fontSize = 14 * option.scale;
 
     return (
       <TouchableOpacity
@@ -84,12 +61,12 @@ const ThemeSwitch: React.FC<ThemeSwitchProps> = ({
             borderColor: isSelected ? currentTheme.colors.primary : currentTheme.colors.placeholder,
           },
         ]}
-        onPress={() => handleThemeChange(option.value)}
+        onPress={() => handleFontScaleChange(option.value)}
         activeOpacity={0.7}
       >
         {showIcon && (
           <MaterialCommunityIcons
-            name={option.icon as any}
+            name="format-size"
             size={24}
             color={isSelected ? '#FFFFFF' : currentTheme.colors.text}
             style={styles.optionIcon}
@@ -100,6 +77,7 @@ const ThemeSwitch: React.FC<ThemeSwitchProps> = ({
             styles.optionLabel,
             {
               color: isSelected ? '#FFFFFF' : currentTheme.colors.text,
+              fontSize,
             },
             titleStyle,
           ]}
@@ -113,7 +91,7 @@ const ThemeSwitch: React.FC<ThemeSwitchProps> = ({
     );
   };
 
-  return <View style={[styles.container, style]}>{THEME_OPTIONS.map(renderThemeOption)}</View>;
+  return <View style={[styles.container, style]}>{FONT_SCALE_OPTIONS.map(renderFontScaleOption)}</View>;
 };
 
 // 样式定义
@@ -139,10 +117,9 @@ const styles = StyleSheet.create({
   },
   optionLabel: {
     flex: 1,
-    fontSize: 16,
     fontWeight: '500',
     lineHeight: 24,
   },
 });
 
-export default ThemeSwitch;
+export default FontScaleSwitch;

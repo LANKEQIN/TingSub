@@ -61,12 +61,7 @@ const SubscriptionList: React.FC<SubscriptionListProps> = ({
       );
     }
 
-    return (
-      <Empty
-        iconName={emptyIconName}
-        description={emptyMessage}
-      />
-    );
+    return <Empty iconName={emptyIconName} description={emptyMessage} />;
   };
 
   const renderListFooter = () => {
@@ -121,30 +116,30 @@ const SubscriptionList: React.FC<SubscriptionListProps> = ({
 };
 
 const styles = StyleSheet.create({
-  listContent: {
-    paddingVertical: 8,
-  },
-  emptyContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   card: {
     marginBottom: 8,
+  },
+  emptyContent: {
+    alignItems: 'center',
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  footerLoading: {
+    alignItems: 'center',
+    paddingVertical: 16,
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
+  listContent: {
+    paddingVertical: 8,
+  },
   loadingContainer: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     paddingVertical: 40,
-  },
-  footerLoading: {
-    paddingVertical: 16,
-    alignItems: 'center',
   },
 });
 

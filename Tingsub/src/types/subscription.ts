@@ -34,19 +34,13 @@ export interface Subscription {
 /**
  * 创建订阅参数
  */
-export type CreateSubscriptionParams = Omit<
-  Subscription,
-  'id' | 'createdAt' | 'updatedAt'
->;
+export type CreateSubscriptionParams = Omit<Subscription, 'id' | 'createdAt' | 'updatedAt'>;
 
 /**
  * 更新订阅参数
  */
 export type UpdateSubscriptionParams = Partial<
-  Omit<
-    Subscription,
-    'id' | 'userId' | 'createdAt' | 'updatedAt'
-  >
+  Omit<Subscription, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
 >;
 
 /**

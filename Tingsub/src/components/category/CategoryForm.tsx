@@ -193,9 +193,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             left={<TextInput.Icon icon="tag" />}
           />
           {errors.name && (
-            <Text style={[styles.errorText, { color: theme.colors.error }]}>
-              {errors.name}
-            </Text>
+            <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.name}</Text>
           )}
         </View>
 
@@ -216,9 +214,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           <Button
             mode="outlined"
             onPress={() => setShowColorPicker(true)}
-            icon={() => (
-              <View style={[styles.colorPreview, { backgroundColor: formData.color }]} />
-            )}
+            icon={() => <View style={[styles.colorPreview, { backgroundColor: formData.color }]} />}
             style={[
               styles.pickerButton,
               { borderColor: errors.color ? theme.colors.error : undefined },
@@ -250,12 +246,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
 
         <View style={styles.buttonContainer}>
           {onCancel && (
-            <Button
-              mode="outlined"
-              onPress={onCancel}
-              style={styles.button}
-              disabled={loading}
-            >
+            <Button mode="outlined" onPress={onCancel} style={styles.button} disabled={loading}>
               取消
             </Button>
           )}
@@ -278,34 +269,14 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
+  button: {
     flex: 1,
-    backgroundColor: 'transparent',
+    marginHorizontal: 4,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-  },
-  section: {
-    marginBottom: 16,
-  },
-  input: {
-    backgroundColor: 'transparent',
-  },
-  pickerButton: {
-    justifyContent: 'flex-start',
-  },
-  errorText: {
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 12,
-  },
-  colorPreview: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 24,
   },
   colorGrid: {
     flexDirection: 'row',
@@ -313,19 +284,26 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   colorOption: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    margin: 8,
-    justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
+    margin: 8,
+    width: 40,
   },
-  selectedColor: {
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
+  colorPreview: {
+    borderRadius: 10,
+    height: 20,
+    width: 20,
   },
-  iconScroll: {
-    maxHeight: 300,
+  container: {
+    backgroundColor: 'transparent',
+    flex: 1,
+  },
+  errorText: {
+    fontSize: 12,
+    marginLeft: 12,
+    marginTop: 4,
   },
   iconGrid: {
     flexDirection: 'row',
@@ -333,25 +311,38 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   iconOption: {
-    width: 56,
-    height: 56,
+    alignItems: 'center',
     borderRadius: 12,
     borderWidth: 2,
-    margin: 8,
+    height: 56,
     justifyContent: 'center',
-    alignItems: 'center',
+    margin: 8,
+    width: 56,
+  },
+  iconScroll: {
+    maxHeight: 300,
+  },
+  input: {
+    backgroundColor: 'transparent',
+  },
+  pickerButton: {
+    justifyContent: 'flex-start',
+  },
+  scrollContent: {
+    padding: 16,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  section: {
+    marginBottom: 16,
+  },
+  selectedColor: {
+    borderColor: '#FFFFFF',
+    borderWidth: 2,
   },
   selectedIcon: {
     backgroundColor: 'rgba(154, 207, 255, 0.1)',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 24,
-  },
-  button: {
-    flex: 1,
-    marginHorizontal: 4,
   },
 });
 

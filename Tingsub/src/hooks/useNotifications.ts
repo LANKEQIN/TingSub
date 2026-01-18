@@ -7,7 +7,8 @@ import { notificationService } from '../services/notification/NotificationServic
  * 封装了通知权限申请、本地通知发送等操作
  */
 export const useNotifications = () => {
-  const [notificationPermission, setNotificationPermission] = useState<Notifications.NotificationPermissionsStatus | null>(null);
+  const [notificationPermission, setNotificationPermission] =
+    useState<Notifications.NotificationPermissionsStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,11 +47,7 @@ export const useNotifications = () => {
 
   // 发送本地通知
   const sendLocalNotification = useCallback(
-    async (
-      title: string,
-      body: string,
-      data?: Record<string, any>
-    ) => {
+    async (title: string, body: string, data?: Record<string, any>) => {
       setLoading(true);
       try {
         const notificationId = await notificationService.sendNotification({
@@ -71,20 +68,17 @@ export const useNotifications = () => {
   );
 
   // 取消本地通知
-  const cancelLocalNotification = useCallback(
-    async (notificationId: string) => {
-      setLoading(true);
-      try {
-        await notificationService.cancelNotification(notificationId);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : '取消通知失败');
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
+  const cancelLocalNotification = useCallback(async (notificationId: string) => {
+    setLoading(true);
+    try {
+      await notificationService.cancelNotification(notificationId);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '取消通知失败');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // 调度到期提醒
   const scheduleExpirationReminder = useCallback(
@@ -118,20 +112,17 @@ export const useNotifications = () => {
   );
 
   // 取消到期提醒
-  const cancelExpirationReminder = useCallback(
-    async (subscriptionId: string) => {
-      setLoading(true);
-      try {
-        await notificationService.cancelNotification(subscriptionId);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : '取消提醒失败');
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
+  const cancelExpirationReminder = useCallback(async (subscriptionId: string) => {
+    setLoading(true);
+    try {
+      await notificationService.cancelNotification(subscriptionId);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '取消提醒失败');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return {
     notificationPermission,

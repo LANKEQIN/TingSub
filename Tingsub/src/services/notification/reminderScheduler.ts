@@ -213,7 +213,10 @@ export class ReminderScheduler {
   /**
    * 为新订阅安排提醒
    */
-  async scheduleReminderForNewSubscription(subscription: Subscription, userId: string): Promise<void> {
+  async scheduleReminderForNewSubscription(
+    subscription: Subscription,
+    userId: string
+  ): Promise<void> {
     try {
       const user = await this.userRepository.getById(userId);
       if (!user || !user.reminderSettings.enabled) {

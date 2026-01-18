@@ -12,6 +12,9 @@ export const USER_STORAGE_KEYS = {
   // 主题设置
   THEME_SETTING: 'theme_setting',
 
+  // 字体大小设置
+  FONT_SIZE_SETTING: 'font_size_setting',
+
   // 货币设置
   CURRENCY_SETTING: 'currency_setting',
 

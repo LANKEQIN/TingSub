@@ -128,7 +128,10 @@ export class NotificationService {
   /**
    * 发送订阅到期提醒通知
    */
-  async sendExpirationReminder(subscription: Subscription, daysUntilExpiry: number): Promise<string | null> {
+  async sendExpirationReminder(
+    subscription: Subscription,
+    daysUntilExpiry: number
+  ): Promise<string | null> {
     const title = daysUntilExpiry === 0 ? '订阅今日到期' : `订阅将在${daysUntilExpiry}天后到期`;
     const body = `${subscription.name} 的订阅将于 ${this.formatDate(subscription.renewalDate)} 到期`;
 
@@ -147,7 +150,10 @@ export class NotificationService {
   /**
    * 发送订阅续费提醒通知
    */
-  async sendRenewalReminder(subscription: Subscription, daysUntilRenewal: number): Promise<string | null> {
+  async sendRenewalReminder(
+    subscription: Subscription,
+    daysUntilRenewal: number
+  ): Promise<string | null> {
     const title = daysUntilRenewal === 0 ? '订阅今日续费' : `订阅将在${daysUntilRenewal}天后续费`;
     const body = `${subscription.name} 的订阅将于 ${this.formatDate(subscription.renewalDate)} 自动续费，费用：${subscription.price} ${subscription.currency}`;
 
@@ -168,7 +174,10 @@ export class NotificationService {
   /**
    * 安排定时通知
    */
-  async scheduleNotification(config: NotificationConfig, trigger: Notifications.NotificationTriggerInput): Promise<string | null> {
+  async scheduleNotification(
+    config: NotificationConfig,
+    trigger: Notifications.NotificationTriggerInput
+  ): Promise<string | null> {
     try {
       const hasPermission = await this.checkPermissions();
       if (!hasPermission) {
@@ -350,7 +359,9 @@ export class NotificationService {
   /**
    * 添加通知监听器
    */
-  addNotificationListener(listener: (notification: Notifications.Notification) => void): Notifications.Subscription {
+  addNotificationListener(
+    listener: (notification: Notifications.Notification) => void
+  ): Notifications.Subscription {
     const subscription = Notifications.addNotificationReceivedListener(listener);
     Logger.info('通知监听器已添加');
     return subscription;

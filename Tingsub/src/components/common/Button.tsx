@@ -83,16 +83,12 @@ const Button: React.FC<ButtonProps> = ({
     // 根据类型设置样式
     switch (type) {
       case 'primary':
-        baseStyle.backgroundColor = disabled
-          ? theme.colors.disabled
-          : theme.colors.primary;
+        baseStyle.backgroundColor = disabled ? theme.colors.disabled : theme.colors.primary;
         break;
       case 'secondary':
         baseStyle.backgroundColor = 'transparent';
         baseStyle.borderWidth = 1;
-        baseStyle.borderColor = disabled
-          ? theme.colors.disabled
-          : theme.colors.primary;
+        baseStyle.borderColor = disabled ? theme.colors.disabled : theme.colors.primary;
         break;
       case 'text':
         baseStyle.backgroundColor = 'transparent';
@@ -128,14 +124,10 @@ const Button: React.FC<ButtonProps> = ({
         baseStyle.color = '#FFFFFF';
         break;
       case 'secondary':
-        baseStyle.color = disabled
-          ? theme.colors.disabled
-          : theme.colors.primary;
+        baseStyle.color = disabled ? theme.colors.disabled : theme.colors.primary;
         break;
       case 'text':
-        baseStyle.color = disabled
-          ? theme.colors.disabled
-          : theme.colors.primary;
+        baseStyle.color = disabled ? theme.colors.disabled : theme.colors.primary;
         break;
     }
 
@@ -158,8 +150,7 @@ const Button: React.FC<ButtonProps> = ({
   const renderIcon = () => {
     if (!icon) return null;
 
-    const iconColor =
-      type === 'primary' ? '#FFFFFF' : theme.colors.primary;
+    const iconColor = type === 'primary' ? '#FFFFFF' : theme.colors.primary;
 
     return (
       <MaterialCommunityIcons
@@ -197,21 +188,21 @@ const Button: React.FC<ButtonProps> = ({
 // 样式定义
 const styles = StyleSheet.create({
   button: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
     minHeight: 44,
-  },
-  text: {
-    fontWeight: '500',
-    textAlign: 'center',
   },
   iconLeft: {
     marginRight: 8,
   },
   iconRight: {
     marginLeft: 8,
+  },
+  text: {
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });
 

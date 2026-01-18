@@ -8,7 +8,8 @@ import { useCategoryStore } from '../store/categoryStore';
  * 封装了分类的增删改查操作
  */
 export const useCategories = (repository: CategoryRepository, userId: string) => {
-  const { categories, createCategory, updateCategory, deleteCategory, loadCategories } = useCategoryStore();
+  const { categories, createCategory, updateCategory, deleteCategory, loadCategories } =
+    useCategoryStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -87,7 +88,8 @@ export const useCategories = (repository: CategoryRepository, userId: string) =>
   // 获取分类的订阅数量
   const getCategorySubscriptionCount = useCallback(
     (categoryId: string, subscriptions: Array<{ categoryId: string }>) => {
-      return subscriptions.filter((sub: { categoryId: string }) => sub.categoryId === categoryId).length;
+      return subscriptions.filter((sub: { categoryId: string }) => sub.categoryId === categoryId)
+        .length;
     },
     []
   );

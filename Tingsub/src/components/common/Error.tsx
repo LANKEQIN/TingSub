@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ViewStyle,
-  TextStyle,
-} from 'react-native';
+import { StyleSheet, View, Text, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Button from './Button';
@@ -86,11 +80,7 @@ const Error: React.FC<ErrorProps> = ({
     if (!showIcon) return null;
 
     return (
-      <MaterialCommunityIcons
-        name={errorInfo.icon as any}
-        size={64}
-        color={theme.colors.error}
-      />
+      <MaterialCommunityIcons name={errorInfo.icon as any} size={64} color={theme.colors.error} />
     );
   };
 
@@ -101,18 +91,12 @@ const Error: React.FC<ErrorProps> = ({
         <Text style={[styles.title, titleStyle, { color: theme.colors.text }]}>
           {errorInfo.title}
         </Text>
-        <Text
-          style={[styles.description, descriptionStyle, { color: theme.colors.placeholder }]}
-        >
+        <Text style={[styles.description, descriptionStyle, { color: theme.colors.placeholder }]}>
           {errorInfo.description}
         </Text>
         {onRetry && (
           <View style={styles.buttonContainer}>
-            <Button
-              title={retryText}
-              type="primary"
-              onPress={onRetry}
-            />
+            <Button title={retryText} type="primary" onPress={onRetry} />
           </View>
         )}
       </View>
@@ -122,30 +106,30 @@ const Error: React.FC<ErrorProps> = ({
 
 // 样式定义
 const styles = StyleSheet.create({
+  buttonContainer: {
+    marginTop: 8,
+  },
   container: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     padding: 24,
   },
   content: {
     alignItems: 'center',
     maxWidth: 300,
   },
+  description: {
+    fontSize: 14,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
   title: {
     fontSize: 18,
     fontWeight: '600',
-    marginTop: 16,
     marginBottom: 8,
+    marginTop: 16,
     textAlign: 'center',
-  },
-  description: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  buttonContainer: {
-    marginTop: 8,
   },
 });
 

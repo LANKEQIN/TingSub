@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Text,
-} from 'react-native';
+import { StyleSheet, View, ScrollView, KeyboardAvoidingView, Platform, Text } from 'react-native';
 import { useTheme, TextInput, Button, Checkbox, Chip } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { SubscriptionFormData, SubscriptionFormErrors } from '../../types/subscription';
@@ -136,9 +129,7 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             left={<TextInput.Icon icon="tag" />}
           />
           {errors.name && (
-            <Text style={[styles.errorText, { color: theme.colors.error }]}>
-              {errors.name}
-            </Text>
+            <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.name}</Text>
           )}
         </View>
 
@@ -185,9 +176,7 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             <TextInput
               label="价格 *"
               value={formData.price > 0 ? formData.price.toString() : ''}
-              onChangeText={(text) =>
-                setFormData({ ...formData, price: parseFloat(text) || 0 })
-              }
+              onChangeText={(text) => setFormData({ ...formData, price: parseFloat(text) || 0 })}
               error={!!errors.price}
               mode="outlined"
               keyboardType="decimal-pad"
@@ -196,47 +185,29 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             />
           </View>
           <View style={styles.halfWidth}>
-            <Button
-              mode="outlined"
-              onPress={() => {}}
-              style={styles.pickerButton}
-            >
+            <Button mode="outlined" onPress={() => {}} style={styles.pickerButton}>
               {formData.currency}
             </Button>
           </View>
         </View>
         {errors.price && (
-          <Text style={[styles.errorText, { color: theme.colors.error }]}>
-            {errors.price}
-          </Text>
+          <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.price}</Text>
         )}
 
         <View style={styles.section}>
-          <Button
-            mode="outlined"
-            onPress={() => {}}
-            style={styles.pickerButton}
-          >
+          <Button mode="outlined" onPress={() => {}} style={styles.pickerButton}>
             {typeOptions.find((t) => t.value === formData.type)?.label || '选择周期 *'}
           </Button>
         </View>
 
         <View style={styles.row}>
           <View style={styles.halfWidth}>
-            <Button
-              mode="outlined"
-              onPress={() => {}}
-              style={styles.pickerButton}
-            >
+            <Button mode="outlined" onPress={() => {}} style={styles.pickerButton}>
               计费日期 *
             </Button>
           </View>
           <View style={styles.halfWidth}>
-            <Button
-              mode="outlined"
-              onPress={() => {}}
-              style={styles.pickerButton}
-            >
+            <Button mode="outlined" onPress={() => {}} style={styles.pickerButton}>
               开始日期 *
             </Button>
           </View>
@@ -253,9 +224,7 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             left={<TextInput.Icon icon="web" />}
           />
           {errors.platform && (
-            <Text style={[styles.errorText, { color: theme.colors.error }]}>
-              {errors.platform}
-            </Text>
+            <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.platform}</Text>
           )}
         </View>
 
@@ -282,9 +251,7 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
               status={formData.autoRenew ? 'checked' : 'unchecked'}
               onPress={() => setFormData({ ...formData, autoRenew: !formData.autoRenew })}
             />
-            <Text style={[styles.checkboxLabel, { color: theme.colors.text }]}>
-              自动续费
-            </Text>
+            <Text style={[styles.checkboxLabel, { color: theme.colors.text }]}>自动续费</Text>
           </View>
         </View>
 
@@ -326,12 +293,7 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
 
         <View style={styles.buttonContainer}>
           {onCancel && (
-            <Button
-              mode="outlined"
-              onPress={onCancel}
-              style={styles.button}
-              disabled={loading}
-            >
+            <Button mode="outlined" onPress={onCancel} style={styles.button} disabled={loading}>
               取消
             </Button>
           )}
@@ -351,70 +313,70 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  scrollView: {
+  button: {
     flex: 1,
   },
-  scrollContent: {
-    padding: 16,
-  },
-  section: {
-    marginBottom: 16,
-  },
-  input: {
-    backgroundColor: 'transparent',
-  },
-  row: {
+  buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  halfWidth: {
-    width: '48%',
-  },
-  pickerButton: {
-    justifyContent: 'flex-start',
-  },
-  errorText: {
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 12,
-  },
-  checkboxRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    gap: 12,
+    justifyContent: 'flex-end',
+    marginTop: 24,
   },
   checkboxLabel: {
     fontSize: 16,
     marginLeft: 8,
+  },
+  checkboxRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  chip: {
+    marginBottom: 8,
+    marginRight: 8,
+  },
+  chipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  chipText: {
+    fontSize: 14,
+  },
+  container: {
+    backgroundColor: 'transparent',
+    flex: 1,
+  },
+  errorText: {
+    fontSize: 12,
+    marginLeft: 12,
+    marginTop: 4,
+  },
+  halfWidth: {
+    width: '48%',
+  },
+  input: {
+    backgroundColor: 'transparent',
   },
   label: {
     fontSize: 16,
     fontWeight: '500',
     marginBottom: 8,
   },
-  chipContainer: {
+  pickerButton: {
+    justifyContent: 'flex-start',
+  },
+  row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
-  chip: {
-    marginRight: 8,
-    marginBottom: 8,
+  scrollContent: {
+    padding: 16,
   },
-  chipText: {
-    fontSize: 14,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 24,
-    gap: 12,
-  },
-  button: {
+  scrollView: {
     flex: 1,
+  },
+  section: {
+    marginBottom: 16,
   },
 });
 
