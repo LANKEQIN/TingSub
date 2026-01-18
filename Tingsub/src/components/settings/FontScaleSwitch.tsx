@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
@@ -29,6 +29,15 @@ const FontScaleSwitch: React.FC<FontScaleSwitchProps> = ({
   const { currentTheme } = useTheme();
   const { fontScale, changeFontScale } = useFontScale();
   const [selectedFontScale, setSelectedFontScale] = useState<FontScaleType>(value || fontScale);
+
+  // 当外部value或fontScale变化时，同步更新内部状态
+  useEffect(() => {
+    if (value !== undefined) {
+      setSelectedFontScale(value);
+    } else {
+      setSelectedFontScale(fontScale);
+    }
+  }, [value, fontScale]);
 
   // 处理字体大小切换
   const handleFontScaleChange = async (fontScaleValue: FontScaleType) => {

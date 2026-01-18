@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
@@ -53,6 +53,15 @@ const ThemeSwitch: React.FC<ThemeSwitchProps> = ({
 }) => {
   const { theme, currentTheme, toggleTheme } = useTheme();
   const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>(value || theme);
+
+  // 当外部value或theme变化时，同步更新内部状态
+  useEffect(() => {
+    if (value !== undefined) {
+      setSelectedTheme(value);
+    } else {
+      setSelectedTheme(theme);
+    }
+  }, [value, theme]);
 
   // 处理主题切换
   const handleThemeChange = async (themeValue: 'light' | 'dark' | 'system') => {
